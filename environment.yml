@@ -1,0 +1,13 @@
+name: keryu3
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - django=5.0
+  - python-dotenv=1.0
+  - gunicorn=21.2
+  - whitenoise=6.6
+  - pip
+  - pip:
+    - django-cors-headers==4.3.1 
