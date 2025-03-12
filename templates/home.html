@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome to Keryu3{% endblock %}
+
+{% block content %}
+<div class="px-4 py-5 my-5 text-center">
+    <h1 class="display-5 fw-bold text-body-emphasis">Keryu3 Care System</h1>
+    <div class="col-lg-6 mx-auto">
+        <p class="lead mb-4">
+            A comprehensive system for taking care of vulnerable people. 
+            Manage subjects, monitor their well-being, and receive instant alerts.
+        </p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            {% if user.is_authenticated %}
+                <a href="{% url 'subject_list' %}" class="btn btn-primary btn-lg px-4 gap-3">View Subjects</a>
+                <a href="{% url 'custodian_dashboard' %}" class="btn btn-outline-secondary btn-lg px-4">Dashboard</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-primary btn-lg px-4 gap-3">Login</a>
+                <a href="{% url 'register' %}" class="btn btn-outline-secondary btn-lg px-4">Register</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row g-4 py-5">
+        <div class="col-md-4">
+            <div class="dashboard-widget">
+                <h3>Subject Management</h3>
+                <p>Register and manage vulnerable people's information, including medical details and emergency contacts.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-widget">
+                <h3>QR Code System</h3>
+                <p>Generate unique QR codes for each subject that can be used to quickly access their information in emergencies.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-widget">
+                <h3>Instant Alerts</h3>
+                <p>Receive immediate WhatsApp notifications when someone scans a subject's QR code during an emergency.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
