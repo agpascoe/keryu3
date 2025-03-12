@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Keryu3{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Welcome, {{ user.get_full_name|default:user.username }}</h2>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'custodians:custodian_profile' %}" class="btn btn-outline-primary">
+                <i class="bi bi-person"></i> Edit Profile
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Subjects Overview -->
+        <div class="col-md-6">
+            <div class="dashboard-widget">
+                <h3>Your Subjects</h3>
+                {% if user.subjects.exists %}
+                    <div class="list-group">
+                        {% for subject in user.subjects.all %}
+                            <a href="{% url 'subjects:subject_detail' subject.id %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ subject.full_name }}</h5>
+                                    <small>{{ subject.age }} years old</small>
+                                </div>
+                                <p class="mb-1">{{ subject.get_condition_display }}</p>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>No subjects registered yet.</p>
+                {% endif %}
+                <div class="mt-3">
+                    <a href="{% url 'subjects:subject_create' %}" class="btn btn-primary">
+                        Add New Subject
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Alerts -->
+        <div class="col-md-6">
+            <div class="dashboard-widget">
+                <h3>Recent Alerts</h3>
+                {% if recent_alerts %}
+                    <div class="list-group">
+                        {% for alert in recent_alerts %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ alert.subject.full_name }}</h5>
+                                    <small>{{ alert.created_at|timesince }} ago</small>
+                                </div>
+                                <p class="mb-1">{{ alert.message }}</p>
+                                <small>Location: {{ alert.location|default:"Not specified" }}</small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>No recent alerts.</p>
+                {% endif %}
+                <div class="mt-3">
+                    <a href="{% url 'alarms:alarm_list' %}" class="btn btn-outline-secondary">
+                        View All Alerts
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-12">
+            <div class="dashboard-widget">
+                <h3>Quick Actions</h3>
+                <div class="row g-3">
+                    <div class="col-sm-6 col-md-4">
+                        <a href="{% url 'subjects:subject_create' %}" class="btn btn-outline-primary w-100">
+                            Register New Subject
+                        </a>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                        <a href="{% url 'subjects:qr_codes' %}" class="btn btn-outline-success w-100">
+                            Print QR Codes
+                        </a>
+                    </div>
+                    <div class="col-sm-6 col-md-4">
+                        <a href="{% url 'custodians:custodian_profile' %}" class="btn btn-outline-info w-100">
+                            Update Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

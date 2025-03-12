@@ -13,12 +13,12 @@ Keryu3 is a full-stack system for managing and monitoring vulnerable people (eld
 - [ ] Custodian associations
 - [ ] Document attachments (medical records, etc.)
 
-### 2. Custodian System ⏳
-- [ ] User registration and authentication
+### 2. Custodian System 🚧
+- [x] User registration and authentication
 - [ ] Subject creation and management
 - [ ] Multiple custodians per subject
-- [ ] WhatsApp number verification
-- [ ] Dashboard with subject overview
+- [x] WhatsApp number verification setup
+- [x] Dashboard with subject overview
 - [ ] Notification preferences
 
 ### 3. QR Code System ⏳
@@ -50,22 +50,22 @@ Keryu3 is a full-stack system for managing and monitoring vulnerable people (eld
 - [x] Custom CSS styling
 - [x] User-friendly forms
 
-### Backend ⏳
+### Backend 🚧
 - [x] Django 5.0 framework
 - [x] REST API architecture
+- [x] Authentication system
 - [ ] Database models
 - [ ] Business logic
-- [ ] Authentication system
 
-### Security 🔒
-- [ ] User authentication
+### Security 🚧
+- [x] User authentication
 - [ ] Data encryption
-- [ ] CSRF protection
+- [x] CSRF protection
 - [ ] API security
 - [ ] Privacy compliance
 
-### Database Schema ⏳
-- [ ] Users/Custodians
+### Database Schema 🚧
+- [x] Users/Custodians
 - [ ] Subjects
 - [ ] Medical Information
 - [ ] Emergency Contacts
@@ -80,10 +80,13 @@ Keryu3 is a full-stack system for managing and monitoring vulnerable people (eld
 3. Basic frontend structure
 4. Template system
 5. Static files organization
+6. Custodian authentication system
+7. Registration and login forms
+8. Dashboard template
 
 ### In Progress 🚧
 1. Database models design
-2. User authentication system
+2. Subject management system
 3. Basic CRUD operations
 
 ### Pending 📋
@@ -96,7 +99,7 @@ Keryu3 is a full-stack system for managing and monitoring vulnerable people (eld
 
 ## Timeline
 - Phase 1: Basic Setup and Structure ✅
-- Phase 2: Core Features Development ⏳
+- Phase 2: Core Features Development 🚧
 - Phase 3: Integration and Testing ⏳
 - Phase 4: Deployment and Documentation ⏳
 
