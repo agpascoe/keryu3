@@ -47,6 +47,9 @@ INSTALLED_APPS = [
     'corsheaders',
     'phonenumber_field',
     'drf_yasg',
+    'widget_tweaks',
+    'crispy_forms',
+    'crispy_bootstrap5',
     # Local apps
     'subjects.apps.SubjectsConfig',
     'alarms.apps.AlarmsConfig',
@@ -161,6 +164,27 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:8000',
 ]
 
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'custodians': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+}
+
 # WhatsApp API settings (to be configured)
 WHATSAPP_API_KEY = os.getenv('WHATSAPP_API_KEY', '')
 WHATSAPP_API_URL = os.getenv('WHATSAPP_API_URL', '')
+
+# Crispy Forms
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"

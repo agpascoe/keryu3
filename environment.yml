@@ -14,6 +14,6 @@ dependencies:
     - djangorestframework==3.14.0
     - qrcode==7.4.2
     - Pillow==10.2.0
-    - python-whatsapp-api==1.0.4
     - django-phonenumber-field[phonenumbers]==7.3.0
-    - drf-yasg==1.21.7  # For API documentation 
+    - drf-yasg==1.21.7  # For API documentation
+    - django-widget-tweaks==1.5.0  # For form rendering 

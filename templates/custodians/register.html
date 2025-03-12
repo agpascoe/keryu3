@@ -1,112 +1,69 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load widget_tweaks %}
 
-{% block title %}Register as Custodian - Keryu3{% endblock %}
+{% block title %}Register - {{ block.super }}{% endblock %}
 
 {% block content %}
-<div class="form-container">
-    <h2 class="text-center mb-4">Register as Custodian</h2>
-    <form method="post" class="needs-validation" novalidate>
-        {% csrf_token %}
-        
-        {% if form.errors %}
-            <div class="alert alert-danger">
-                Please correct the errors below.
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        {% if messages %}
+        <div class="messages mb-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
+            {% endfor %}
+        </div>
         {% endif %}
-        
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name</label>
-                {{ form.first_name }}
-                {% if form.first_name.errors %}
-                    <div class="invalid-feedback d-block">
-                        {{ form.first_name.errors.0 }}
-                    </div>
-                {% endif %}
+
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="card-title mb-0">Register as a Custodian</h4>
             </div>
-            
-            <div class="col-md-6 mb-3">
-                <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name</label>
-                {{ form.last_name }}
-                {% if form.last_name.errors %}
-                    <div class="invalid-feedback d-block">
-                        {{ form.last_name.errors.0 }}
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
                     </div>
-                {% endif %}
+                    {% endif %}
+                    
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">
+                            {{ field.label }}
+                            {% if field.field.required %}
+                                <span class="text-danger">*</span>
+                            {% endif %}
+                        </label>
+                        {% if field.errors %}
+                        <div class="alert alert-danger py-1">
+                            {% for error in field.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {{ field|add_class:"form-control" }}
+                        {% if field.help_text %}
+                            <div class="form-text">{{ field.help_text }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Register</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                Already have an account? <a href="{% url 'login' %}">Login here</a>
             </div>
         </div>
-
-        <div class="mb-3">
-            <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
-            {{ form.username }}
-            {% if form.username.errors %}
-                <div class="invalid-feedback d-block">
-                    {{ form.username.errors.0 }}
-                </div>
-            {% endif %}
-        </div>
-
-        <div class="mb-3">
-            <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
-            {{ form.email }}
-            {% if form.email.errors %}
-                <div class="invalid-feedback d-block">
-                    {{ form.email.errors.0 }}
-                </div>
-            {% endif %}
-        </div>
-
-        <div class="mb-3">
-            <label for="{{ form.phone_number.id_for_label }}" class="form-label">WhatsApp Number</label>
-            {{ form.phone_number }}
-            <div class="form-text">{{ form.phone_number.help_text }}</div>
-            {% if form.phone_number.errors %}
-                <div class="invalid-feedback d-block">
-                    {{ form.phone_number.errors.0 }}
-                </div>
-            {% endif %}
-        </div>
-
-        <div class="mb-3">
-            <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
-            {{ form.password1 }}
-            <div class="form-text">{{ form.password1.help_text }}</div>
-            {% if form.password1.errors %}
-                <div class="invalid-feedback d-block">
-                    {{ form.password1.errors.0 }}
-                </div>
-            {% endif %}
-        </div>
-
-        <div class="mb-3">
-            <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password</label>
-            {{ form.password2 }}
-            {% if form.password2.errors %}
-                <div class="invalid-feedback d-block">
-                    {{ form.password2.errors.0 }}
-                </div>
-            {% endif %}
-        </div>
-
-        <div class="d-grid">
-            <button type="submit" class="btn btn-primary">Register</button>
-        </div>
-    </form>
-    
-    <div class="text-center mt-3">
-        <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    // Add Bootstrap form-control class to all form inputs
-    document.addEventListener('DOMContentLoaded', function() {
-        const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"]');
-        inputs.forEach(input => {
-            input.classList.add('form-control');
-        });
-    });
-</script>
 {% endblock %} 

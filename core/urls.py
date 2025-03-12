@@ -54,10 +54,12 @@ urlpatterns = [
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     
+    # Custodians
+    path('custodians/', include('custodians.urls')),
+    
     # App URLs
     path('subjects/', include('subjects.urls')),
     path('alarms/', include('alarms.urls')),
-    path('custodians/', include('custodians.urls')),
     
     # API URLs
     path('api/v1/subjects/', include('subjects.api.urls')),

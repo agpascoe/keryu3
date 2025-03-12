@@ -1,47 +1,195 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
 
-{% block title %}Welcome to Keryu3{% endblock %}
+{% block title %}Welcome - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.hero-section {
+    background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+    color: white;
+    padding: 6rem 0;
+    margin-top: -1.5rem;
+}
+
+.feature-icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e9ecef;
+}
+
+.step-card {
+    border: none;
+    transition: transform 0.3s ease;
+}
+
+.step-card:hover {
+    transform: translateY(-10px);
+}
+
+.step-number {
+    width: 2rem;
+    height: 2rem;
+    background-color: #0d6efd;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.cta-section {
+    background-color: #f8f9fa;
+    padding: 4rem 0;
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="px-4 py-5 my-5 text-center">
-    <h1 class="display-5 fw-bold text-body-emphasis">Keryu3 Care System</h1>
-    <div class="col-lg-6 mx-auto">
-        <p class="lead mb-4">
-            A comprehensive system for taking care of vulnerable people. 
-            Manage subjects, monitor their well-being, and receive instant alerts.
-        </p>
-        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-            {% if user.is_authenticated %}
-                <a href="{% url 'subject_list' %}" class="btn btn-primary btn-lg px-4 gap-3">View Subjects</a>
-                <a href="{% url 'custodian_dashboard' %}" class="btn btn-outline-secondary btn-lg px-4">Dashboard</a>
-            {% else %}
-                <a href="{% url 'login' %}" class="btn btn-primary btn-lg px-4 gap-3">Login</a>
-                <a href="{% url 'register' %}" class="btn btn-outline-secondary btn-lg px-4">Register</a>
-            {% endif %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Welcome to Keryu3</h1>
+                <p class="lead mb-4">A comprehensive care management system designed to support vulnerable individuals and their caregivers.</p>
+                {% if not user.is_authenticated %}
+                    <div class="d-grid gap-3 d-md-flex">
+                        <a href="{% url 'custodians:register' %}" class="btn btn-light btn-lg px-4 me-md-2">Get Started</a>
+                        <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg px-4">Login</a>
+                    </div>
+                {% else %}
+                    <div class="d-grid gap-3 d-md-flex">
+                        <a href="{% url 'custodians:custodian_dashboard' %}" class="btn btn-light btn-lg px-4">Go to Dashboard</a>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <img src="{% static 'images/hero.svg' %}" alt="Care Management" class="img-fluid">
+            </div>
         </div>
     </div>
-</div>
+</section>
 
-<div class="container">
-    <div class="row g-4 py-5">
-        <div class="col-md-4">
-            <div class="dashboard-widget">
-                <h3>Subject Management</h3>
-                <p>Register and manage vulnerable people's information, including medical details and emergency contacts.</p>
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Key Features</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mx-auto mb-3">
+                            <i class="fas fa-user-shield fa-2x text-primary"></i>
+                        </div>
+                        <h3 class="h4">Subject Management</h3>
+                        <p class="text-muted">Register and track vulnerable individuals with detailed profiles and medical information.</p>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="dashboard-widget">
-                <h3>QR Code System</h3>
-                <p>Generate unique QR codes for each subject that can be used to quickly access their information in emergencies.</p>
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mx-auto mb-3">
+                            <i class="fas fa-qrcode fa-2x text-primary"></i>
+                        </div>
+                        <h3 class="h4">QR Code System</h3>
+                        <p class="text-muted">Generate unique QR codes for quick access to critical information in emergencies.</p>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="dashboard-widget">
-                <h3>Instant Alerts</h3>
-                <p>Receive immediate WhatsApp notifications when someone scans a subject's QR code during an emergency.</p>
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mx-auto mb-3">
+                            <i class="fas fa-bell fa-2x text-primary"></i>
+                        </div>
+                        <h3 class="h4">Real-time Alerts</h3>
+                        <p class="text-muted">Receive instant notifications about your subjects via WhatsApp and email.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">How It Works</h2>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="card step-card h-100">
+                    <div class="card-body text-center">
+                        <div class="step-number mx-auto">1</div>
+                        <h4>Register</h4>
+                        <p class="text-muted">Create your custodian account with basic information.</p>
+                        <a href="{% url 'custodians:register' %}" class="btn btn-outline-primary mt-2">Register Now</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card step-card h-100">
+                    <div class="card-body text-center">
+                        <div class="step-number mx-auto">2</div>
+                        <h4>Add Subjects</h4>
+                        <p class="text-muted">Register the vulnerable individuals under your care.</p>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'custodians:subject_list' %}" class="btn btn-outline-primary mt-2">Manage Subjects</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card step-card h-100">
+                    <div class="card-body text-center">
+                        <div class="step-number mx-auto">3</div>
+                        <h4>Set Up Alerts</h4>
+                        <p class="text-muted">Configure notification preferences and emergency contacts.</p>
+                        {% if user.is_authenticated %}
+                            <a href="#" class="btn btn-outline-primary mt-2">Manage Alerts</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card step-card h-100">
+                    <div class="card-body text-center">
+                        <div class="step-number mx-auto">4</div>
+                        <h4>Monitor</h4>
+                        <p class="text-muted">Track activities and receive real-time notifications.</p>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'custodians:custodian_dashboard' %}" class="btn btn-outline-primary mt-2">View Dashboard</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container text-center">
+        <h2 class="mb-4">Ready to Get Started?</h2>
+        <p class="lead mb-4">Join our community of caregivers and make a difference in someone's life.</p>
+        {% if not user.is_authenticated %}
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                <a href="{% url 'custodians:register' %}" class="btn btn-primary btn-lg px-4 me-sm-3">Register Now</a>
+                <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg px-4">Login</a>
+            </div>
+        {% else %}
+            <a href="{% url 'custodians:custodian_dashboard' %}" class="btn btn-primary btn-lg px-4">Go to Dashboard</a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<!-- No additional scripts needed since Font Awesome is loaded in base.html -->
 {% endblock %} 

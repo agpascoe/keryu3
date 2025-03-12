@@ -5,17 +5,17 @@ Keryu3 is a full-stack system for managing and monitoring vulnerable people (eld
 
 ## Core Features
 
-### 1. Subject Management ⏳
-- [ ] Personal information storage
-- [ ] Medical history and conditions
-- [ ] Emergency contact details
+### 1. Subject Management 🚧
+- [x] Personal information storage
+- [x] Medical history and conditions
+- [x] Emergency contact details
 - [ ] Hospital preferences
-- [ ] Custodian associations
+- [x] Custodian associations
 - [ ] Document attachments (medical records, etc.)
 
 ### 2. Custodian System 🚧
 - [x] User registration and authentication
-- [ ] Subject creation and management
+- [x] Subject creation and management
 - [ ] Multiple custodians per subject
 - [x] WhatsApp number verification setup
 - [x] Dashboard with subject overview
@@ -54,8 +54,8 @@ Keryu3 is a full-stack system for managing and monitoring vulnerable people (eld
 - [x] Django 5.0 framework
 - [x] REST API architecture
 - [x] Authentication system
-- [ ] Database models
-- [ ] Business logic
+- [x] Database models
+- [x] Business logic
 
 ### Security 🚧
 - [x] User authentication
@@ -66,9 +66,9 @@ Keryu3 is a full-stack system for managing and monitoring vulnerable people (eld
 
 ### Database Schema 🚧
 - [x] Users/Custodians
-- [ ] Subjects
-- [ ] Medical Information
-- [ ] Emergency Contacts
+- [x] Subjects
+- [x] Medical Information
+- [x] Emergency Contacts
 - [ ] Alerts/Notifications
 - [ ] Audit Logs
 
@@ -83,19 +83,20 @@ Keryu3 is a full-stack system for managing and monitoring vulnerable people (eld
 6. Custodian authentication system
 7. Registration and login forms
 8. Dashboard template
+9. Subject management system (CRUD)
+10. Medical information storage
 
 ### In Progress 🚧
-1. Database models design
-2. Subject management system
-3. Basic CRUD operations
+1. QR code system
+2. WhatsApp integration setup
+3. Alert system design
 
 ### Pending 📋
-1. QR code generation system
-2. WhatsApp integration
-3. Alert system
-4. API endpoints
-5. Testing
-6. Documentation
+1. WhatsApp integration
+2. Alert system
+3. API endpoints
+4. Testing
+5. Documentation
 
 ## Timeline
 - Phase 1: Basic Setup and Structure ✅
@@ -111,7 +112,7 @@ Keryu3 is a full-stack system for managing and monitoring vulnerable people (eld
 
 ## Legend
 - ✅ Completed
-- ⏳ In Progress/Pending
+- 🚧 In Progress
+- ⏳ Pending
 - 🔒 Security Feature
-- 📋 To Do
-- �� Under Construction 
+- 📋 To Do 

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Manage Subjects - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Manage Subjects</h2>
+        <a href="{% url 'custodians:subject_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add New Subject
+        </a>
+    </div>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if subject_list %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for subject in subject_list %}
+        <div class="col">
+            <div class="card h-100">
+                {% if subject.photo %}
+                <img src="{{ subject.photo.url }}" class="card-img-top" alt="{{ subject.name }}'s photo" style="height: 200px; object-fit: cover;">
+                {% else %}
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="fas fa-user-circle fa-5x text-secondary"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ subject.name }}</h5>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar"></i> {{ subject.date_of_birth|date:"F j, Y" }}<br>
+                            <i class="fas fa-venus-mars"></i> {{ subject.get_gender_display }}
+                        </small>
+                    </p>
+                    
+                    {% if subject.medical_conditions %}
+                    <p class="card-text">
+                        <strong>Medical Conditions:</strong><br>
+                        {{ subject.medical_conditions|truncatewords:20 }}
+                    </p>
+                    {% endif %}
+
+                    <div class="mt-3">
+                        <h6 class="mb-2"><i class="fas fa-user-md"></i> Doctor's Information</h6>
+                        <p class="card-text mb-1">
+                            <small>
+                                <strong>Name:</strong> {{ subject.doctor_name }}<br>
+                                <strong>Phone:</strong> {{ subject.doctor_phone }}<br>
+                                <strong>Specialty:</strong> {{ subject.doctor_speciality }}
+                            </small>
+                        </p>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'custodians:subject_detail' subject.pk %}" class="btn btn-info btn-sm">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        <a href="{% url 'custodians:subject_update' subject.pk %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a href="{% url 'custodians:subject_delete' subject.pk %}" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash"></i> Delete
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <h4 class="alert-heading">No Subjects Added Yet</h4>
+        <p>You haven't added any subjects to manage. Click the "Add New Subject" button above to get started.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 
