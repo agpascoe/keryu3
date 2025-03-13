@@ -1,5 +1,5 @@
 from django import forms
-from custodians.models import Subject
+from .models import Subject
 from phonenumber_field.formfields import PhoneNumberField
 
 class SubjectForm(forms.ModelForm):

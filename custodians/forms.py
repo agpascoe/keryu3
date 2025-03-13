@@ -2,7 +2,8 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from phonenumber_field.formfields import PhoneNumberField
-from .models import Custodian, Subject
+from .models import Custodian
+from subjects.models import Subject
 from django.db import transaction
 
 class CustodianRegistrationForm(UserCreationForm):

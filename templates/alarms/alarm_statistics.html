@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Alarm Statistics</h2>
+                <div class="btn-group">
+                    <button class="btn btn-outline-primary" id="last7Days">Last 7 Days</button>
+                    <button class="btn btn-outline-primary active" id="last30Days">Last 30 Days</button>
+                    <button class="btn btn-outline-primary" id="last90Days">Last 90 Days</button>
+                </div>
+            </div>
+
+            <!-- Overview Cards -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Alarms</h5>
+                            <h2 class="card-text">{{ total_alarms }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Recent Alarms (30 days)</h5>
+                            <h2 class="card-text">{{ recent_alarms }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Subjects</h5>
+                            <h2 class="card-text">{{ total_subjects }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="row">
+                <!-- Alarms Over Time -->
+                <div class="col-12 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Alarms Over Time</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="alarmsTimeChart" height="100"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alarms by Subject -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Alarms by Subject</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="alarmsSubjectChart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notification Status -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Notification Status</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="notificationStatusChart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Options -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Export Data</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <a href="{% url 'alarms:export_csv' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-file-csv"></i> Export as CSV
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'alarms:export_excel' %}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-file-excel"></i> Export as Excel
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'alarms:export_pdf' %}" class="btn btn-outline-danger w-100">
+                                <i class="fas fa-file-pdf"></i> Export as PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+// Chart configuration
+const chartConfig = {
+    plugins: {
+        legend: {
+            position: 'bottom'
+        }
+    },
+    responsive: true,
+    maintainAspectRatio: false
+};
+
+// Alarms Over Time Chart
+const timeCtx = document.getElementById('alarmsTimeChart').getContext('2d');
+new Chart(timeCtx, {
+    type: 'line',
+    data: {
+        labels: {{ chart_data.date_labels|safe }},
+        datasets: [{
+            label: 'Number of Alarms',
+            data: {{ chart_data.date_data|safe }},
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1,
+            fill: true,
+            backgroundColor: 'rgba(75, 192, 192, 0.2)'
+        }]
+    },
+    options: {
+        ...chartConfig,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+
+// Alarms by Subject Chart
+const subjectCtx = document.getElementById('alarmsSubjectChart').getContext('2d');
+new Chart(subjectCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ chart_data.subject_labels|safe }},
+        datasets: [{
+            label: 'Alarms per Subject',
+            data: {{ chart_data.subject_data|safe }},
+            backgroundColor: 'rgba(54, 162, 235, 0.8)'
+        }]
+    },
+    options: {
+        ...chartConfig,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+
+// Notification Status Chart
+const notificationCtx = document.getElementById('notificationStatusChart').getContext('2d');
+new Chart(notificationCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Sent', 'Failed', 'Pending'],
+        datasets: [{
+            data: [
+                {{ chart_data.notifications.sent }},
+                {{ chart_data.notifications.failed }},
+                {{ chart_data.notifications.pending }}
+            ],
+            backgroundColor: [
+                'rgba(75, 192, 192, 0.8)',
+                'rgba(255, 99, 132, 0.8)',
+                'rgba(255, 205, 86, 0.8)'
+            ]
+        }]
+    },
+    options: chartConfig
+});
+
+// Date range buttons
+document.querySelectorAll('.btn-group .btn').forEach(button => {
+    button.addEventListener('click', function() {
+        // Remove active class from all buttons
+        document.querySelectorAll('.btn-group .btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Add active class to clicked button
+        this.classList.add('active');
+        
+        // Get the date range
+        const days = this.id === 'last7Days' ? 7 : 
+                    this.id === 'last30Days' ? 30 : 90;
+        
+        // Update charts with new data
+        fetch(`/alarms/statistics/data/?days=${days}`)
+            .then(response => response.json())
+            .then(data => {
+                // Update time chart
+                timeChart.data.labels = data.date_labels;
+                timeChart.data.datasets[0].data = data.date_data;
+                timeChart.update();
+                
+                // Update subject chart
+                subjectChart.data.labels = data.subject_labels;
+                subjectChart.data.datasets[0].data = data.subject_data;
+                subjectChart.update();
+                
+                // Update notification chart
+                notificationChart.data.datasets[0].data = [
+                    data.notifications.sent,
+                    data.notifications.failed,
+                    data.notifications.pending
+                ];
+                notificationChart.update();
+                
+                // Update overview cards
+                document.querySelector('.total-alarms').textContent = data.total_alarms;
+                document.querySelector('.recent-alarms').textContent = data.recent_alarms;
+            });
+    });
+});
+</script>
+{% endblock %} 

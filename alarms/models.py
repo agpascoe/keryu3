@@ -1,3 +1,4 @@
 from django.db import models
+from subjects.models import Alarm
 
-# Create your models here.
+# All alarm-related models have been moved to subjects.models

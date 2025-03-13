@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Alarm Monitoring Dashboard</h2>
+                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#autoRefreshModal">
+                    <i class="fas fa-sync"></i> Auto-Refresh Settings
+                </button>
+            </div>
+            
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Alarms</h5>
+                            <h2 class="card-text">{{ stats.total_alarms }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Recent Alarms (7 days)</h5>
+                            <h2 class="card-text">{{ stats.recent_alarms }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Notifications Sent</h5>
+                            <h2 class="card-text">{{ stats.notifications_sent }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card {% if stats.notifications_failed > 0 %}bg-danger{% else %}bg-success{% endif %} text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Failed Notifications</h5>
+                            <h2 class="card-text">{{ stats.notifications_failed }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Alarms Table -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Alarms</h5>
+                    <span class="text-muted" id="lastUpdated">
+                        Last updated: {{ now|date:"Y-m-d H:i:s" }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Subject</th>
+                                    <th>Custodian</th>
+                                    <th>Location</th>
+                                    <th>Notification</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for alarm in latest_alarms %}
+                                <tr>
+                                    <td>{{ alarm.timestamp|date:"Y-m-d H:i:s" }}</td>
+                                    <td>
+                                        <a href="{% url 'admin:subjects_subject_change' alarm.subject.id %}">
+                                            {{ alarm.subject.name }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'admin:auth_user_change' alarm.subject.custodian.user.id %}">
+                                            {{ alarm.subject.custodian.user.get_full_name }}
+                                        </a>
+                                        <br>
+                                        <small class="text-muted">{{ alarm.subject.custodian.phone_number }}</small>
+                                    </td>
+                                    <td>
+                                        {% if alarm.location %}
+                                            <span class="text-success">{{ alarm.location }}</span>
+                                        {% else %}
+                                            <span class="text-muted">Not available</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if alarm.notification_sent %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check"></i> Sent
+                                            </span>
+                                            <br>
+                                            <small class="text-muted">{{ alarm.notification_sent_at|date:"H:i:s" }}</small>
+                                        {% else %}
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-clock"></i> Pending
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{% url 'alarms:alarm_detail' alarm.id %}" 
+                                               class="btn btn-sm btn-info" 
+                                               title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'admin:alarms_alarm_change' alarm.id %}" 
+                                               class="btn btn-sm btn-primary"
+                                               title="Edit in Admin">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            {% if not alarm.notification_sent %}
+                                            <button class="btn btn-sm btn-warning retry-notification" 
+                                                    data-alarm-id="{{ alarm.id }}"
+                                                    title="Retry Notification">
+                                                <i class="fas fa-redo"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4">
+                                        <i class="fas fa-bell-slash fa-2x text-muted"></i>
+                                        <p class="mt-2">No recent alarms</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <a href="{% url 'alarms:alarm_list' %}" class="btn btn-primary">
+                        <i class="fas fa-list"></i> View All Alarms
+                    </a>
+                    <a href="{% url 'alarms:alarm_statistics' %}" class="btn btn-info">
+                        <i class="fas fa-chart-bar"></i> View Statistics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Auto-refresh Modal -->
+<div class="modal fade" id="autoRefreshModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-sync"></i> Auto-Refresh Settings
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="autoRefreshToggle">
+                    <label class="form-check-label" for="autoRefreshToggle">Enable Auto-Refresh</label>
+                </div>
+                <div class="mb-3">
+                    <label for="refreshInterval" class="form-label">Refresh Interval (seconds)</label>
+                    <input type="number" class="form-control" id="refreshInterval" 
+                           value="30" min="10" max="300">
+                    <div class="form-text">Minimum: 10 seconds, Maximum: 300 seconds</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveSettings">
+                    <i class="fas fa-save"></i> Save Settings
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let refreshTimer;
+const defaultInterval = 30000; // 30 seconds
+
+function refreshDashboard() {
+    fetch(window.location.href)
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // Update statistics cards
+            document.querySelector('.container').innerHTML = 
+                doc.querySelector('.container').innerHTML;
+            
+            // Reinitialize tooltips
+            initializeTooltips();
+            
+            // Update last refreshed time
+            document.getElementById('lastUpdated').textContent = 
+                'Last updated: ' + new Date().toLocaleString();
+        })
+        .catch(error => {
+            console.error('Error refreshing dashboard:', error);
+        });
+}
+
+function initializeTooltips() {
+    const tooltips = document.querySelectorAll('[title]');
+    tooltips.forEach(el => {
+        new bootstrap.Tooltip(el);
+    });
+}
+
+function handleRetryNotification(event) {
+    const button = event.target.closest('.retry-notification');
+    if (!button) return;
+    
+    const alarmId = button.dataset.alarmId;
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    fetch(`/alarms/${alarmId}/retry-notification/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            refreshDashboard();
+        } else {
+            alert('Failed to retry notification: ' + data.error);
+            button.disabled = false;
+            button.innerHTML = '<i class="fas fa-redo"></i>';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-redo"></i>';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    initializeTooltips();
+    
+    // Initialize auto-refresh if enabled
+    const autoRefresh = localStorage.getItem('autoRefresh') === 'true';
+    const interval = parseInt(localStorage.getItem('refreshInterval')) || defaultInterval;
+    
+    if (autoRefresh) {
+        refreshTimer = setInterval(refreshDashboard, interval);
+        document.getElementById('autoRefreshToggle').checked = true;
+        document.getElementById('refreshInterval').value = interval / 1000;
+    }
+
+    // Save settings
+    document.getElementById('saveSettings').addEventListener('click', function() {
+        const enabled = document.getElementById('autoRefreshToggle').checked;
+        const interval = document.getElementById('refreshInterval').value * 1000;
+        
+        localStorage.setItem('autoRefresh', enabled);
+        localStorage.setItem('refreshInterval', interval);
+        
+        clearInterval(refreshTimer);
+        if (enabled) {
+            refreshTimer = setInterval(refreshDashboard, interval);
+        }
+        
+        const modal = bootstrap.Modal.getInstance(document.getElementById('autoRefreshModal'));
+        modal.hide();
+    });
+
+    // Handle retry notification clicks
+    document.addEventListener('click', handleRetryNotification);
+});
+</script>
+{% endblock %} 

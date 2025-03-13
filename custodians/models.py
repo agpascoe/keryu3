@@ -19,35 +19,6 @@ class Custodian(models.Model):
     class Meta:
         ordering = ['-created_at']
 
-class Subject(models.Model):
-    GENDER_CHOICES = [
-        ('M', 'Male'),
-        ('F', 'Female'),
-        ('O', 'Other')
-    ]
-
-    name = models.CharField(max_length=100)
-    date_of_birth = models.DateField()
-    gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
-    medical_conditions = models.TextField(blank=True)
-    allergies = models.TextField(blank=True)
-    medications = models.TextField(blank=True)
-    custodian = models.ForeignKey(Custodian, on_delete=models.CASCADE, related_name='subjects')
-    doctor_name = models.CharField(max_length=100, blank=True, help_text='Primary care physician')
-    doctor_phone = PhoneNumberField(blank=True, null=True, help_text='Doctor\'s contact number')
-    doctor_address = models.TextField(blank=True, help_text='Doctor\'s office address')
-    doctor_speciality = models.CharField(max_length=100, blank=True, help_text='Doctor\'s speciality')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    photo = models.ImageField(upload_to='subject_photos/', blank=True, null=True)
-    is_active = models.BooleanField(default=True)
-
-    def __str__(self):
-        return f"{self.name} (Custodian: {self.custodian})"
-
-    class Meta:
-        ordering = ['name']
-
 @receiver(post_save, sender=User)
 def create_custodian(sender, instance, created, **kwargs):
     """Create a Custodian profile whenever a new User is created"""

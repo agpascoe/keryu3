@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'custodians',
     'subjects',
     'alarms',
+    'django_filters',
+    'chartjs',
 ]
 
 MIDDLEWARE = [
@@ -150,25 +152,42 @@ PHONENUMBER_DEFAULT_REGION = 'MX'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'DEBUG',
     },
     'loggers': {
         'django': {
             'handlers': ['console'],
             'level': 'INFO',
-            'propagate': False,
+            'propagate': True,
         },
         'subjects': {
             'handlers': ['console'],
             'level': 'DEBUG',
-            'propagate': False,
+            'propagate': True,
+        },
+        'custodians': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'alarms': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
         },
     },
 }
@@ -180,3 +199,26 @@ LOGOUT_REDIRECT_URL = '/'
 # WhatsApp API settings (to be configured)
 WHATSAPP_API_KEY = os.getenv('WHATSAPP_API_KEY', '')
 WHATSAPP_API_URL = os.getenv('WHATSAPP_API_URL', '')
+
+# WhatsApp API Configuration
+WHATSAPP_API_TOKEN = os.getenv('WHATSAPP_API_TOKEN')
+
+# QR Code Configuration
+QR_CODE_DIR = os.path.join(MEDIA_ROOT, 'qr_codes')
+os.makedirs(QR_CODE_DIR, exist_ok=True)
+
+# Cache Configuration
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': os.getenv('REDIS_URL', 'redis://localhost:6379/1'),
+    }
+}
+
+# Celery Configuration
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE

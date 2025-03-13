@@ -1,11 +1,12 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
-from custodians.models import Custodian, Subject
+from custodians.models import Custodian
 from django.utils import timezone
 from datetime import date
 from django.core.files.uploadedfile import SimpleUploadedFile
 import json
+from .models import Subject, SubjectQR, Alarm
 
 class SubjectAdminViewsTest(TestCase):
     def setUp(self):
@@ -386,3 +387,123 @@ class SubjectManagementIntegrationTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)  # Form redisplay
         self.assertContains(response, 'This field is required')
+
+class SubjectTests(TestCase):
+    def setUp(self):
+        # Create test user and custodian
+        self.user = User.objects.create_user(
+            username='testuser',
+            password='testpass123',
+            email='test@example.com'
+        )
+        self.custodian = self.user.custodian
+        
+        # Create test subject
+        self.subject = Subject.objects.create(
+            name='Test Subject',
+            date_of_birth=date(2000, 1, 1),
+            gender='M',
+            custodian=self.custodian
+        )
+
+    def test_subject_creation(self):
+        """Test that a subject can be created"""
+        self.assertEqual(self.subject.name, 'Test Subject')
+        self.assertEqual(self.subject.custodian, self.custodian)
+        self.assertTrue(self.subject.is_active)
+
+    def test_subject_str(self):
+        """Test the string representation of a subject"""
+        expected = f"{self.subject.name} (Custodian: {self.custodian})"
+        self.assertEqual(str(self.subject), expected)
+
+class SubjectQRTests(TestCase):
+    def setUp(self):
+        # Create test user and custodian
+        self.user = User.objects.create_user(
+            username='testuser',
+            password='testpass123',
+            email='test@example.com'
+        )
+        self.custodian = self.user.custodian
+        
+        # Create test subject
+        self.subject = Subject.objects.create(
+            name='Test Subject',
+            date_of_birth=date(2000, 1, 1),
+            gender='M',
+            custodian=self.custodian
+        )
+        
+        # Create test QR code
+        self.qr = SubjectQR.objects.create(
+            subject=self.subject,
+            is_active=True
+        )
+
+    def test_qr_creation(self):
+        """Test that a QR code can be created"""
+        self.assertEqual(self.qr.subject, self.subject)
+        self.assertTrue(self.qr.is_active)
+        self.assertIsNotNone(self.qr.uuid)
+
+    def test_qr_activation(self):
+        """Test QR code activation"""
+        # Create another QR code
+        qr2 = SubjectQR.objects.create(
+            subject=self.subject,
+            is_active=False
+        )
+        
+        # Activate the second QR code
+        qr2.is_active = True
+        qr2.save()
+        
+        # Check that the first QR code is deactivated
+        self.qr.refresh_from_db()
+        self.assertFalse(self.qr.is_active)
+        self.assertTrue(qr2.is_active)
+
+class AlarmTests(TestCase):
+    def setUp(self):
+        # Create test user and custodian
+        self.user = User.objects.create_user(
+            username='testuser',
+            password='testpass123',
+            email='test@example.com'
+        )
+        self.custodian = self.user.custodian
+        
+        # Create test subject
+        self.subject = Subject.objects.create(
+            name='Test Subject',
+            date_of_birth=date(2000, 1, 1),
+            gender='M',
+            custodian=self.custodian
+        )
+        
+        # Create test QR code
+        self.qr = SubjectQR.objects.create(
+            subject=self.subject,
+            is_active=True
+        )
+        
+        # Create test alarm
+        self.alarm = Alarm.objects.create(
+            subject=self.subject,
+            qr_code=self.qr,
+            location='Test Location'
+        )
+
+    def test_alarm_creation(self):
+        """Test that an alarm can be created"""
+        self.assertEqual(self.alarm.subject, self.subject)
+        self.assertEqual(self.alarm.qr_code, self.qr)
+        self.assertEqual(self.alarm.location, 'Test Location')
+        self.assertFalse(self.alarm.notification_sent)
+        self.assertIsNotNone(self.alarm.timestamp)
+
+    def test_alarm_str(self):
+        """Test the string representation of an alarm"""
+        expected = f"Alarm for {self.subject.name} at {self.alarm.timestamp}"
+        self.assertEqual(str(self.alarm), expected)

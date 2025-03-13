@@ -71,6 +71,27 @@
                             </a>
                         </li>
                     {% endif %}
+                    {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="alarmsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell"></i> Alarms
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="alarmsDropdown">
+                            <li><a class="dropdown-item" href="{% url 'alarms:alarm_list' %}">
+                                <i class="fas fa-list"></i> Alarm History
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'alarms:alarm_statistics' %}">
+                                <i class="fas fa-chart-bar"></i> Statistics
+                            </a></li>
+                            {% if user.is_staff %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'alarms:admin_dashboard' %}">
+                                <i class="fas fa-tachometer-alt"></i> Admin Dashboard
+                            </a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>

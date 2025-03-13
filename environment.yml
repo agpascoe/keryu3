@@ -1,19 +1,23 @@
-name: keryu3
+name: keryu
 channels:
   - conda-forge
   - defaults
 dependencies:
   - python=3.11
+  - pip
+  - postgresql
+  - redis
+  - pip:
+    - -r requirements.txt
+    - django-widget-tweaks==1.5.0
+    - drf-yasg==1.21.7
+    - djangorestframework==3.14.0
   - django=5.0
   - python-dotenv=1.0
   - gunicorn=21.2
   - whitenoise=6.6
-  - pip
   - pip:
     - django-cors-headers==4.3.1
-    - djangorestframework==3.14.0
     - qrcode==7.4.2
     - Pillow==10.2.0
-    - django-phonenumber-field[phonenumbers]==7.3.0
-    - drf-yasg==1.21.7  # For API documentation
-    - django-widget-tweaks==1.5.0  # For form rendering 
+    - django-phonenumber-field[phonenumbers]==7.3.0 

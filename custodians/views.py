@@ -7,8 +7,15 @@ from .forms import (
     CustodianRegistrationForm, CustodianUpdateForm, 
     CustodianProfileForm, SubjectForm
 )
-from .models import Subject
+from subjects.models import Subject
 import logging
+import qrcode
+from io import BytesIO
+from django.core.files import File
+from django.utils import timezone
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.urls import reverse
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +110,6 @@ def subject_detail(request, pk):
     return render(request, 'custodians/subject_detail.html', {'subject': subject})
 
 @login_required
-@transaction.atomic
 def profile(request):
     if request.method == 'POST':
         user_form = CustodianUpdateForm(request.POST, instance=request.user)

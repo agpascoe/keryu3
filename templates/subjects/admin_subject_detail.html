@@ -1,142 +1,103 @@
-{% extends "subjects/admin_base.html" %}
+{% extends "base.html" %}
 {% load static %}
 
-{% block title %}Subject Details - {{ subject.name }} - Admin View{% endblock %}
+{% block title %}{{ subject.name }} - Details{% endblock %}
 
-{% block admin_content %}
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Subject Details: {{ subject.name }}</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <div class="btn-group me-2">
-            <a href="{% url 'admin:custodians_subject_change' subject.pk %}" class="btn btn-warning">
-                <i class="fas fa-edit"></i> Edit in Admin
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Subject Details</h1>
+        <div>
+            <a href="{% url 'subjects:subject_edit' subject.pk %}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit Subject
             </a>
-            <button type="button" class="btn btn-primary" onclick="window.print()">
-                <i class="fas fa-print"></i> Print
-            </button>
+            <a href="{% url 'subjects:subject_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
         </div>
     </div>
-</div>
 
-<div class="row">
-    <!-- Left Column -->
-    <div class="col-md-4">
-        <!-- Basic Information Card -->
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title mb-0"><i class="fas fa-info-circle"></i> Basic Information</h5>
-            </div>
-            <div class="card-body">
-                <div class="text-center mb-3">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
                     {% if subject.photo %}
-                    <img src="{{ subject.photo.url }}" alt="{{ subject.name }}" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                    <img src="{{ subject.photo.url }}" alt="{{ subject.name }}" class="img-fluid rounded mb-3">
                     {% else %}
-                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 150px; height: 150px;">
-                        <i class="fas fa-user-circle fa-6x text-secondary"></i>
+                    <div class="text-center p-4 bg-light rounded mb-3">
+                        <i class="fas fa-user fa-4x text-secondary"></i>
                     </div>
                     {% endif %}
-                </div>
-                <dl class="row">
-                    <dt class="col-sm-4">Name</dt>
-                    <dd class="col-sm-8">{{ subject.name }}</dd>
-
-                    <dt class="col-sm-4">Gender</dt>
-                    <dd class="col-sm-8">{{ subject.get_gender_display }}</dd>
-
-                    <dt class="col-sm-4">Birth Date</dt>
-                    <dd class="col-sm-8">{{ subject.date_of_birth }}</dd>
-
-                    <dt class="col-sm-4">Status</dt>
-                    <dd class="col-sm-8">
-                        {% if subject.is_active %}
-                        <span class="badge bg-success">Active</span>
-                        {% else %}
-                        <span class="badge bg-danger">Inactive</span>
-                        {% endif %}
-                    </dd>
-                </dl>
-            </div>
-        </div>
-
-        <!-- Custodian Information Card -->
-        <div class="card mb-4">
-            <div class="card-header bg-info text-white">
-                <h5 class="card-title mb-0"><i class="fas fa-user-shield"></i> Custodian Information</h5>
-            </div>
-            <div class="card-body">
-                <dl class="row">
-                    <dt class="col-sm-4">Name</dt>
-                    <dd class="col-sm-8">{{ subject.custodian.user.get_full_name }}</dd>
-
-                    <dt class="col-sm-4">Username</dt>
-                    <dd class="col-sm-8">{{ subject.custodian.user.username }}</dd>
-
-                    <dt class="col-sm-4">Email</dt>
-                    <dd class="col-sm-8">{{ subject.custodian.user.email }}</dd>
-
-                    <dt class="col-sm-4">Phone</dt>
-                    <dd class="col-sm-8">{{ subject.custodian.phone_number }}</dd>
-                </dl>
-            </div>
-        </div>
-    </div>
-
-    <!-- Right Column -->
-    <div class="col-md-8">
-        <!-- Medical Information Card -->
-        <div class="card mb-4">
-            <div class="card-header bg-warning">
-                <h5 class="card-title mb-0"><i class="fas fa-notes-medical"></i> Medical Information</h5>
-            </div>
-            <div class="card-body">
-                <div class="mb-4">
-                    <h6>Medical Conditions</h6>
-                    <p class="border-bottom pb-2">{{ subject.medical_conditions|default:"None reported"|linebreaks }}</p>
-
-                    <h6>Allergies</h6>
-                    <p class="border-bottom pb-2">{{ subject.allergies|default:"None reported"|linebreaks }}</p>
-
-                    <h6>Current Medications</h6>
-                    <p>{{ subject.medications|default:"None reported"|linebreaks }}</p>
+                    <h5 class="card-title">{{ subject.name }}</h5>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            {% if subject.is_active %}
+                            <span class="badge bg-success">Active</span>
+                            {% else %}
+                            <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </small>
+                    </p>
                 </div>
             </div>
         </div>
 
-        <!-- Doctor Information Card -->
-        <div class="card mb-4">
-            <div class="card-header bg-success text-white">
-                <h5 class="card-title mb-0"><i class="fas fa-user-md"></i> Doctor Information</h5>
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Date of Birth</dt>
+                        <dd class="col-sm-9">{{ subject.date_of_birth }}</dd>
+
+                        <dt class="col-sm-3">Gender</dt>
+                        <dd class="col-sm-9">{{ subject.get_gender_display }}</dd>
+
+                        <dt class="col-sm-3">Custodian</dt>
+                        <dd class="col-sm-9">{{ subject.custodian.user.get_full_name|default:subject.custodian.user.username }}</dd>
+                    </dl>
+                </div>
             </div>
-            <div class="card-body">
-                <dl class="row">
-                    <dt class="col-sm-3">Doctor Name</dt>
-                    <dd class="col-sm-9">{{ subject.doctor_name|default:"Not specified" }}</dd>
 
-                    <dt class="col-sm-3">Specialty</dt>
-                    <dd class="col-sm-9">{{ subject.doctor_speciality|default:"Not specified" }}</dd>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Medical Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Medical Conditions</dt>
+                        <dd class="col-sm-9">{{ subject.medical_conditions|default:"None" }}</dd>
 
-                    <dt class="col-sm-3">Phone</dt>
-                    <dd class="col-sm-9">{{ subject.doctor_phone|default:"Not specified" }}</dd>
+                        <dt class="col-sm-3">Allergies</dt>
+                        <dd class="col-sm-9">{{ subject.allergies|default:"None" }}</dd>
 
-                    <dt class="col-sm-3">Address</dt>
-                    <dd class="col-sm-9">{{ subject.doctor_address|default:"Not specified"|linebreaks }}</dd>
-                </dl>
+                        <dt class="col-sm-3">Medications</dt>
+                        <dd class="col-sm-9">{{ subject.medications|default:"None" }}</dd>
+                    </dl>
+                </div>
             </div>
-        </div>
 
-        <!-- System Information Card -->
-        <div class="card mb-4">
-            <div class="card-header bg-secondary text-white">
-                <h5 class="card-title mb-0"><i class="fas fa-clock"></i> System Information</h5>
-            </div>
-            <div class="card-body">
-                <dl class="row">
-                    <dt class="col-sm-3">Created</dt>
-                    <dd class="col-sm-9">{{ subject.created_at }}</dd>
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Doctor Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Doctor Name</dt>
+                        <dd class="col-sm-9">{{ subject.doctor_name|default:"Not specified" }}</dd>
 
-                    <dt class="col-sm-3">Last Updated</dt>
-                    <dd class="col-sm-9">{{ subject.updated_at }}</dd>
-                </dl>
+                        <dt class="col-sm-3">Speciality</dt>
+                        <dd class="col-sm-9">{{ subject.doctor_speciality|default:"Not specified" }}</dd>
+
+                        <dt class="col-sm-3">Phone</dt>
+                        <dd class="col-sm-9">{{ subject.doctor_phone|default:"Not specified" }}</dd>
+
+                        <dt class="col-sm-3">Address</dt>
+                        <dd class="col-sm-9">{{ subject.doctor_address|default:"Not specified" }}</dd>
+                    </dl>
+                </div>
             </div>
         </div>
     </div>

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'alarms:alarm_list' %}">Alarms</a></li>
+                    <li class="breadcrumb-item active">Alarm Detail</li>
+                </ol>
+            </nav>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        Alarm Details
+                        <small class="text-muted">{{ alarm.timestamp|date:"Y-m-d H:i:s" }}</small>
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Subject Information -->
+                    <div class="mb-4">
+                        <h4>Subject Information</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Name:</strong> {{ alarm.subject.name }}</p>
+                                <p><strong>Gender:</strong> {{ alarm.subject.get_gender_display }}</p>
+                                <p><strong>Age:</strong> {{ alarm.subject.date_of_birth|timesince }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Custodian:</strong> {{ alarm.subject.custodian.user.get_full_name }}</p>
+                                <p><strong>Phone:</strong> {{ alarm.subject.custodian.phone_number }}</p>
+                                {% if alarm.subject.custodian.emergency_phone %}
+                                <p><strong>Emergency Phone:</strong> {{ alarm.subject.custodian.emergency_phone }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medical Information -->
+                    <div class="mb-4">
+                        <h4>Medical Information</h4>
+                        <div class="row">
+                            <div class="col-md-12">
+                                {% if alarm.subject.medical_conditions %}
+                                <p><strong>Medical Conditions:</strong><br>
+                                {{ alarm.subject.medical_conditions|linebreaks }}</p>
+                                {% endif %}
+                                
+                                {% if alarm.subject.allergies %}
+                                <p><strong>Allergies:</strong><br>
+                                {{ alarm.subject.allergies|linebreaks }}</p>
+                                {% endif %}
+                                
+                                {% if alarm.subject.medications %}
+                                <p><strong>Medications:</strong><br>
+                                {{ alarm.subject.medications|linebreaks }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Doctor Information -->
+                    <div class="mb-4">
+                        <h4>Doctor Information</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Doctor:</strong> {{ alarm.subject.doctor_name }}</p>
+                                <p><strong>Speciality:</strong> {{ alarm.subject.doctor_speciality }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Phone:</strong> {{ alarm.subject.doctor_phone }}</p>
+                                <p><strong>Address:</strong> {{ alarm.subject.doctor_address }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alarm Details -->
+                    <div class="mb-4">
+                        <h4>Alarm Details</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Timestamp:</strong> {{ alarm.timestamp|date:"Y-m-d H:i:s" }}</p>
+                                <p><strong>Location:</strong> 
+                                    {% if alarm.location %}
+                                        {{ alarm.location }}
+                                    {% else %}
+                                        <span class="text-muted">Not available</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Notification Status:</strong>
+                                    {% if alarm.notification_sent %}
+                                        <span class="badge bg-success">Sent</span>
+                                        <br>
+                                        <small class="text-muted">at {{ alarm.notification_sent_at|date:"Y-m-d H:i:s" }}</small>
+                                    {% else %}
+                                        <span class="badge bg-warning">Pending</span>
+                                    {% endif %}
+                                </p>
+                                <p><strong>Scanned from IP:</strong> {{ alarm.scanned_by_ip|default:"Not available" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'alarms:alarm_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </a>
+                    {% if user.is_staff %}
+                    <a href="{% url 'admin:alarms_alarm_change' alarm.id %}" class="btn btn-primary float-end">
+                        <i class="fas fa-edit"></i> Edit in Admin
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

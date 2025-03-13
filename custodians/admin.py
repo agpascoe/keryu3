@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
-from .models import Custodian, Subject
+from .models import Custodian
 
 class CustodianInline(admin.StackedInline):
     model = Custodian
@@ -15,13 +15,6 @@ class CustomUserAdmin(UserAdmin):
     def get_phone_number(self, obj):
         return obj.custodian.phone_number if hasattr(obj, 'custodian') else '-'
     get_phone_number.short_description = 'Phone Number'
-
-@admin.register(Subject)
-class SubjectAdmin(admin.ModelAdmin):
-    list_display = ('name', 'custodian', 'date_of_birth', 'gender', 'is_active')
-    list_filter = ('gender', 'is_active', 'custodian')
-    search_fields = ('name', 'custodian__user__username', 'custodian__user__email')
-    date_hierarchy = 'created_at'
 
 # Unregister the default User admin and register our custom one
 admin.site.unregister(User)

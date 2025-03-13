@@ -1,7 +1,71 @@
-# Keryu3 Project Scope
+# Keryu - Subject Management System
 
-## Overview
-Keryu3 is a comprehensive subject management system designed to help custodians and administrators manage subject information efficiently and securely.
+## Project Overview
+Keryu is a comprehensive subject management system designed to help track and manage subjects with their associated QR codes and alarms. The system provides features for both administrators and custodians to manage subjects, generate QR codes, and monitor alarms.
+
+## Core Features
+
+### Subject Management
+- Create, read, update, and delete subjects
+- Track subject details including:
+  - Personal information (name, date of birth, gender)
+  - Medical information (conditions, allergies, medications)
+  - Doctor information (name, phone, speciality, address)
+  - Photo upload capability
+  - Active/Inactive status
+
+### QR Code System
+- Generate unique QR codes for each subject
+- Multiple QR codes per subject support
+- QR code activation/deactivation functionality
+- QR code download and image generation
+- Last used timestamp tracking
+- UUID-based QR code identification
+
+### Alarm System
+- Automatic alarm creation on QR code scanning
+- Location tracking support (latitude/longitude)
+- WhatsApp notification integration
+- Alarm history tracking
+- Notification status monitoring
+
+### User Roles and Permissions
+- Admin users with full system access
+- Custodian users with limited access to their subjects
+- Staff-only access to certain features
+- Role-based view filtering
+
+### Reporting and Statistics
+- Subject statistics dashboard
+- Gender distribution
+- Custodian distribution
+- Active/Inactive subject counts
+- Export capabilities (Excel, PDF)
+
+## Technical Stack
+- Django 4.2+
+- PostgreSQL database
+- Redis for caching and Celery tasks
+- Celery for background task processing
+- QR code generation with qrcode library
+- Report generation with reportlab and xlsxwriter
+- Chart visualization with django-chartjs
+
+## Security Features
+- Role-based access control
+- Secure QR code generation with UUID
+- Permission checks on all operations
+- Staff-only access to sensitive features
+- Secure file upload handling
+
+## Future Enhancements
+- Enhanced location tracking
+- Mobile application integration
+- Advanced reporting features
+- API endpoints for external integration
+- Enhanced notification system
+- Subject activity timeline
+- Document management system
 
 ## User Roles and Access Levels
 
@@ -23,58 +87,6 @@ Keryu3 is a comprehensive subject management system designed to help custodians 
 - Can generate and manage QR codes for all subjects
 - Can create, edit, and delete any subject
 - Access to detailed statistics and reports
-
-## Core Features
-
-### Authentication and Authorization
-- User registration with email verification
-- Secure login system
-- Password reset functionality
-- Role-based access control
-- Session management
-
-### Subject Management
-- CRUD operations for subjects
-- Comprehensive subject profiles including:
-  - Personal information (name, date of birth, gender)
-  - Medical information (conditions, allergies, medications)
-  - Doctor's information (name, phone, speciality, address)
-  - Photo upload capability
-  - Active/inactive status tracking
-
-### Admin Features
-1. Subject List View
-   - View all subjects across all custodians
-   - Quick access to subject details
-   - Filtering and sorting capabilities
-   - Bulk operations support
-
-2. Subject Statistics
-   - Total subjects count
-   - Gender distribution
-   - Subjects per custodian
-   - Active vs. inactive subjects
-   - Visual charts and graphs
-
-3. QR Code Management
-   - Generate QR codes for subjects
-   - Print QR codes individually or in bulk
-   - QR code linking to subject profiles
-
-4. Detailed Subject View
-   - Complete subject information
-   - Medical history
-   - Doctor's contact details
-   - Photo gallery
-   - Edit and delete options
-
-### Security Features
-- CSRF protection
-- Form validation
-- Phone number format validation
-- Secure file uploads
-- Permission-based access control
-- 403 Forbidden responses for unauthorized access
 
 ## Technical Implementation
 
@@ -172,4 +184,87 @@ Keryu3 is a comprehensive subject management system designed to help custodians 
 - 🚧 In Progress
 - ⏳ Pending
 - 🔒 Security Feature
-- 📋 To Do 
+- 📋 To Do
+
+### User Roles and Access Levels
+
+1. **Public Users**
+   - Can scan QR codes
+   - Can view emergency information when scanning valid QR codes
+   - No login required
+
+2. **Custodians**
+   - Full management of their subjects
+   - Generate and manage QR codes for their subjects
+   - View alarm history for their subjects
+   - Receive WhatsApp notifications when their subjects' QR codes are scanned
+   - Access to statistics and reports for their subjects
+
+3. **Admin Users**
+   - Full system access
+   - Manage all custodians and subjects
+   - View system-wide statistics
+   - Access to all QR codes and alarm history
+
+### Core Features
+
+1. **Subject Management**
+   - Create, update, and delete subject profiles
+   - Store medical information and emergency contacts
+   - Upload and manage subject photos
+   - Track subject status and history
+
+2. **QR Code System**
+   - Generate unique QR codes for subjects
+   - One active QR code per subject at a time
+   - QR code activation/deactivation
+   - Download and print QR codes
+   - QR codes contain only UUID (no personal data)
+
+3. **Alarm System**
+   - Record all QR code scans as alarms
+   - Track scan location and timestamp
+   - Automatic WhatsApp notifications to custodians
+   - Alarm history and reporting
+   - Statistics and analytics
+
+4. **Security and Privacy**
+   - Secure authentication system
+   - Role-based access control
+   - No personal information in QR codes
+   - Encrypted data transmission
+   - Activity logging
+
+### Technical Requirements
+
+1. **Backend**
+   - Django framework
+   - PostgreSQL database
+   - REST API endpoints for QR scanning
+   - WhatsApp API integration
+   - Celery for async tasks
+
+2. **Frontend**
+   - Bootstrap-based responsive design
+   - JavaScript for dynamic interactions
+   - QR code generation and management
+   - Charts and statistics visualization
+
+3. **External Services**
+   - WhatsApp Business API
+   - QR code generation library
+   - Geolocation services (optional)
+
+### Out of Scope
+- Mobile app development
+- Custom QR scanner implementation
+- Real-time video monitoring
+- Payment processing
+- Multi-language support (future enhancement)
+
+### Success Criteria
+1. Custodians can successfully manage QR codes
+2. QR codes can be scanned with standard mobile phones
+3. WhatsApp notifications are delivered within 1 minute of scanning
+4. System maintains accurate alarm history
+5. Statistics and reports are accurate and up-to-date 
