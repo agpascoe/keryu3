@@ -6,66 +6,53 @@ from .models import Alarm
 
 logger = logging.getLogger(__name__)
 
-@shared_task(bind=True, max_retries=3)
-def send_whatsapp_notification(self, alarm_id):
+@shared_task
+def send_whatsapp_notification(alarm_id):
     """
-    Send WhatsApp notification for an alarm using WhatsApp Business API.
-    Retries up to 3 times with exponential backoff if sending fails.
+    Send WhatsApp notification for an alarm using the Meta WhatsApp Business API.
     """
     try:
-        alarm = Alarm.objects.select_related('subject__custodian').get(id=alarm_id)
+        alarm = Alarm.objects.get(id=alarm_id)
+        subject = alarm.subject
+        custodian = subject.custodian
         
-        # Prepare message
+        # Prepare the message
         message = (
-            f"⚠️ *ALERT*: {alarm.subject.name} needs attention!\n\n"
-            f"📅 Time: {alarm.timestamp.strftime('%Y-%m-%d %H:%M:%S')}\n"
+            f"🚨 ALERT: {subject.name} has triggered an alarm!\n\n"
+            f"Location: {alarm.location or 'Unknown'}\n"
+            f"Time: {alarm.timestamp.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+            f"Please check on {subject.name} immediately."
         )
         
-        if alarm.location:
-            lat, lng = alarm.location.split(',')
-            message += f"📍 Location: https://maps.google.com/?q={lat},{lng}\n"
-        
-        # WhatsApp API endpoint
+        # Prepare the API request
         url = f"https://graph.facebook.com/v17.0/{settings.WHATSAPP_PHONE_NUMBER_ID}/messages"
-        
-        # Prepare headers
         headers = {
             "Authorization": f"Bearer {settings.WHATSAPP_ACCESS_TOKEN}",
             "Content-Type": "application/json",
         }
-        
-        # Prepare payload
-        payload = {
+        data = {
             "messaging_product": "whatsapp",
-            "to": alarm.subject.custodian.phone,
+            "to": str(custodian.phone_number),
             "type": "text",
             "text": {"body": message}
         }
         
-        # Send request
-        response = requests.post(url, json=payload, headers=headers)
+        # Send the request
+        response = requests.post(url, headers=headers, json=data)
         response.raise_for_status()
         
         # Update alarm status
         alarm.notification_sent = True
-        alarm.notification_error = None
         alarm.save()
         
-        logger.info(f"WhatsApp notification sent successfully for alarm {alarm_id}")
+        logger.info(f"Successfully sent WhatsApp notification for alarm {alarm_id}")
         
     except Alarm.DoesNotExist:
         logger.error(f"Alarm {alarm_id} not found")
-        return
-        
     except requests.exceptions.RequestException as e:
         logger.error(f"Failed to send WhatsApp notification for alarm {alarm_id}: {str(e)}")
         alarm.notification_error = str(e)
         alarm.save()
-        
-        # Retry with exponential backoff
-        retry_in = 2 ** self.request.retries * 60  # 1min, 2min, 4min
-        raise self.retry(exc=e, countdown=retry_in)
-        
     except Exception as e:
         logger.error(f"Unexpected error sending WhatsApp notification for alarm {alarm_id}: {str(e)}")
         alarm.notification_error = str(e)

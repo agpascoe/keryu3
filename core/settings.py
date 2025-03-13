@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-gy=7)$hs$5@hs$5@hs$5@hs$5@hs$5@hs$5@hs$5@hs$5@hs$5@'
+SECRET_KEY = 'django-insecure-gy=7)$hs$5@hs$5@hs$5@hs$5@hs$5@hs$5@hs$5@hs$5@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     'alarms',
     'django_filters',
     'chartjs',
+    'rest_framework',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -196,12 +198,9 @@ LOGGING = {
 LOGIN_REDIRECT_URL = '/custodians/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
-# WhatsApp API settings (to be configured)
-WHATSAPP_API_KEY = os.getenv('WHATSAPP_API_KEY', '')
-WHATSAPP_API_URL = os.getenv('WHATSAPP_API_URL', '')
-
-# WhatsApp API Configuration
-WHATSAPP_API_TOKEN = os.getenv('WHATSAPP_API_TOKEN')
+# WhatsApp API Configuration (Meta WhatsApp Business API)
+WHATSAPP_PHONE_NUMBER_ID = os.getenv('WHATSAPP_PHONE_NUMBER_ID', '')
+WHATSAPP_ACCESS_TOKEN = os.getenv('WHATSAPP_ACCESS_TOKEN', '')
 
 # QR Code Configuration
 QR_CODE_DIR = os.path.join(MEDIA_ROOT, 'qr_codes')
@@ -222,3 +221,5 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_ALWAYS_EAGER = True  # Execute tasks locally instead of sending to queue
+CELERY_TASK_EAGER_PROPAGATES = True  # Propagate exceptions in eager mode

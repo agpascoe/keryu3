@@ -18,43 +18,27 @@ def send_whatsapp_notification(self, alarm_id):
             'subject__custodian'
         ).get(id=alarm_id)
         
-        # Prepare the message
-        message = (
-            f"⚠️ ALERT: {alarm.subject.name} QR code was scanned\n\n"
-            f"📅 Time: {alarm.timestamp.strftime('%Y-%m-%d %H:%M:%S')}\n"
-        )
-        
-        if alarm.location:
-            message += f"📍 Location: {alarm.location}\n"
-            
-        message += "\nℹ️ Subject Information:\n"
-        if alarm.subject.medical_conditions:
-            message += f"🏥 Medical Conditions: {alarm.subject.medical_conditions}\n"
-        if alarm.subject.allergies:
-            message += f"⚕️ Allergies: {alarm.subject.allergies}\n"
-        if alarm.subject.medications:
-            message += f"💊 Medications: {alarm.subject.medications}\n"
-            
-        # Add doctor information if available
-        if alarm.subject.doctor_name:
-            message += f"\n👨‍⚕️ Doctor: {alarm.subject.doctor_name}"
-            if alarm.subject.doctor_phone:
-                message += f"\n☎️ Doctor's Phone: {alarm.subject.doctor_phone}"
-
         # Prepare the API request
+        url = f"https://graph.facebook.com/v22.0/{settings.WHATSAPP_PHONE_NUMBER_ID}/messages"
         headers = {
-            'Authorization': f'Bearer {settings.WHATSAPP_API_TOKEN}',
-            'Content-Type': 'application/json',
+            "Authorization": f"Bearer {settings.WHATSAPP_ACCESS_TOKEN}",
+            "Content-Type": "application/json",
         }
-        
         data = {
-            'phone': str(alarm.subject.custodian.phone_number),
-            'message': message,
+            "messaging_product": "whatsapp",
+            "to": str(alarm.subject.custodian.phone_number).replace("+", ""),  # Remove + prefix
+            "type": "template",
+            "template": {
+                "name": "hello_world",
+                "language": {
+                    "code": "en_US"
+                }
+            }
         }
         
         # Send the WhatsApp message
         response = requests.post(
-            settings.WHATSAPP_API_URL,
+            url,
             headers=headers,
             json=data,
             timeout=10
@@ -92,7 +76,7 @@ def retry_failed_notifications():
     """
     Retry sending notifications for alarms where notification failed.
     """
-    from .models import Alarm
+    from subjects.models import Alarm
     
     # Get alarms where notification wasn't sent
     failed_alarms = Alarm.objects.filter(
