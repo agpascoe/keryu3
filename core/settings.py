@@ -221,5 +221,14 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
-CELERY_TASK_ALWAYS_EAGER = True  # Execute tasks locally instead of sending to queue
+CELERY_TASK_ALWAYS_EAGER = False  # Execute tasks in the queue instead of locally
 CELERY_TASK_EAGER_PROPAGATES = True  # Propagate exceptions in eager mode
+
+# Notification Provider Configuration
+NOTIFICATION_PROVIDER = 'twilio'  # Options: whatsapp_api or twilio
+
+# Twilio Configuration
+TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
+TWILIO_FROM_NUMBER = os.getenv('TWILIO_FROM_NUMBER')
+TWILIO_WHATSAPP_SANDBOX = os.getenv('TWILIO_WHATSAPP_SANDBOX', 'True').lower() == 'true'

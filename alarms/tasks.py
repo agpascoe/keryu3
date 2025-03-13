@@ -1,75 +1,56 @@
 from celery import shared_task
 from django.conf import settings
 from django.utils import timezone
-import requests
+from notifications.providers import get_notification_service
 import logging
 
 logger = logging.getLogger(__name__)
 
-@shared_task(bind=True, max_retries=3)
-def send_whatsapp_notification(self, alarm_id):
+@shared_task
+def send_whatsapp_notification(alarm_id):
     """
-    Send WhatsApp notification for an alarm.
+    Send a WhatsApp notification for a new alarm using the configured notification provider.
     """
-    from .models import Alarm  # Import here to avoid circular imports
+    from subjects.models import Alarm
     
     try:
-        alarm = Alarm.objects.select_related(
-            'subject__custodian'
-        ).get(id=alarm_id)
+        alarm = Alarm.objects.get(id=alarm_id)
+        if alarm.notification_sent:
+            logger.info(f"Notification already sent for alarm {alarm_id}")
+            return
+            
+        # Get the notification service based on configuration
+        notification_service = get_notification_service()
         
-        # Prepare the API request
-        url = f"https://graph.facebook.com/v22.0/{settings.WHATSAPP_PHONE_NUMBER_ID}/messages"
-        headers = {
-            "Authorization": f"Bearer {settings.WHATSAPP_ACCESS_TOKEN}",
-            "Content-Type": "application/json",
-        }
-        data = {
-            "messaging_product": "whatsapp",
-            "to": str(alarm.subject.custodian.phone_number).replace("+", ""),  # Remove + prefix
-            "type": "template",
-            "template": {
-                "name": "hello_world",
-                "language": {
-                    "code": "en_US"
-                }
-            }
-        }
+        # Get the custodian's phone number
+        phone_number = alarm.subject.custodian.phone_number
         
-        # Send the WhatsApp message
-        response = requests.post(
-            url,
-            headers=headers,
-            json=data,
-            timeout=10
+        # Send the notification
+        response = notification_service.send_message(
+            to_number=phone_number,
+            message=f"Alarm triggered for subject {alarm.subject.name} at {alarm.timestamp}"
         )
         
-        if response.status_code == 200:
-            # Update alarm status
-            alarm.notification_sent = True
-            alarm.notification_sent_at = timezone.now()
-            alarm.save()
-            logger.info(f"WhatsApp notification sent successfully for alarm {alarm_id}")
-            return True
-            
-        else:
-            logger.error(
-                f"Failed to send WhatsApp notification for alarm {alarm_id}. "
-                f"Status code: {response.status_code}, Response: {response.text}"
-            )
-            raise Exception(f"WhatsApp API returned status code {response.status_code}")
-            
+        # Check if the message was sent successfully
+        if hasattr(response, 'status_code'):  # WhatsApp API response
+            if response.status_code == 200:
+                alarm.notification_sent = True
+                alarm.save()
+                logger.info(f"WhatsApp notification sent successfully for alarm {alarm_id}")
+            else:
+                logger.error(f"Failed to send WhatsApp notification for alarm {alarm_id}. Status code: {response.status_code}")
+        else:  # Twilio response
+            if response.sid:
+                alarm.notification_sent = True
+                alarm.save()
+                logger.info(f"Twilio notification sent successfully for alarm {alarm_id}")
+            else:
+                logger.error(f"Failed to send Twilio notification for alarm {alarm_id}")
+                
     except Alarm.DoesNotExist:
         logger.error(f"Alarm {alarm_id} not found")
-        return False
-        
-    except requests.RequestException as e:
-        logger.error(f"Network error while sending WhatsApp notification: {str(e)}")
-        raise self.retry(exc=e, countdown=60)  # Retry after 1 minute
-        
     except Exception as e:
-        logger.error(f"Error sending WhatsApp notification: {str(e)}")
-        raise self.retry(exc=e, countdown=300)  # Retry after 5 minutes
+        logger.error(f"Error sending notification for alarm {alarm_id}: {str(e)}")
 
 @shared_task
 def retry_failed_notifications():
