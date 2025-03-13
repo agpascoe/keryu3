@@ -1,0 +1,157 @@
+{% extends "subjects/admin_base.html" %}
+{% load static %}
+{% load subject_tags %}
+
+{% block title %}Subject Statistics - Admin View{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Subject Statistics</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                <i class="fas fa-print"></i> Print Report
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Overview Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Total Subjects</h5>
+                <p class="card-text display-6">{{ stats.total_subjects }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">Active Subjects</h5>
+                <p class="card-text display-6">{{ stats.active_subjects }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">Inactive</h5>
+                <p class="card-text display-6">{{ stats.total_subjects|subtract:stats.active_subjects }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <!-- Gender Distribution -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Gender Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="genderChart" height="200"></canvas>
+                <div class="table-responsive mt-3">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Gender</th>
+                                <th>Count</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for gender in stats.subjects_by_gender %}
+                            <tr>
+                                <td>{{ gender.gender }}</td>
+                                <td>{{ gender.count }}</td>
+                                <td>{{ gender.count|percentage:stats.total_subjects }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subjects per Custodian -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Subjects per Custodian</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="custodianChart" height="200"></canvas>
+                <div class="table-responsive mt-3">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Custodian</th>
+                                <th>Number of Subjects</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for custodian in stats.subjects_by_custodian %}
+                            <tr>
+                                <td>{{ custodian.custodian__user__username }}</td>
+                                <td>{{ custodian.count }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Implementation -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gender Distribution Chart
+    const genderCtx = document.getElementById('genderChart').getContext('2d');
+    new Chart(genderCtx, {
+        type: 'pie',
+        data: {
+            labels: [{% for gender in stats.subjects_by_gender %}'{{ gender.gender }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+                data: [{% for gender in stats.subjects_by_gender %}{{ gender.count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // Subjects per Custodian Chart
+    const custodianCtx = document.getElementById('custodianChart').getContext('2d');
+    new Chart(custodianCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for custodian in stats.subjects_by_custodian %}'{{ custodian.custodian__user__username }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Number of Subjects',
+                data: [{% for custodian in stats.subjects_by_custodian %}{{ custodian.count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                backgroundColor: '#4BC0C0'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %} 

@@ -1,76 +1,129 @@
 # Keryu3 Project Scope
 
 ## Overview
-Keryu3 is a full-stack system for managing and monitoring vulnerable people (elderly and children, referred to as "subjects"). The system provides a comprehensive platform for custodians to register and monitor their subjects, with emergency alert capabilities through QR codes and WhatsApp integration.
+Keryu3 is a comprehensive subject management system designed to help custodians and administrators manage subject information efficiently and securely.
+
+## User Roles and Access Levels
+
+### Anonymous Users
+- Can access public pages only
+- Can register as a custodian
+- Can log in if they have an account
+
+### Custodians (Authenticated Users)
+- Can manage their own profile information
+- Can view and manage their assigned subjects
+- Can access the dashboard with their subjects' information
+- Cannot access admin features or other custodians' subjects
+
+### Admin Users
+- Full access to all system features
+- Can manage all subjects across all custodians
+- Access to administrative dashboard with statistics
+- Can generate and manage QR codes for all subjects
+- Can create, edit, and delete any subject
+- Access to detailed statistics and reports
 
 ## Core Features
 
-### 1. Subject Management 🚧
-- [x] Personal information storage
-- [x] Medical history and conditions
-- [x] Emergency contact details
-- [ ] Hospital preferences
-- [x] Custodian associations
-- [ ] Document attachments (medical records, etc.)
+### Authentication and Authorization
+- User registration with email verification
+- Secure login system
+- Password reset functionality
+- Role-based access control
+- Session management
 
-### 2. Custodian System 🚧
-- [x] User registration and authentication
-- [x] Subject creation and management
-- [ ] Multiple custodians per subject
-- [x] WhatsApp number verification setup
-- [x] Dashboard with subject overview
-- [ ] Notification preferences
+### Subject Management
+- CRUD operations for subjects
+- Comprehensive subject profiles including:
+  - Personal information (name, date of birth, gender)
+  - Medical information (conditions, allergies, medications)
+  - Doctor's information (name, phone, speciality, address)
+  - Photo upload capability
+  - Active/inactive status tracking
 
-### 3. QR Code System ⏳
-- [ ] Unique QR code generation for each subject
-- [ ] Printable credential generation
-- [ ] QR code scanning and validation
-- [ ] Emergency information display
-- [ ] Access logging
+### Admin Features
+1. Subject List View
+   - View all subjects across all custodians
+   - Quick access to subject details
+   - Filtering and sorting capabilities
+   - Bulk operations support
 
-### 4. Alert System ⏳
-- [ ] QR code scan triggers
-- [ ] WhatsApp notifications
-- [ ] Email notifications (optional)
-- [ ] Alert history
-- [ ] Alert status tracking
+2. Subject Statistics
+   - Total subjects count
+   - Gender distribution
+   - Subjects per custodian
+   - Active vs. inactive subjects
+   - Visual charts and graphs
 
-### 5. API Integration ⏳
-- [ ] RESTful API architecture
-- [ ] WhatsApp Business API integration
-- [ ] QR code generation API
-- [ ] Emergency alert API endpoints
+3. QR Code Management
+   - Generate QR codes for subjects
+   - Print QR codes individually or in bulk
+   - QR code linking to subject profiles
+
+4. Detailed Subject View
+   - Complete subject information
+   - Medical history
+   - Doctor's contact details
+   - Photo gallery
+   - Edit and delete options
+
+### Security Features
+- CSRF protection
+- Form validation
+- Phone number format validation
+- Secure file uploads
+- Permission-based access control
+- 403 Forbidden responses for unauthorized access
 
 ## Technical Implementation
 
-### Frontend ✅
-- [x] Django templates
-- [x] Bootstrap 5 UI framework
-- [x] Responsive design
-- [x] Custom CSS styling
-- [x] User-friendly forms
+### Models
+- User (Django's built-in)
+- Custodian (Profile model)
+- Subject (Main data model)
 
-### Backend 🚧
-- [x] Django 5.0 framework
-- [x] REST API architecture
-- [x] Authentication system
-- [x] Database models
-- [x] Business logic
+### Forms
+- Registration forms
+- Subject management forms
+- Profile update forms
 
-### Security 🚧
-- [x] User authentication
-- [ ] Data encryption
-- [x] CSRF protection
-- [ ] API security
-- [ ] Privacy compliance
+### Views
+- Public views
+- Custodian views
+- Admin views
+- API endpoints (future)
 
-### Database Schema 🚧
-- [x] Users/Custodians
-- [x] Subjects
-- [x] Medical Information
-- [x] Emergency Contacts
-- [ ] Alerts/Notifications
-- [ ] Audit Logs
+### Templates
+- Base templates
+- Admin templates
+- Subject management templates
+- Error pages
+
+## Testing Coverage
+- Unit tests for all models
+- Integration tests for workflows
+- Access control tests
+- Form validation tests
+- Error handling tests
+
+## Future Enhancements
+- API implementation
+- Mobile application
+- Advanced reporting
+- Batch operations
+- Export/Import functionality
+- Email notifications
+- WhatsApp integration
+
+## Technical Requirements
+- Python 3.11+
+- Django 5.0+
+- PostgreSQL (production)
+- Bootstrap 5
+- Chart.js for visualizations
+- Phone number field support
+- File upload handling
 
 ## Project Progress
 
@@ -85,11 +138,15 @@ Keryu3 is a full-stack system for managing and monitoring vulnerable people (eld
 8. Dashboard template
 9. Subject management system (CRUD)
 10. Medical information storage
+11. Admin interface configuration
+12. Basic access control implementation
 
 ### In Progress 🚧
-1. QR code system
-2. WhatsApp integration setup
-3. Alert system design
+1. Enhanced access control for custodians
+2. Subject-custodian relationship enforcement
+3. QR code system
+4. WhatsApp integration setup
+5. Alert system design
 
 ### Pending 📋
 1. WhatsApp integration

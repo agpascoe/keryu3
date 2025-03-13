@@ -1,0 +1,99 @@
+{% extends "subjects/admin_base.html" %}
+{% load static %}
+
+{% block title %}QR Codes Management - Admin View{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">QR Codes Management</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                <i class="fas fa-print"></i> Print All QR Codes
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Info Alert -->
+<div class="alert alert-info" role="alert">
+    <h4 class="alert-heading"><i class="fas fa-info-circle"></i> QR Code Information</h4>
+    <p>QR codes are used to quickly access subject information in emergency situations. Each QR code contains a unique identifier that links to the subject's emergency information page.</p>
+    <hr>
+    <p class="mb-0">Print and distribute these QR codes to custodians for their subjects.</p>
+</div>
+
+<!-- QR Codes Grid -->
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for subject in subjects %}
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">{{ subject.name }}</h5>
+            </div>
+            <div class="card-body text-center">
+                <!-- Placeholder for QR Code -->
+                <div class="qr-code-placeholder mb-3">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ request.scheme }}://{{ request.get_host }}{% url 'subjects:subject_detail' subject.pk %}" 
+                         alt="QR Code for {{ subject.name }}"
+                         class="img-fluid">
+                </div>
+                <p class="card-text">
+                    <small class="text-muted">
+                        Custodian: {{ subject.custodian.user.get_full_name }}<br>
+                        ID: {{ subject.pk }}
+                    </small>
+                </p>
+            </div>
+            <div class="card-footer">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary btn-sm" onclick="printQRCode(this)">
+                        <i class="fas fa-print"></i> Print Individual QR
+                    </button>
+                    <a href="{% url 'subjects:subject_detail' subject.pk %}" class="btn btn-info btn-sm">
+                        <i class="fas fa-eye"></i> View Subject
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-warning">
+            <h4 class="alert-heading">No Active Subjects</h4>
+            <p>There are currently no active subjects in the system. QR codes will appear here once subjects are added.</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Print Script -->
+<script>
+function printQRCode(button) {
+    const card = button.closest('.card');
+    const cardClone = card.cloneNode(true);
+    const printWindow = window.open('', '', 'width=600,height=600');
+    
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>Print QR Code</title>
+                <style>
+                    body { font-family: Arial, sans-serif; }
+                    .card { width: 300px; margin: 20px auto; padding: 15px; border: 1px solid #ddd; }
+                    .text-center { text-align: center; }
+                    img { max-width: 100%; height: auto; }
+                </style>
+            </head>
+            <body>
+                ${cardClone.outerHTML}
+                <script>
+                    window.onload = function() { window.print(); window.close(); }
+                <\/script>
+            </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+</script>
+{% endblock %} 
