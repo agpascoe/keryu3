@@ -42,11 +42,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'phonenumber_field',
+    'widget_tweaks',
     'crispy_forms',
     'crispy_bootstrap5',
+    'phonenumber_field',
     'custodians',
     'subjects',
+    'alarms',
 ]
 
 MIDDLEWARE = [
@@ -170,6 +172,10 @@ LOGGING = {
         },
     },
 }
+
+# Authentication settings
+LOGIN_REDIRECT_URL = '/custodians/dashboard/'
+LOGOUT_REDIRECT_URL = '/'
 
 # WhatsApp API settings (to be configured)
 WHATSAPP_API_KEY = os.getenv('WHATSAPP_API_KEY', '')
