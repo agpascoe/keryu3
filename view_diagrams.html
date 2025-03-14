@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Keryu System Diagrams</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+        .diagram-container {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Keryu System Diagrams</h1>
+
+    <div class="diagram-container">
+        <h2>1. High-Level System Architecture</h2>
+        <div class="mermaid">
+graph TB
+    subgraph Client
+        A[Web Interface] --> B[Django Application]
+        M[Admin Interface] --> B
+    end
+    
+    subgraph Backend
+        B --> C[Core App]
+        B --> D[Notifications App]
+        B --> E[Subjects App]
+        B --> F[Alarms App]
+        B --> G[Custodians App]
+    end
+    
+    subgraph Message Processing
+        D --> H[Celery Workers]
+        H --> I[Redis]
+    end
+    
+    subgraph External Services
+        H --> J[Twilio API]
+        J --> K[WhatsApp]
+    end
+    
+    subgraph Storage
+        B --> L[(Database)]
+        I --> L
+    end
+        </div>
+    </div>
+
+    <div class="diagram-container">
+        <h2>2. Notification Flow Sequence</h2>
+        <div class="mermaid">
+sequenceDiagram
+    participant U as User/System
+    participant D as Django App
+    participant C as Celery
+    participant R as Redis
+    participant T as Twilio
+    participant W as WhatsApp
+
+    U->>D: Create Notification
+    D->>D: Validate Input
+    D->>C: Queue Task
+    C->>R: Store Task
+    C->>T: Send Message
+    T->>W: Deliver to WhatsApp
+    W-->>T: Delivery Status
+    T-->>C: Status Update
+    C-->>D: Update Status
+    D-->>U: Return Result
+        </div>
+    </div>
+
+    <div class="diagram-container">
+        <h2>3. Database Entity Relationship</h2>
+        <div class="mermaid">
+erDiagram
+    Subjects ||--o{ Notifications : receives
+    Notifications ||--o{ MessageTemplates : uses
+    Custodians ||--o{ Notifications : manages
+    Alarms ||--o{ Notifications : triggers
+
+    Subjects {
+        UUID id
+        string name
+        string phone_number
+        boolean is_active
+        json preferences
+    }
+
+    Notifications {
+        UUID id
+        UUID subject_id
+        text message_template
+        string status
+        datetime created_at
+        datetime scheduled_for
+        datetime sent_at
+        int retry_count
+    }
+
+    MessageTemplates {
+        UUID id
+        string name
+        text content
+        json variables
+        string status
+        boolean approved
+    }
+        </div>
+    </div>
+
+    <div class="diagram-container">
+        <h2>4. Component State Flow</h2>
+        <div class="mermaid">
+stateDiagram-v2
+    [*] --> Created
+    Created --> Queued: Validation Passed
+    Queued --> Processing: Worker Available
+    Processing --> Sent: Success
+    Processing --> Failed: Error
+    Failed --> Queued: Retry
+    Failed --> [*]: Max Retries
+    Sent --> [*]
+        </div>
+    </div>
+
+    <div class="diagram-container">
+        <h2>5. Deployment Architecture</h2>
+        <div class="mermaid">
+graph TB
+    subgraph Production Environment
+        LB[Load Balancer]
+        
+        subgraph App Servers
+            A1[App Server 1]
+            A2[App Server 2]
+            A3[App Server N]
+        end
+        
+        subgraph Worker Nodes
+            W1[Celery Worker 1]
+            W2[Celery Worker 2]
+            W3[Celery Worker N]
+        end
+        
+        subgraph Data Layer
+            RD[(Redis)]
+            DB[(PostgreSQL)]
+            FS[File Storage]
+        end
+    end
+    
+    subgraph External
+        T[Twilio API]
+        WA[WhatsApp]
+    end
+    
+    Client-->LB
+    LB-->A1
+    LB-->A2
+    LB-->A3
+    
+    A1-->RD
+    A2-->RD
+    A3-->RD
+    
+    A1-->DB
+    A2-->DB
+    A3-->DB
+    
+    W1-->RD
+    W2-->RD
+    W3-->RD
+    
+    W1-->T
+    W2-->T
+    W3-->T
+    
+    T-->WA
+        </div>
+    </div>
+</body>
+</html> 
