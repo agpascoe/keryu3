@@ -18,6 +18,7 @@ import io
 from PIL import Image
 from .models import Subject, SubjectQR, Alarm
 from .tasks import send_whatsapp_notification
+from django.views.decorators.csrf import csrf_exempt
 
 logger = logging.getLogger(__name__)
 
@@ -173,11 +174,11 @@ def generate_qr(request):
         if activate:
             SubjectQR.objects.filter(subject=subject).exclude(id=qr.id).update(is_active=False)
         
-        # Generate QR code image
-        qr_url = request.build_absolute_uri(
-            reverse('subjects:scan_qr', args=[qr_uuid])
+        # Generate QR code image with API endpoint
+        api_endpoint = request.build_absolute_uri(
+            reverse('subjects:trigger_alarm', args=[qr_uuid])
         )
-        img = generate_qr_image(qr_url)
+        img = generate_qr_image(api_endpoint)
         
         # Save image to QR instance
         img_io = io.BytesIO()
@@ -327,6 +328,7 @@ def generate_qr_image(url):
     
     return qr.make_image(fill_color="black", back_color="white")
 
+@csrf_exempt
 def scan_qr(request, uuid):
     """Handle QR code scanning and create alarm if active"""
     qr = get_object_or_404(SubjectQR, uuid=uuid)
@@ -335,7 +337,9 @@ def scan_qr(request, uuid):
     if qr.is_active:
         # Get location from request if available
         location = None
-        if request.GET.get('lat') and request.GET.get('lng'):
+        if request.method == 'POST':
+            location = f"{request.POST.get('lat')},{request.POST.get('lng')}"
+        elif request.method == 'GET':
             location = f"{request.GET.get('lat')},{request.GET.get('lng')}"
         
         # Create alarm
@@ -349,13 +353,92 @@ def scan_qr(request, uuid):
         qr.last_used = timezone.now()
         qr.save()
         
-        # Queue WhatsApp notification
+        # Send WhatsApp notification immediately in test mode
         try:
+            # Since CELERY_TASK_ALWAYS_EAGER is True, this will execute immediately
             send_whatsapp_notification.delay(alarm.id)
+            logger.info(f"WhatsApp notification queued for alarm {alarm.id}")
         except Exception as e:
             logger.error(f"Failed to queue WhatsApp notification for alarm {alarm.id}: {e}")
     
+    # Return JSON response for API requests
+    if request.content_type == 'application/json' or request.headers.get('Accept') == 'application/json':
+        return JsonResponse({
+            'status': 'success' if qr.is_active else 'error',
+            'message': 'Alarm triggered successfully' if qr.is_active else 'QR code is not active',
+            'alarm_id': alarm.id if alarm else None
+        })
+    
+    # Return HTML response for browser requests
     return render(request, 'subjects/scan_result.html', {
         'qr': qr,
         'alarm': alarm
+    })
+
+@require_POST
+def trigger_alarm(request, uuid):
+    """API endpoint for triggering an alarm from a QR code scan"""
+    qr = get_object_or_404(SubjectQR, uuid=uuid)
+    
+    if not qr.is_active:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'This QR code is no longer active'
+        }, status=400)
+    
+    # Get location from request if available
+    location = None
+    if request.POST.get('lat') and request.POST.get('lng'):
+        location = f"{request.POST.get('lat')},{request.POST.get('lng')}"
+    
+    # Create alarm
+    alarm = Alarm.objects.create(
+        subject=qr.subject,
+        qr_code=qr,
+        location=location
+    )
+    
+    # Update QR code last used timestamp
+    qr.last_used = timezone.now()
+    qr.save()
+    
+    # Queue WhatsApp notification
+    try:
+        send_whatsapp_notification.delay(alarm.id)
+    except Exception as e:
+        logger.error(f"Failed to queue WhatsApp notification for alarm {alarm.id}: {e}")
+    
+    return JsonResponse({
+        'status': 'success',
+        'message': 'Alarm triggered successfully'
+    })
+
+@login_required
+def print_qr(request, uuid):
+    """Print view for QR code"""
+    qr = get_object_or_404(SubjectQR, uuid=uuid)
+    
+    # Check permissions
+    if not request.user.is_staff and qr.subject.custodian.user != request.user:
+        return HttpResponse('Permission denied', status=403)
+    
+    # Get or generate QR image URL
+    if qr.image:
+        qr_image_url = qr.image.url
+    else:
+        # Generate QR code image
+        api_endpoint = request.build_absolute_uri(
+            reverse('subjects:trigger_alarm', args=[qr.uuid])
+        )
+        img = generate_qr_image(api_endpoint)
+        
+        # Save image
+        img_io = io.BytesIO()
+        img.save(img_io, format='PNG')
+        qr.image.save(f'qr_{qr.uuid}.png', io.BytesIO(img_io.getvalue()))
+        qr_image_url = qr.image.url
+    
+    return render(request, 'subjects/print_qr.html', {
+        'qr': qr,
+        'qr_image_url': qr_image_url
     })
