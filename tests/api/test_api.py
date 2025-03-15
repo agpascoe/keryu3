@@ -4,7 +4,7 @@ import django
 from django.conf import settings
 
 # Add the project directory to the Python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 # Configure Django settings
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
