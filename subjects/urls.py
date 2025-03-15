@@ -19,4 +19,5 @@ urlpatterns = [
     path('qr/<uuid:uuid>/deactivate/', views.deactivate_qr, name='deactivate_qr'),
     path('qr/<uuid:uuid>/delete/', views.delete_qr, name='delete_qr'),
     path('qr/<uuid:uuid>/scan/', views.scan_qr, name='scan_qr'),
+    path('qr/<uuid:uuid>/trigger/', views.trigger_alarm, name='trigger_alarm'),
 ] 

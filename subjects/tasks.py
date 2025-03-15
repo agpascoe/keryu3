@@ -3,57 +3,65 @@ from django.conf import settings
 import requests
 import logging
 from .models import Alarm
+from notifications.providers import get_notification_service
 
 logger = logging.getLogger(__name__)
 
-@shared_task
-def send_whatsapp_notification(alarm_id):
+@shared_task(bind=True, max_retries=3)
+def send_whatsapp_notification(self, alarm_id):
     """
-    Send WhatsApp notification for an alarm using the Meta WhatsApp Business API.
+    Send WhatsApp notification for an alarm using the WhatsApp Business API.
     """
     try:
         alarm = Alarm.objects.get(id=alarm_id)
         subject = alarm.subject
         custodian = subject.custodian
         
-        # Prepare the message
-        message = (
-            f"🚨 ALERT: {subject.name} has triggered an alarm!\n\n"
-            f"Location: {alarm.location or 'Unknown'}\n"
-            f"Time: {alarm.timestamp.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-            f"Please check on {subject.name} immediately."
+        # Skip if notification was already sent
+        if alarm.notification_sent:
+            logger.info(f"Notification already sent for alarm {alarm_id}")
+            return
+        
+        # Prepare the message data for the template
+        message_data = {
+            'subject_name': subject.name,
+            'timestamp': alarm.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+        # Get the WhatsApp API service
+        notification_service = get_notification_service()
+        logger.info(f"Sending notification to: {custodian.phone_number}")
+        
+        # Send the notification
+        response = notification_service.send_message(
+            to_number=custodian.phone_number,
+            message_data=message_data
         )
         
-        # Prepare the API request
-        url = f"https://graph.facebook.com/v17.0/{settings.WHATSAPP_PHONE_NUMBER_ID}/messages"
-        headers = {
-            "Authorization": f"Bearer {settings.WHATSAPP_ACCESS_TOKEN}",
-            "Content-Type": "application/json",
-        }
-        data = {
-            "messaging_product": "whatsapp",
-            "to": str(custodian.phone_number),
-            "type": "text",
-            "text": {"body": message}
-        }
-        
-        # Send the request
-        response = requests.post(url, headers=headers, json=data)
-        response.raise_for_status()
-        
-        # Update alarm status
-        alarm.notification_sent = True
-        alarm.save()
-        
-        logger.info(f"Successfully sent WhatsApp notification for alarm {alarm_id}")
+        # Handle the WhatsApp API response
+        if response.status_code == 200:
+            alarm.notification_sent = True
+            alarm.save()
+            logger.info(f"WhatsApp notification sent successfully for alarm {alarm_id}")
+        else:
+            error_msg = f"Failed to send WhatsApp notification. Status: {response.status_code}, Response: {response.text}"
+            logger.error(error_msg)
+            alarm.notification_error = error_msg
+            alarm.save()
+            raise self.retry(exc=Exception(error_msg), countdown=60)
         
     except Alarm.DoesNotExist:
         logger.error(f"Alarm {alarm_id} not found")
     except requests.exceptions.RequestException as e:
-        logger.error(f"Failed to send WhatsApp notification for alarm {alarm_id}: {str(e)}")
-        alarm.notification_error = str(e)
+        error_msg = f"API request failed: {str(e)}"
+        logger.error(error_msg)
+        alarm.notification_error = error_msg
         alarm.save()
+        raise self.retry(exc=e, countdown=60)
     except Exception as e:
-        logger.error(f"Unexpected error sending WhatsApp notification for alarm {alarm_id}: {str(e)}")
-        alarm.notification_error = str(e)
-        alarm.save() 
+        error_msg = f"Unexpected error: {str(e)}"
+        logger.error(error_msg)
+        if 'alarm' in locals():
+            alarm.notification_error = error_msg
+            alarm.save()
+        raise self.retry(exc=e, countdown=60) 
