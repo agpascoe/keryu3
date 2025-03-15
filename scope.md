@@ -3,6 +3,12 @@
 ## Project Overview
 Keryu is a comprehensive subject management system designed to help track and manage subjects with their associated QR codes and alarms. The system provides features for both administrators and custodians to manage subjects, generate QR codes, and monitor alarms.
 
+Example of one case (among others) where kareyu is helpful:
+The parent of a child is leting him/her to go to the zoo with his/her school mates (and teachers). Suddenly this child is lost and a Person find him/her. This Person uses de QR that this child has(in his/her badge), and his/her parent (custodian), recieves a Whatsapp message with the alarm. From here the parent call the teacher to check the situation.
+For doing this, the parent had to signup in keryu, create the subject record with his/her child data, see and print the QR that keryu gave him/her.
+
+Example of Subjects are: children, elders, and especial persons with disabilities
+
 ## Core Features
 
 ### Subject Management
