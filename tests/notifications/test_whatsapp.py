@@ -36,34 +36,33 @@ def test_whatsapp_message(template_name, language_code="en_US", template_params=
         "Content-Type": "application/json",
     }
     
-    # Build template data
-    template_data = {
-        "name": template_name,
-        "language": {
-            "code": language_code
+    # Build template data with components inside
+    data = {
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": test_phone,
+        "type": "template",
+        "template": {
+            "name": template_name,
+            "language": {
+                "code": language_code
+            }
         }
     }
     
     # Add template parameters if provided
     if template_params:
-        template_data["components"] = []
-        for key, value in template_params.items():
-            template_data["components"].append({
+        data["template"]["components"] = [
+            {
                 "type": "body",
                 "parameters": [
                     {
                         "type": "text",
                         "text": str(value)
-                    }
+                    } for value in template_params.values()
                 ]
-            })
-    
-    data = {
-        "messaging_product": "whatsapp",
-        "to": test_phone,
-        "type": "template",
-        "template": template_data
-    }
+            }
+        ]
     
     try:
         print("\nSending request to WhatsApp API...")
@@ -92,15 +91,18 @@ def test_whatsapp_message(template_name, language_code="en_US", template_params=
         print(f"\nError: {str(e)}")
 
 if __name__ == "__main__":
-    # Test the qr_is_on template
+    # Override the access token for testing
+    os.environ['WHATSAPP_ACCESS_TOKEN'] = "EAASvZCLmGU1YBO0YTpJthfbF6CMvzXn039EURHZCaOMsvZCHYdLzZB1NsGht9TKhZCivcuovz44im5mTmZAB9Ww9ZC40ZAJPsSHt9RxBySTwdtnpISZAbVYR0mNZCCkhkiZARVS1JyuF3ZAnTXubndp27hT51TTjneQ284vZBLXQJH9sZBemwrzY9mzCDlqQft0PZCZCQG7d0JZBkEurSOc9ZCVWQq1ZCJLPWsjNQ4ZD"
+    
+    # Test with parameters for the new template
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     template_params = {
-        "Subject": "Test Subject",
-        "Timestamp": current_time
+        "subject_name": "Test Subject",  # This will be {{1}}
+        "timestamp": current_time        # This will be {{2}}
     }
     
     test_whatsapp_message(
-        template_name="qr_is_on",
+        template_name="qr_template_on_m",
         language_code="en_US",
         template_params=template_params
     ) 
