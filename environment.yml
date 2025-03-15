@@ -3,21 +3,54 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python=3.11
+  - python=3.12
   - pip
+  
+  # Core Dependencies (from conda-forge when available)
+  - django=5.0.2
+  - djangorestframework=3.14.0
+  - django-environ=0.11.2
+  - django-filter=23.5
+  
+  # Database and Cache
   - postgresql
-  - redis
+  - redis-py=5.0.1
+  - psycopg2=2.9.9
+  
+  # Development and Testing
+  - black=24.2.0
+  - flake8=7.0.0
+  - pytest=8.0.2
+  - pytest-django=4.8.0
+  - coverage=7.3.2
+  
+  # Production
+  - gunicorn=21.2.0
+  - whitenoise=6.6.0
+  
+  # Utilities from conda-forge
+  - pillow=10.2.0
+  - python-dotenv=1.0.1
+  - requests=2.31.0
+  - reportlab=4.0.8
+  - xlsxwriter=3.1.9
+  
   - pip:
-    - -r requirements.txt
-    - django-widget-tweaks==1.5.0
-    - drf-yasg==1.21.7
-    - djangorestframework==3.14.0
-  - django=5.0
-  - python-dotenv=1.0
-  - gunicorn=21.2
-  - whitenoise=6.6
-  - pip:
+    # Django Extensions
     - django-cors-headers==4.3.1
+    - django-phonenumber-field==7.3.0
+    - django-chartjs==2.3.0
+    - django-debug-toolbar==4.2.0
+    - django-widget-tweaks==1.5.0
+    - django-crispy-forms==2.3
+    - crispy-bootstrap5==2024.10
+    - drf-yasg==1.21.7
+    
+    # Celery
+    - celery==5.3.6
+    
+    # Additional Utilities
     - qrcode==7.4.2
-    - Pillow==10.2.0
-    - django-phonenumber-field[phonenumbers]==7.3.0 
+    - phonenumbers==8.13.27
+    - boto3==1.34.14
+    - twilio==8.12.0 
