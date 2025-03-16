@@ -4,48 +4,315 @@
 {% block title %}Welcome - {{ block.super }}{% endblock %}
 
 {% block extra_css %}
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Nunito+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
+/* Existing variables for reference */
+:root {
+    --accent-red: #e74c3c;
+    --accent-red-dark: #c0392b;
+    --font-heading: 'Montserrat', sans-serif;
+    --font-body: 'Nunito Sans', sans-serif;
+}
+
+/* Typography Base Styles */
+body {
+    font-family: var(--font-body);
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6,
+.navbar-brand {
+    font-family: var(--font-heading);
+    font-weight: 600;
+}
+
+.display-4 {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.lead {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 1.25rem;
+    line-height: 1.8;
+}
+
+.btn {
+    font-family: var(--font-heading);
+    font-weight: 500;
+}
+
 .hero-section {
-    background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
+    color: var(--white);
     padding: 6rem 0;
     margin-top: -1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(90deg, var(--accent-red), var(--accent-red-dark));
+    z-index: 1;
+}
+
+.hero-section .btn-hero.btn-accent {
+    background: linear-gradient(90deg, var(--accent-red), var(--accent-red-dark));
+    border: none;
+    color: var(--white);
+}
+
+.hero-section .btn-hero.btn-accent:hover {
+    background: linear-gradient(90deg, var(--accent-red-dark), var(--accent-red));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
 }
 
 .feature-icon {
     width: 4rem;
     height: 4rem;
-    border-radius: 0.75rem;
+    border-radius: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #e9ecef;
+    background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+    color: var(--white);
+    box-shadow: 0 4px 6px rgba(45, 62, 80, 0.1);
+    position: relative;
+}
+
+.feature-icon::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    background: var(--accent-red);
+    border-radius: 50%;
+    border: 2px solid var(--white);
 }
 
 .step-card {
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
     border: none;
-    transition: transform 0.3s ease;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background: var(--white);
+    box-shadow: 0 4px 6px rgba(45, 62, 80, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.step-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--accent-red), var(--accent-red-dark));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.step-card:hover::before {
+    opacity: 1;
 }
 
 .step-card:hover {
     transform: translateY(-10px);
+    box-shadow: 0 8px 15px rgba(45, 62, 80, 0.1);
 }
 
 .step-number {
-    width: 2rem;
-    height: 2rem;
-    background-color: #0d6efd;
-    color: white;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+    color: var(--white);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 1rem;
+    margin: 0 auto 1rem;
+    box-shadow: 0 4px 6px rgba(45, 62, 80, 0.1);
+    position: relative;
+}
+
+.step-number::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-red), transparent);
+    opacity: 0.2;
+    z-index: -1;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-blue), var(--accent-red));
+    border-radius: 2px;
+}
+
+.text-gradient {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    background: linear-gradient(90deg, var(--primary-blue), var(--accent-red));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+}
+
+.feature-card {
+    height: 100%;
+    border: none;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background: var(--white);
+    box-shadow: 0 4px 6px rgba(45, 62, 80, 0.05);
+    overflow: hidden;
+    position: relative;
+}
+
+.feature-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-red), var(--accent-red-dark));
+    transition: width 0.3s ease;
+}
+
+.feature-card:hover::after {
+    width: 100%;
+    left: 0;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(45, 62, 80, 0.1);
 }
 
 .cta-section {
-    background-color: #f8f9fa;
+    background: linear-gradient(135deg, var(--bg-light), var(--bg-light-gradient));
     padding: 4rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.cta-section .btn-hero.btn-accent {
+    background: linear-gradient(90deg, var(--accent-red), var(--accent-red-dark));
+    border: none;
+    color: var(--white);
+}
+
+.cta-section .btn-hero.btn-accent:hover {
+    background: linear-gradient(90deg, var(--accent-red-dark), var(--accent-red));
+}
+
+.btn-hero {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 0.8rem 2rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+.btn-hero:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(45, 62, 80, 0.2);
+}
+
+.hero-image {
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 4px 8px rgba(45, 62, 80, 0.2));
+}
+
+.feature-card .card-body {
+    padding: 2rem;
+}
+
+.feature-title {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 1rem 0;
+    color: var(--text-dark);
+}
+
+.text-muted {
+    font-family: var(--font-body);
+    font-weight: 400;
+    line-height: 1.6;
+    color: #6c757d !important;
+}
+
+.section-title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-dark);
+    margin-bottom: 3rem;
+    position: relative;
+    display: inline-block;
+}
+
+/* Add these new styles for inactive steps */
+.step-card.inactive {
+    cursor: not-allowed;
+    opacity: 0.6;
+    filter: grayscale(1);
+    pointer-events: none;
+}
+
+.step-card.inactive .feature-icon {
+    background: linear-gradient(135deg, #6c757d, #495057);
+}
+
+.step-card.inactive .feature-icon::after {
+    background: #6c757d;
+}
+
+.step-card.inactive .feature-title {
+    color: #6c757d;
+}
+
+.step-card.inactive::before {
+    display: none;
+}
+
+.step-card .lock-icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    color: #6c757d;
+    font-size: 1.2rem;
 }
 </style>
 {% endblock %}
@@ -56,61 +323,61 @@
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">Welcome to Keryu3</h1>
-                <p class="lead mb-4">A comprehensive care management system designed to support vulnerable individuals and their caregivers.</p>
+                <h1 class="display-4 fw-bold mb-4">Welcome to Keryu</h1>
+                <p class="lead mb-4">Always behind your care - A comprehensive system designed to protect and support vulnerable individuals through innovative tracking and instant notifications.</p>
                 {% if not user.is_authenticated %}
                     <div class="d-grid gap-3 d-md-flex">
-                        <a href="{% url 'custodians:register' %}" class="btn btn-light btn-lg px-4 me-md-2">Get Started</a>
-                        <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg px-4">Login</a>
+                        <a href="{% url 'custodians:register' %}" class="btn btn-accent btn-lg btn-hero">Get Started</a>
+                        <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg btn-hero">Login</a>
                     </div>
                 {% else %}
                     <div class="d-grid gap-3 d-md-flex">
-                        <a href="{% url 'custodians:custodian_dashboard' %}" class="btn btn-light btn-lg px-4">Go to Dashboard</a>
+                        <a href="{% url 'custodians:custodian_dashboard' %}" class="btn btn-accent btn-lg btn-hero">Go to Dashboard</a>
                     </div>
                 {% endif %}
             </div>
-            <div class="col-lg-6 d-none d-lg-block">
-                <img src="{% static 'images/hero.svg' %}" alt="Care Management" class="img-fluid">
+            <div class="col-lg-6 d-none d-lg-block text-center">
+                <img src="{% static 'images/brand/keryu-logo.svg' %}" alt="Keryu Protection" class="img-fluid hero-image" style="max-width: 400px;">
             </div>
         </div>
     </div>
 </section>
 
 <!-- Features Section -->
-<section class="py-5">
+<section class="features-section">
     <div class="container">
-        <h2 class="text-center mb-5">Key Features</h2>
+        <h2 class="text-center section-title">Key Features</h2>
         <div class="row g-4">
             <div class="col-md-4">
-                <div class="card h-100 shadow-sm">
+                <div class="feature-card">
                     <div class="card-body text-center">
-                        <div class="feature-icon mx-auto mb-3">
-                            <i class="fas fa-user-shield fa-2x text-primary"></i>
+                        <div class="feature-icon mx-auto">
+                            <i class="fas fa-user-shield fa-2x"></i>
                         </div>
-                        <h3 class="h4">Subject Management</h3>
+                        <h3 class="feature-title">Subject Management</h3>
                         <p class="text-muted">Register and track vulnerable individuals with detailed profiles and medical information.</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card h-100 shadow-sm">
+                <div class="feature-card">
                     <div class="card-body text-center">
-                        <div class="feature-icon mx-auto mb-3">
-                            <i class="fas fa-qrcode fa-2x text-primary"></i>
+                        <div class="feature-icon mx-auto">
+                            <i class="fas fa-qrcode fa-2x"></i>
                         </div>
-                        <h3 class="h4">QR Code System</h3>
+                        <h3 class="feature-title">QR Code System</h3>
                         <p class="text-muted">Generate unique QR codes for quick access to critical information in emergencies.</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card h-100 shadow-sm">
+                <div class="feature-card">
                     <div class="card-body text-center">
-                        <div class="feature-icon mx-auto mb-3">
-                            <i class="fas fa-bell fa-2x text-primary"></i>
+                        <div class="feature-icon mx-auto">
+                            <i class="fas fa-bell fa-2x"></i>
                         </div>
-                        <h3 class="h4">Real-time Alerts</h3>
-                        <p class="text-muted">Receive instant notifications about your subjects via WhatsApp and email.</p>
+                        <h3 class="feature-title">Real-time Alerts</h3>
+                        <p class="text-muted">Receive instant notifications about your subjects via WhatsApp.</p>
                     </div>
                 </div>
             </div>
@@ -119,55 +386,70 @@
 </section>
 
 <!-- How It Works Section -->
-<section class="py-5 bg-light">
+<section class="section bg-light" style="padding-top: 6rem; margin-top: 3rem;">
     <div class="container">
-        <h2 class="text-center mb-5">How It Works</h2>
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="section-title">How It Works</h2>
+                <p class="text-muted">Simple steps to get started with Keryu Protection</p>
+            </div>
+        </div>
         <div class="row g-4">
-            <div class="col-md-3">
-                <div class="card step-card h-100">
-                    <div class="card-body text-center">
-                        <div class="step-number mx-auto">1</div>
-                        <h4>Register</h4>
-                        <p class="text-muted">Create your custodian account with basic information.</p>
-                        <a href="{% url 'custodians:register' %}" class="btn btn-outline-primary mt-2">Register Now</a>
+            <div class="col-md-6 col-lg-3">
+                <a href="{% if not user.is_authenticated %}{% url 'custodians:register' %}{% else %}#{% endif %}" class="text-decoration-none">
+                    <div class="card h-100 border-0 shadow-sm step-card {% if user.is_authenticated %}inactive{% endif %}">
+                        {% if user.is_authenticated %}<i class="fas fa-check-circle lock-icon text-success"></i>{% endif %}
+                        <div class="card-body text-center">
+                            <div class="feature-icon mb-4">
+                                <i class="fas fa-user-plus fa-2x text-primary"></i>
+                            </div>
+                            <h4 class="feature-title">1. Register</h4>
+                            <p class="text-muted">{% if user.is_authenticated %}You are already registered{% else %}Create your custodian account to get started with protecting your loved ones{% endif %}</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
-            <div class="col-md-3">
-                <div class="card step-card h-100">
-                    <div class="card-body text-center">
-                        <div class="step-number mx-auto">2</div>
-                        <h4>Add Subjects</h4>
-                        <p class="text-muted">Register the vulnerable individuals under your care.</p>
-                        {% if user.is_authenticated %}
-                            <a href="{% url 'custodians:subject_list' %}" class="btn btn-outline-primary mt-2">Manage Subjects</a>
-                        {% endif %}
+            <div class="col-md-6 col-lg-3">
+                <a href="{% if user.is_authenticated %}{% url 'subjects:list' %}{% else %}#{% endif %}" class="text-decoration-none">
+                    <div class="card h-100 border-0 shadow-sm step-card {% if not user.is_authenticated %}inactive{% endif %}">
+                        {% if not user.is_authenticated %}<i class="fas fa-lock lock-icon"></i>{% endif %}
+                        <div class="card-body text-center">
+                            <div class="feature-icon mb-4">
+                                <i class="fas fa-users fa-2x text-primary"></i>
+                            </div>
+                            <h4 class="feature-title">2. Add Subjects</h4>
+                            <p class="text-muted">Add and manage information about the people you want to protect</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
-            <div class="col-md-3">
-                <div class="card step-card h-100">
-                    <div class="card-body text-center">
-                        <div class="step-number mx-auto">3</div>
-                        <h4>Set Up Alerts</h4>
-                        <p class="text-muted">Configure notification preferences and emergency contacts.</p>
-                        {% if user.is_authenticated %}
-                            <a href="#" class="btn btn-outline-primary mt-2">Manage Alerts</a>
-                        {% endif %}
+            <div class="col-md-6 col-lg-3">
+                <a href="{% if user.is_authenticated %}{% url 'subjects:qr_codes' %}{% else %}#{% endif %}" class="text-decoration-none">
+                    <div class="card h-100 border-0 shadow-sm step-card {% if not user.is_authenticated %}inactive{% endif %}">
+                        {% if not user.is_authenticated %}<i class="fas fa-lock lock-icon"></i>{% endif %}
+                        <div class="card-body text-center">
+                            <div class="feature-icon mb-4">
+                                <i class="fas fa-qrcode fa-2x text-primary"></i>
+                            </div>
+                            <h4 class="feature-title">3. Create/Manage QR</h4>
+                            <p class="text-muted">Generate and manage QR codes for your subjects, easily update or reassign them as needed</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
-            <div class="col-md-3">
-                <div class="card step-card h-100">
-                    <div class="card-body text-center">
-                        <div class="step-number mx-auto">4</div>
-                        <h4>Monitor</h4>
-                        <p class="text-muted">Track activities and receive real-time notifications.</p>
-                        {% if user.is_authenticated %}
-                            <a href="{% url 'custodians:custodian_dashboard' %}" class="btn btn-outline-primary mt-2">View Dashboard</a>
-                        {% endif %}
+            <div class="col-md-6 col-lg-3">
+                <a href="{% if user.is_authenticated %}{% url 'alarms:alarm_statistics' %}{% else %}#{% endif %}" class="text-decoration-none">
+                    <div class="card h-100 border-0 shadow-sm step-card {% if not user.is_authenticated %}inactive{% endif %}">
+                        {% if not user.is_authenticated %}<i class="fas fa-lock lock-icon"></i>{% endif %}
+                        <div class="card-body text-center">
+                            <div class="feature-icon mb-4">
+                                <i class="fas fa-chart-line fa-2x text-primary"></i>
+                            </div>
+                            <h4 class="feature-title">4. Statistics</h4>
+                            <p class="text-muted">Track and analyze alarm patterns over time to better understand and respond to needs</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
         </div>
     </div>
@@ -175,21 +457,19 @@
 
 <!-- CTA Section -->
 <section class="cta-section">
-    <div class="container text-center">
-        <h2 class="mb-4">Ready to Get Started?</h2>
+    <div class="container text-center position-relative" style="z-index: 1;">
+        <h2 class="mb-4 text-gradient">Ready to Get Started?</h2>
         <p class="lead mb-4">Join our community of caregivers and make a difference in someone's life.</p>
         {% if not user.is_authenticated %}
             <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                <a href="{% url 'custodians:register' %}" class="btn btn-primary btn-lg px-4 me-sm-3">Register Now</a>
-                <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg px-4">Login</a>
+                <a href="{% url 'custodians:register' %}" class="btn btn-accent btn-lg btn-hero">Register Now</a>
+                <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg btn-hero">Login</a>
             </div>
         {% else %}
-            <a href="{% url 'custodians:custodian_dashboard' %}" class="btn btn-primary btn-lg px-4">Go to Dashboard</a>
+            <a href="{% url 'custodians:custodian_dashboard' %}" class="btn btn-accent btn-lg btn-hero">Go to Dashboard</a>
         {% endif %}
     </div>
 </section>
 {% endblock %}
 
-{% block extra_js %}
-<!-- No additional scripts needed since Font Awesome is loaded in base.html -->
-{% endblock %} 
+{% block extra_js %}{% endblock %} 

@@ -36,73 +36,83 @@ def subject_list(request):
         'stats': stats
     })
 
-@staff_member_required_403
+@login_required
 def subject_create(request):
-    """Admin view to create a new subject"""
+    """View to create a new subject"""
     if request.method == 'POST':
         form = SubjectForm(request.POST, request.FILES)
         logger.debug(f"Form data: {request.POST}")
         if form.is_valid():
-            subject = form.save()
+            subject = form.save(commit=False)
+            subject.custodian = request.user.custodian  # Set the current user as custodian
+            subject.save()
             messages.success(request, f'Subject "{subject.name}" was created successfully.')
-            return redirect('subjects:subject_detail', pk=subject.pk)
+            return redirect('subjects:detail', pk=subject.pk)
         else:
             logger.debug(f"Form errors: {form.errors}")
             messages.error(request, 'Please correct the errors below.')
     else:
         form = SubjectForm()
     
-    return render(request, 'subjects/admin_subject_form.html', {
+    return render(request, 'subjects/subject_form.html', {
         'form': form,
-        'title': 'Create Subject',
+        'title': 'Add New Subject',
         'submit_text': 'Create'
     })
 
-@staff_member_required_403
+@login_required
 def subject_detail(request, pk):
-    """Admin view to see complete subject details"""
+    """View to see subject details"""
+    # Get the subject and verify ownership
     subject = get_object_or_404(Subject, pk=pk)
-    return render(request, 'subjects/admin_subject_detail.html', {
+    if not request.user.is_staff and subject.custodian.user != request.user:
+        return HttpResponse('Permission denied', status=403)
+    
+    return render(request, 'subjects/subject_detail.html', {
         'subject': subject
     })
 
-@staff_member_required_403
+@login_required
 def subject_edit(request, pk):
-    """Admin view to edit a subject"""
+    """View to edit a subject"""
+    # Get the subject and verify ownership
     subject = get_object_or_404(Subject, pk=pk)
+    if not request.user.is_staff and subject.custodian.user != request.user:
+        return HttpResponse('Permission denied', status=403)
     
     if request.method == 'POST':
         form = SubjectForm(request.POST, request.FILES, instance=subject)
-        logger.debug(f"Form data: {request.POST}")
         if form.is_valid():
             subject = form.save()
             messages.success(request, f'Subject "{subject.name}" was updated successfully.')
-            return redirect('subjects:subject_detail', pk=subject.pk)
+            return redirect('subjects:detail', pk=subject.pk)
         else:
-            logger.debug(f"Form errors: {form.errors}")
             messages.error(request, 'Please correct the errors below.')
     else:
         form = SubjectForm(instance=subject)
     
-    return render(request, 'subjects/admin_subject_form.html', {
+    return render(request, 'subjects/subject_form.html', {
         'form': form,
         'subject': subject,
         'title': f'Edit Subject: {subject.name}',
         'submit_text': 'Update'
     })
 
-@staff_member_required_403
+@login_required
 def subject_delete(request, pk):
-    """Admin view to delete a subject"""
+    """View to delete a subject"""
+    # Get the subject and verify ownership
     subject = get_object_or_404(Subject, pk=pk)
+    if not request.user.is_staff and subject.custodian.user != request.user:
+        return HttpResponse('Permission denied', status=403)
     
     if request.method == 'POST':
         subject_name = subject.name
         subject.delete()
         messages.success(request, f'Subject "{subject_name}" was deleted successfully.')
-        return redirect('subjects:subject_list')
+        return redirect('subjects:list')
     
-    return render(request, 'subjects/admin_subject_confirm_delete.html', {
+    return render(request, 'subjects/subject_confirm_delete.html', {
         'subject': subject
     })
 
@@ -117,7 +127,6 @@ def subject_stats(request):
     }
     return render(request, 'subjects/admin_stats.html', {'stats': stats})
 
-@staff_member_required_403
 @login_required
 def qr_codes(request):
     """View for managing QR codes"""
@@ -145,21 +154,23 @@ def qr_codes(request):
     return render(request, 'subjects/qr_codes.html', context)
 
 @login_required
-@require_POST
 def generate_qr(request):
     """Generate a new QR code for a subject"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+    
     subject_id = request.POST.get('subject_id')
     activate = request.POST.get('activate') == 'on'
     
-    # Verify permissions
-    subject = get_object_or_404(Subject, id=subject_id)
-    if not request.user.is_staff and subject.custodian.user != request.user:
-        return JsonResponse({
-            'success': False,
-            'error': 'Permission denied'
-        }, status=403)
+    if not subject_id:
+        return JsonResponse({'success': False, 'error': 'Subject ID is required'}, status=400)
     
     try:
+        # Get subject and verify permissions
+        subject = get_object_or_404(Subject, id=subject_id)
+        if not request.user.is_staff and subject.custodian.user != request.user:
+            return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+        
         # Generate unique UUID
         qr_uuid = str(uuid.uuid4())
         
@@ -178,7 +189,19 @@ def generate_qr(request):
         api_endpoint = request.build_absolute_uri(
             reverse('subjects:trigger_alarm', args=[qr_uuid])
         )
-        img = generate_qr_image(api_endpoint)
+        
+        # Generate QR code
+        qr_img = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr_img.add_data(api_endpoint)
+        qr_img.make(fit=True)
+        
+        # Create image
+        img = qr_img.make_image(fill_color="black", back_color="white")
         
         # Save image to QR instance
         img_io = io.BytesIO()
@@ -187,12 +210,15 @@ def generate_qr(request):
         
         return JsonResponse({
             'success': True,
-            'uuid': qr_uuid
+            'uuid': qr_uuid,
+            'image_url': request.build_absolute_uri(qr.image.url)
         })
+        
     except Exception as e:
+        logger.error(f"Error generating QR code: {str(e)}")
         return JsonResponse({
             'success': False,
-            'error': str(e)
+            'error': 'Failed to generate QR code'
         }, status=500)
 
 @login_required
@@ -296,24 +322,19 @@ def deactivate_qr(request, uuid):
 @login_required
 @require_POST
 def delete_qr(request, uuid):
-    """Delete a QR code"""
+    """Delete QR code"""
     qr = get_object_or_404(SubjectQR, uuid=uuid)
     
     # Check permissions
     if not request.user.is_staff and qr.subject.custodian.user != request.user:
-        return JsonResponse({
-            'success': False,
-            'error': 'Permission denied'
-        }, status=403)
+        return HttpResponse('Permission denied', status=403)
     
-    try:
+    if request.method == 'POST':
         qr.delete()
-        return JsonResponse({'success': True})
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
+        messages.success(request, 'QR code deleted successfully')
+        return redirect('subjects:qr_codes')
+    
+    return HttpResponse('Invalid request method', status=405)
 
 def generate_qr_image(url):
     """Helper function to generate QR code image"""
@@ -380,10 +401,15 @@ def trigger_alarm(request, uuid):
     """API endpoint for triggering an alarm from a QR code scan"""
     qr = get_object_or_404(SubjectQR, uuid=uuid)
     
+    # Return HTML response for browser requests
+    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, 'subjects/test_alarm.html', {'qr': qr})
+    
+    # For API requests, continue with JSON response
     if not qr.is_active:
         return JsonResponse({
             'status': 'error',
-            'message': 'This QR code is no longer active'
+            'message': 'This QR code is not active'
         }, status=400)
     
     # Get location from request if available
@@ -391,11 +417,12 @@ def trigger_alarm(request, uuid):
     if request.POST.get('lat') and request.POST.get('lng'):
         location = f"{request.POST.get('lat')},{request.POST.get('lng')}"
     
-    # Create alarm
+    # Create alarm with test flag
     alarm = Alarm.objects.create(
         subject=qr.subject,
         qr_code=qr,
-        location=location
+        location=location,
+        notification_status='TEST'  # Mark as test alarm
     )
     
     # Update QR code last used timestamp
@@ -410,35 +437,74 @@ def trigger_alarm(request, uuid):
     
     return JsonResponse({
         'status': 'success',
-        'message': 'Alarm triggered successfully'
+        'message': 'Test alarm triggered successfully'
     })
 
 @login_required
-def print_qr(request, uuid):
-    """Print view for QR code"""
+def print_qr(request):
+    """Print QR code page"""
+    uuid = request.GET.get('uuid')
+    if not uuid:
+        return HttpResponse('QR code UUID is required', status=400)
+    
     qr = get_object_or_404(SubjectQR, uuid=uuid)
     
     # Check permissions
     if not request.user.is_staff and qr.subject.custodian.user != request.user:
         return HttpResponse('Permission denied', status=403)
     
-    # Get or generate QR image URL
-    if qr.image:
-        qr_image_url = qr.image.url
-    else:
-        # Generate QR code image
-        api_endpoint = request.build_absolute_uri(
-            reverse('subjects:trigger_alarm', args=[qr.uuid])
-        )
-        img = generate_qr_image(api_endpoint)
-        
-        # Save image
-        img_io = io.BytesIO()
-        img.save(img_io, format='PNG')
-        qr.image.save(f'qr_{qr.uuid}.png', io.BytesIO(img_io.getvalue()))
-        qr_image_url = qr.image.url
-    
     return render(request, 'subjects/print_qr.html', {
-        'qr': qr,
-        'qr_image_url': qr_image_url
+        'qr': qr
+    })
+
+@login_required
+def assign_qr(request):
+    """Assign QR code to a subject"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+    
+    qr_id = request.POST.get('qr_id')
+    subject_id = request.POST.get('subject_id')
+    
+    if not qr_id or not subject_id:
+        return JsonResponse({'success': False, 'error': 'QR ID and Subject ID are required'}, status=400)
+    
+    try:
+        qr = get_object_or_404(SubjectQR, id=qr_id)
+        subject = get_object_or_404(Subject, id=subject_id)
+        
+        # Check permissions
+        if not request.user.is_staff:
+            if qr.subject and qr.subject.custodian.user != request.user:
+                return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+            if subject.custodian.user != request.user:
+                return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+        
+        # Assign subject to QR
+        qr.subject = subject
+        qr.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'QR code assigned to {subject.name}'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error assigning QR code: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': 'Failed to assign QR code'
+        }, status=500)
+
+@login_required
+def user_subject_list(request):
+    """Regular user view to list their subjects"""
+    subjects = Subject.objects.filter(custodian__user=request.user)
+    stats = {
+        'total_subjects': subjects.count(),
+        'active_subjects': subjects.filter(is_active=True).count()
+    }
+    return render(request, 'subjects/subject_list.html', {
+        'subjects': subjects,
+        'stats': stats
     })

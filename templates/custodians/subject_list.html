@@ -4,86 +4,202 @@
 {% block title %}Manage Subjects - {{ block.super }}{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Manage Subjects</h2>
-        <a href="{% url 'custodians:subject_create' %}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Add New Subject
-        </a>
-    </div>
-
-    {% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
-    {% if subject_list %}
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        {% for subject in subject_list %}
-        <div class="col">
-            <div class="card h-100">
-                {% if subject.photo %}
-                <img src="{{ subject.photo.url }}" class="card-img-top" alt="{{ subject.name }}'s photo" style="height: 200px; object-fit: cover;">
-                {% else %}
-                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                    <i class="fas fa-user-circle fa-5x text-secondary"></i>
-                </div>
-                {% endif %}
-                <div class="card-body">
-                    <h5 class="card-title">{{ subject.name }}</h5>
-                    <p class="card-text">
-                        <small class="text-muted">
-                            <i class="fas fa-calendar"></i> {{ subject.date_of_birth|date:"F j, Y" }}<br>
-                            <i class="fas fa-venus-mars"></i> {{ subject.get_gender_display }}
-                        </small>
-                    </p>
-                    
-                    {% if subject.medical_conditions %}
-                    <p class="card-text">
-                        <strong>Medical Conditions:</strong><br>
-                        {{ subject.medical_conditions|truncatewords:20 }}
-                    </p>
-                    {% endif %}
-
-                    <div class="mt-3">
-                        <h6 class="mb-2"><i class="fas fa-user-md"></i> Doctor's Information</h6>
-                        <p class="card-text mb-1">
-                            <small>
-                                <strong>Name:</strong> {{ subject.doctor_name }}<br>
-                                <strong>Phone:</strong> {{ subject.doctor_phone }}<br>
-                                <strong>Specialty:</strong> {{ subject.doctor_speciality }}
-                            </small>
-                        </p>
-                    </div>
-                </div>
-                <div class="card-footer bg-transparent">
-                    <div class="d-flex justify-content-between">
-                        <a href="{% url 'custodians:subject_detail' subject.pk %}" class="btn btn-info btn-sm">
-                            <i class="fas fa-eye"></i> View
-                        </a>
-                        <a href="{% url 'custodians:subject_update' subject.pk %}" class="btn btn-warning btn-sm">
-                            <i class="fas fa-edit"></i> Edit
-                        </a>
-                        <a href="{% url 'custodians:subject_delete' subject.pk %}" class="btn btn-danger btn-sm">
-                            <i class="fas fa-trash"></i> Delete
-                        </a>
-                    </div>
-                </div>
+<div class="container py-4">
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-accent text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-users me-2"></i>Manage Subjects
+                </h4>
+                <a href="{% url 'custodians:subject_create' %}" class="btn btn-light btn-sm">
+                    <i class="fas fa-plus me-2"></i>Add New Subject
+                </a>
             </div>
         </div>
-        {% endfor %}
+
+        <div class="card-body">
+            {% if messages %}
+            <div class="messages mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if subject_list %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for subject in subject_list %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        {% if subject.photo %}
+                        <img src="{{ subject.photo.url }}" class="card-img-top" alt="{{ subject.name }}'s photo" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-user-circle fa-5x text-secondary"></i>
+                        </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title text-accent">{{ subject.name }}</h5>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i> {{ subject.date_of_birth|date:"F j, Y" }}<br>
+                                    <i class="fas fa-venus-mars me-1"></i> {{ subject.get_gender_display }}
+                                </small>
+                            </p>
+                            
+                            {% if subject.medical_conditions %}
+                            <p class="card-text">
+                                <strong class="text-accent">Medical Conditions:</strong><br>
+                                {{ subject.medical_conditions|truncatewords:20 }}
+                            </p>
+                            {% endif %}
+
+                            <div class="mt-3">
+                                <h6 class="mb-2 text-accent"><i class="fas fa-user-md me-1"></i> Doctor's Information</h6>
+                                <p class="card-text mb-1">
+                                    <small>
+                                        <strong>Name:</strong> {{ subject.doctor_name|default:"Not specified" }}<br>
+                                        <strong>Phone:</strong> {{ subject.doctor_phone|default:"Not specified" }}<br>
+                                        <strong>Specialty:</strong> {{ subject.doctor_speciality|default:"Not specified" }}
+                                    </small>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex justify-content-between gap-2">
+                                <a href="{% url 'custodians:subject_detail' subject.pk %}" class="btn btn-outline-secondary btn-sm" data-bs-toggle="tooltip" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'custodians:subject_update' subject.pk %}" class="btn btn-outline-secondary btn-sm" data-bs-toggle="tooltip" title="Edit Subject">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'subjects:qr_codes' %}?subject={{ subject.pk }}" class="btn btn-outline-accent btn-sm" data-bs-toggle="tooltip" title="Manage QR Codes">
+                                    <i class="fas fa-qrcode"></i>
+                                </a>
+                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteSubject('{{ subject.pk }}')" data-bs-toggle="tooltip" title="Delete Subject">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <h4 class="alert-heading">No Subjects Added Yet</h4>
+                <p class="mb-0">You haven't added any subjects to manage. Click the "Add New Subject" button above to get started.</p>
+            </div>
+            {% endif %}
+        </div>
     </div>
-    {% else %}
-    <div class="alert alert-info">
-        <h4 class="alert-heading">No Subjects Added Yet</h4>
-        <p>You haven't added any subjects to manage. Click the "Add New Subject" button above to get started.</p>
-    </div>
-    {% endif %}
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this subject? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Card styling */
+    .card {
+        border: none;
+        transition: box-shadow 0.3s ease-in-out;
+    }
+    
+    .card:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .card-header {
+        border-bottom: none;
+    }
+    
+    .bg-accent {
+        background-color: var(--accent-red) !important;
+    }
+    
+    .text-accent {
+        color: var(--accent-red) !important;
+    }
+    
+    /* Button styling */
+    .btn-light {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+    
+    .btn-light:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+    
+    .btn-outline-accent {
+        color: var(--accent-red);
+        border-color: var(--accent-red);
+    }
+    
+    .btn-outline-accent:hover {
+        color: #fff;
+        background-color: var(--accent-red);
+        border-color: var(--accent-red);
+    }
+    
+    /* Card footer buttons */
+    .card-footer .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        min-width: 32px;
+    }
+    
+    .card-footer .btn i {
+        margin: 0;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Delete subject functionality
+        window.deleteSubject = function(subjectId) {
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            const form = document.getElementById('deleteForm');
+            form.action = `/custodians/subjects/${subjectId}/delete/`;
+            modal.show();
+        }
+    });
+</script>
 {% endblock %} 

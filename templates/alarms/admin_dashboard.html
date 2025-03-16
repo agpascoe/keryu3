@@ -112,11 +112,6 @@
                                                title="View Details">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            <a href="{% url 'admin:alarms_alarm_change' alarm.id %}" 
-                                               class="btn btn-sm btn-primary"
-                                               title="Edit in Admin">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
                                             {% if not alarm.notification_sent %}
                                             <button class="btn btn-sm btn-warning retry-notification" 
                                                     data-alarm-id="{{ alarm.id }}"

@@ -1,118 +1,148 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - {{ block.super }}{% endblock %}
+{% block title %}Dashboard - Keryu{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<div class="container">
     <div class="row mb-4">
         <div class="col">
-            <h1 class="h2">Welcome, {{ user.get_full_name|default:user.username }}!</h1>
+            <h1 class="mb-0">Welcome, {{ user.get_full_name|default:user.username }}</h1>
+            <p class="text-muted">Here's an overview of your subjects and recent activity</p>
         </div>
     </div>
 
+    <!-- Stats Overview -->
     <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Your Subjects</h5>
-                    <a href="{% url 'custodians:subject_create' %}" class="btn btn-light btn-sm">
-                        <i class="fas fa-plus"></i> Add New Subject
-                    </a>
+        <div class="col-md-4">
+            <div class="dashboard-widget">
+                <div class="widget-title">
+                    <i class="fas fa-users fa-fw text-primary"></i>
+                    <span>Total Subjects</span>
                 </div>
-                <div class="card-body">
-                    {% if subjects %}
+                <h2 class="mb-0">{{ total_subjects }}</h2>
+                <p class="text-muted mb-0">Active subjects under your care</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-widget">
+                <div class="widget-title">
+                    <i class="fas fa-bell fa-fw text-accent"></i>
+                    <span>Recent Alarms</span>
+                </div>
+                <h2 class="mb-0">{{ recent_alarms }}</h2>
+                <p class="text-muted mb-0">Alarms in the last 24 hours</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-widget">
+                <div class="widget-title">
+                    <i class="fas fa-check-circle fa-fw text-success"></i>
+                    <span>Response Rate</span>
+                </div>
+                <h2 class="mb-0">{{ response_rate }}%</h2>
+                <p class="text-muted mb-0">Average response time to alarms</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card fade-in">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>Recent Activity
+                    </h5>
+                </div>
+                <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-hover mb-0">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Age</th>
-                                    <th>Medical Conditions</th>
-                                    <th>Actions</th>
+                                    <th>Subject</th>
+                                    <th>Event</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for subject in subjects %}
+                                {% for activity in recent_activities %}
                                 <tr>
-                                    <td>{{ subject.name }}</td>
-                                    <td>{{ subject.date_of_birth }}</td>
                                     <td>
-                                        {% if subject.medical_conditions %}
-                                        <span class="badge bg-warning">Yes</span>
-                                        {% else %}
-                                        <span class="badge bg-success">No</span>
-                                        {% endif %}
+                                        <img src="{{ activity.subject.avatar_url|default:'default_avatar.png' }}" 
+                                             alt="{{ activity.subject.name }}" 
+                                             class="rounded-circle me-2"
+                                             width="32">
+                                        {{ activity.subject.name }}
                                     </td>
+                                    <td>{{ activity.event }}</td>
+                                    <td>{{ activity.timestamp|timesince }} ago</td>
                                     <td>
-                                        <a href="{% url 'custodians:subject_update' subject.pk %}" class="btn btn-sm btn-outline-primary">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="{% url 'custodians:subject_delete' subject.pk %}" class="btn btn-sm btn-outline-danger">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
+                                        <span class="badge {% if activity.status == 'success' %}badge-success{% elif activity.status == 'warning' %}badge-warning{% else %}badge-danger{% endif %}">
+                                            {{ activity.status|title }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4">
+                                        <p class="text-muted mb-0">No recent activity</p>
                                     </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
-                    {% else %}
-                    <div class="alert alert-info mb-0">
-                        <i class="fas fa-info-circle"></i> You haven't added any subjects yet. 
-                        <a href="{% url 'custodians:subject_create' %}" class="alert-link">Add your first subject</a>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-info text-white">
-                    <h5 class="card-title mb-0">Quick Actions</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'custodians:subject_create' %}" class="btn btn-outline-primary">
-                            <i class="fas fa-plus"></i> Add New Subject
-                        </a>
-                        <a href="{% url 'custodians:subject_list' %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-list"></i> View All Subjects
-                        </a>
-                        <a href="{% url 'custodians:custodian_profile' %}" class="btn btn-outline-info">
-                            <i class="fas fa-user-edit"></i> Update Profile
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-6 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-success text-white">
-                    <h5 class="card-title mb-0">System Status</h5>
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card fade-in mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
                 </div>
                 <div class="card-body">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Total Subjects
-                            <span class="badge bg-primary rounded-pill">{{ subjects|length }}</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Account Status
-                            <span class="badge bg-success">Active</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            WhatsApp Status
-                            {% if user.custodian.phone_number %}
-                            <span class="badge bg-success">Connected</span>
-                            {% else %}
-                            <span class="badge bg-warning">Not Connected</span>
-                            {% endif %}
-                        </li>
-                    </ul>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'custodians:subject_create' %}" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-2"></i>Add New Subject
+                        </a>
+                        <a href="{% url 'custodians:subject_list' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-qrcode me-2"></i>Manage Subjects
+                        </a>
+                        <a href="{% url 'alarms:export_csv' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-file-export me-2"></i>Export Data
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="card fade-in">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bell me-2"></i>Notifications
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if notifications %}
+                        {% for notification in notifications %}
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-circle-notch fa-spin text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <p class="mb-0">{{ notification.message }}</p>
+                                <small class="text-muted">{{ notification.timestamp|timesince }} ago</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted mb-0">No new notifications</p>
+                    {% endif %}
                 </div>
             </div>
         </div>

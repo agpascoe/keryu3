@@ -6,57 +6,93 @@
 {% block title %}{{ title }} - {{ block.super }}{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container py-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    {% if form.instance.pk %}
-                        <h2 class="mb-0">Edit Subject</h2>
-                    {% else %}
-                        <h2 class="mb-0">Add New Subject</h2>
-                    {% endif %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-accent text-white">
+                    <h4 class="card-title mb-0">
+                        {% if form.instance.pk %}
+                            <i class="fas fa-edit me-2"></i>Edit Subject
+                        {% else %}
+                            <i class="fas fa-plus me-2"></i>Add New Subject
+                        {% endif %}
+                    </h4>
                 </div>
                 <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
+                    <form method="post" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
                         
-                        <div class="row">
-                            <div class="col-md-6">
-                                {{ form.name|as_crispy_field }}
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Basic Information Section -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-accent text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-user me-2"></i>Basic Information
+                                </h5>
                             </div>
-                            <div class="col-md-6">
-                                {{ form.date_of_birth|as_crispy_field }}
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.name|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.date_of_birth|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.gender|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {% if form.instance.photo %}
+                                            <div class="mb-3 text-center">
+                                                <img src="{{ form.instance.photo.url }}" alt="Current photo" class="img-thumbnail" style="max-width: 150px;">
+                                            </div>
+                                        {% endif %}
+                                        {{ form.photo|as_crispy_field }}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                {{ form.gender|as_crispy_field }}
+                        <!-- Medical Information Section -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-accent text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-notes-medical me-2"></i>Medical Information
+                                </h5>
                             </div>
-                            <div class="col-md-6">
-                                {{ form.photo|as_crispy_field }}
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-12">
+                                        {{ form.medical_conditions|as_crispy_field }}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        {{ form.allergies|as_crispy_field }}
+                                    </div>
+                                    <div class="col-md-6">
+                                        {{ form.medications|as_crispy_field }}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-12">
-                                {{ form.medical_conditions|as_crispy_field }}
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                {{ form.allergies|as_crispy_field }}
-                            </div>
-                            <div class="col-md-6">
-                                {{ form.medications|as_crispy_field }}
-                            </div>
-                        </div>
-
-                        <div class="card mt-3 mb-3">
-                            <div class="card-header bg-info text-white">
-                                <h5 class="mb-0">Doctor's Information</h5>
+                        <!-- Doctor Information Section -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-accent text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-user-md me-2"></i>Doctor Information
+                                </h5>
                             </div>
                             <div class="card-body">
                                 <div class="row">
@@ -79,14 +115,12 @@
                         </div>
 
                         <div class="text-center">
-                            <button type="submit" class="btn btn-primary">
-                                {% if form.instance.pk %}
-                                    Update Subject
-                                {% else %}
-                                    Add Subject
-                                {% endif %}
+                            <button type="submit" class="btn btn-accent">
+                                <i class="fas fa-save me-2"></i>{% if form.instance.pk %}Update{% else %}Add{% endif %} Subject
                             </button>
-                            <a href="{% url 'custodians:subject_list' %}" class="btn btn-secondary">Cancel</a>
+                            <a href="{% url 'custodians:subject_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
                         </div>
                     </form>
                 </div>
@@ -94,4 +128,117 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Form styling */
+    .form-control, .form-select {
+        border-radius: 0.375rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--accent-red);
+        box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.25);
+    }
+    
+    /* Card styling */
+    .card {
+        border: none;
+        transition: box-shadow 0.3s ease-in-out;
+        margin-bottom: 1.5rem;
+    }
+    
+    .card:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .card-header {
+        border-bottom: none;
+    }
+    
+    .bg-accent {
+        background-color: var(--accent-red) !important;
+    }
+    
+    /* Button styling */
+    .btn-accent {
+        background-color: var(--accent-red);
+        border-color: var(--accent-red);
+        color: #fff;
+    }
+    
+    .btn-accent:hover {
+        background-color: var(--accent-red-dark);
+        border-color: var(--accent-red-dark);
+        color: #fff;
+    }
+    
+    /* Crispy forms customization */
+    .asteriskField {
+        color: var(--accent-red);
+        font-weight: bold;
+        margin-left: 3px;
+    }
+    
+    .control-label {
+        font-weight: 500;
+        color: #495057;
+    }
+    
+    .form-text {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    /* Image preview */
+    .img-thumbnail {
+        border-color: var(--accent-red);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize form validation
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+        
+        // Preview image before upload
+        const photoInput = document.querySelector('input[type="file"]');
+        if (photoInput) {
+            photoInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.querySelector('img.img-thumbnail');
+                        if (preview) {
+                            preview.src = e.target.result;
+                        } else {
+                            const newPreview = document.createElement('img');
+                            newPreview.src = e.target.result;
+                            newPreview.alt = 'Preview';
+                            newPreview.className = 'img-thumbnail mb-3';
+                            newPreview.style.maxWidth = '150px';
+                            const container = document.createElement('div');
+                            container.className = 'text-center mb-3';
+                            container.appendChild(newPreview);
+                            photoInput.parentElement.insertBefore(container, photoInput);
+                        }
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    });
+</script>
 {% endblock %} 

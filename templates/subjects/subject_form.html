@@ -1,9 +1,7 @@
-{% extends "admin_base.html" %}
-{% load widget_tweaks %}
-{% load static %}
+{% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}{{ title }} - {{ block.super }}{% endblock %}
+{% block title %}{% if subject %}Edit {{ subject.name }}{% else %}Add New Subject{% endif %} - Keryu{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -12,10 +10,10 @@
             <div class="card shadow-sm">
                 <div class="card-header bg-accent text-white">
                     <h4 class="card-title mb-0">
-                        {% if form.instance.pk %}
-                            <i class="fas fa-edit me-2"></i>Edit Subject (Admin)
+                        {% if subject %}
+                            <i class="fas fa-edit me-2"></i>Edit Subject
                         {% else %}
-                            <i class="fas fa-plus me-2"></i>Add New Subject (Admin)
+                            <i class="fas fa-plus me-2"></i>Add New Subject
                         {% endif %}
                     </h4>
                 </div>
@@ -41,23 +39,39 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        {{ form.name|as_crispy_field }}
+                                        {% for field in form %}
+                                            {% if field.name == 'name' %}
+                                                {{ field|as_crispy_field }}
+                                            {% endif %}
+                                        {% endfor %}
                                     </div>
                                     <div class="col-md-6">
-                                        {{ form.date_of_birth|as_crispy_field }}
+                                        {% for field in form %}
+                                            {% if field.name == 'date_of_birth' %}
+                                                {{ field|as_crispy_field }}
+                                            {% endif %}
+                                        {% endfor %}
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6">
-                                        {{ form.gender|as_crispy_field }}
+                                        {% for field in form %}
+                                            {% if field.name == 'gender' %}
+                                                {{ field|as_crispy_field }}
+                                            {% endif %}
+                                        {% endfor %}
                                     </div>
                                     <div class="col-md-6">
-                                        {% if form.instance.photo %}
-                                            <div class="mb-3 text-center">
-                                                <img src="{{ form.instance.photo.url }}" alt="Current photo" class="img-thumbnail" style="max-width: 150px;">
-                                            </div>
-                                        {% endif %}
-                                        {{ form.photo|as_crispy_field }}
+                                        {% for field in form %}
+                                            {% if field.name == 'photo' %}
+                                                {% if subject and subject.photo %}
+                                                    <div class="mb-3 text-center">
+                                                        <img src="{{ subject.photo.url }}" alt="Current photo" class="img-thumbnail" style="max-width: 150px;">
+                                                    </div>
+                                                {% endif %}
+                                                {{ field|as_crispy_field }}
+                                            {% endif %}
+                                        {% endfor %}
                                     </div>
                                 </div>
                             </div>
@@ -73,15 +87,27 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-12">
-                                        {{ form.medical_conditions|as_crispy_field }}
+                                        {% for field in form %}
+                                            {% if field.name == 'medical_conditions' %}
+                                                {{ field|as_crispy_field }}
+                                            {% endif %}
+                                        {% endfor %}
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6">
-                                        {{ form.allergies|as_crispy_field }}
+                                        {% for field in form %}
+                                            {% if field.name == 'allergies' %}
+                                                {{ field|as_crispy_field }}
+                                            {% endif %}
+                                        {% endfor %}
                                     </div>
                                     <div class="col-md-6">
-                                        {{ form.medications|as_crispy_field }}
+                                        {% for field in form %}
+                                            {% if field.name == 'medications' %}
+                                                {{ field|as_crispy_field }}
+                                            {% endif %}
+                                        {% endfor %}
                                     </div>
                                 </div>
                             </div>
@@ -97,45 +123,58 @@
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        {{ form.doctor_name|as_crispy_field }}
+                                        {% for field in form %}
+                                            {% if field.name == 'doctor_name' %}
+                                                {{ field|as_crispy_field }}
+                                            {% endif %}
+                                        {% endfor %}
                                     </div>
                                     <div class="col-md-6">
-                                        {{ form.doctor_phone|as_crispy_field }}
+                                        {% for field in form %}
+                                            {% if field.name == 'doctor_phone' %}
+                                                {{ field|as_crispy_field }}
+                                            {% endif %}
+                                        {% endfor %}
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6">
-                                        {{ form.doctor_speciality|as_crispy_field }}
+                                        {% for field in form %}
+                                            {% if field.name == 'doctor_speciality' %}
+                                                {{ field|as_crispy_field }}
+                                            {% endif %}
+                                        {% endfor %}
                                     </div>
                                     <div class="col-md-6">
-                                        {{ form.doctor_address|as_crispy_field }}
+                                        {% for field in form %}
+                                            {% if field.name == 'doctor_address' %}
+                                                {{ field|as_crispy_field }}
+                                            {% endif %}
+                                        {% endfor %}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Admin Options Section -->
+                        <!-- Status Section -->
                         <div class="card mb-4">
                             <div class="card-header bg-accent text-white">
                                 <h5 class="mb-0">
-                                    <i class="fas fa-cog me-2"></i>Admin Options
+                                    <i class="fas fa-toggle-on me-2"></i>Status
                                 </h5>
                             </div>
                             <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        {{ form.custodian|as_crispy_field }}
-                                    </div>
-                                    <div class="col-md-6">
-                                        {{ form.status|as_crispy_field }}
-                                    </div>
-                                </div>
+                                {% for field in form %}
+                                    {% if field.name == 'is_active' %}
+                                        {{ field|as_crispy_field }}
+                                    {% endif %}
+                                {% endfor %}
                             </div>
                         </div>
 
                         <div class="text-center">
                             <button type="submit" class="btn btn-accent">
-                                <i class="fas fa-save me-2"></i>{% if form.instance.pk %}Update{% else %}Add{% endif %} Subject
+                                <i class="fas fa-save me-2"></i>{% if subject %}Update{% else %}Add{% endif %} Subject
                             </button>
                             <a href="{% url 'subjects:list' %}" class="btn btn-secondary">
                                 <i class="fas fa-times me-2"></i>Cancel

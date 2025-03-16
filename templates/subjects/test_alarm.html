@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Test Alarm - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            {% if qr.is_active %}
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-bell"></i> Test Alarm Sent Successfully
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-check-circle fa-4x text-success"></i>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <p class="mb-0 text-center">
+                            <i class="fas fa-info-circle"></i> Test notification sent to: <strong>{{ qr.subject.name }}</strong>
+                        </p>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <p class="text-muted mb-0">
+                            This was a test alarm. The custodian will receive a notification marked as "TEST".
+                        </p>
+                        <a href="{% url 'subjects:qr_codes' %}" class="btn btn-primary mt-3">
+                            <i class="fas fa-arrow-left me-2"></i>Back to QR Codes
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-circle"></i> Test Failed
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-times-circle fa-4x text-danger"></i>
+                    </div>
+                    <div class="alert alert-warning">
+                        <p class="mb-0 text-center">
+                            <i class="fas fa-exclamation-triangle me-2"></i>This QR code is not active. Test alarms can only be sent for active QR codes.
+                        </p>
+                    </div>
+                    <div class="text-center mt-4">
+                        <a href="{% url 'subjects:qr_codes' %}" class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to QR Codes
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

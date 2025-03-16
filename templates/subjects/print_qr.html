@@ -1,72 +1,95 @@
-{% extends "base_print.html" %}
-{% load static %}
-
-{% block content %}
-<div class="container print-container">
-    <div class="qr-card">
-        <div class="qr-header">
-            <h3>Emergency Contact QR Code</h3>
-        </div>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Print QR Code - {{ qr.subject.name }}</title>
+    <style>
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .no-print {
+                display: none;
+            }
+        }
         
-        <div class="qr-image">
-            <img src="{{ qr_image_url }}" alt="QR Code" class="img-fluid">
-        </div>
-        
-        <div class="qr-instructions">
-            <p class="text-center">
-                <strong>Instructions:</strong><br>
-                1. Scan this QR code to notify the custodian<br>
-                2. The custodian will be contacted immediately<br>
-                3. Please wait for the custodian's response
-            </p>
-        </div>
-        
-        <div class="qr-footer">
-            <small class="text-muted">QR Code ID: {{ qr.uuid }}</small><br>
-            <small class="text-muted">Generated: {{ qr.created_at|date:"Y-m-d" }}</small>
-        </div>
-    </div>
-</div>
-
-{% block extra_css %}
-<style>
-    @media print {
         body {
-            margin: 0;
-            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 1rem;
+        }
+        
+        .qr-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
             background: white;
         }
-        .print-container {
-            width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .qr-card {
-            border: 2px solid #000;
-            padding: 20px;
-            text-align: center;
-            page-break-inside: avoid;
-        }
-        .qr-header {
-            margin-bottom: 20px;
-        }
+        
         .qr-image {
-            margin: 20px 0;
+            max-width: 300px;
+            margin: 1rem auto;
         }
+        
         .qr-image img {
-            max-width: 200px;
+            width: 100%;
             height: auto;
         }
-        .qr-instructions {
-            margin: 20px 0;
-            font-size: 12px;
+        
+        .subject-info {
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            color: #333;
         }
-        .qr-footer {
-            margin-top: 20px;
-            font-size: 10px;
+        
+        .print-button {
+            background-color: var(--accent-red);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 1rem;
         }
-    }
-</style>
-{% endblock %}
-{% endblock %} 
+        
+        .print-button:hover {
+            background-color: var(--accent-red-dark);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="qr-card">
+            <div class="qr-image">
+                <img src="{% url 'subjects:qr_image' qr.uuid %}" alt="QR Code">
+            </div>
+            <div class="subject-info">
+                <strong>{{ qr.subject.name }}</strong>
+                {% if qr.subject.medical_conditions %}
+                <div style="font-size: 0.9rem; color: #666; margin-top: 0.5rem;">
+                    {{ qr.subject.medical_conditions|truncatewords:20 }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="text-center no-print">
+            <button onclick="window.print()" class="print-button">
+                <i class="fas fa-print me-2"></i>Print QR Code
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-print when the page loads
+        window.onload = function() {
+            window.print();
+        }
+    </script>
+</body>
+</html> 

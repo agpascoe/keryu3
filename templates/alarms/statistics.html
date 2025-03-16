@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Alarm Statistics - Keryu{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="mb-0">Alarm Statistics</h1>
+            <p class="text-muted">Track and analyze alarm patterns over time</p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group">
+                <button class="btn btn-outline-primary" onclick="exportData('csv')">
+                    <i class="fas fa-download me-2"></i>Export CSV
+                </button>
+                <button class="btn btn-outline-primary" onclick="exportData('pdf')">
+                    <i class="fas fa-file-pdf me-2"></i>Export PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Date Range Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form id="dateRangeForm" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Date Range</label>
+                    <select class="form-select" name="range" onchange="updateDateRange(this.value)">
+                        <option value="7">Last 7 Days</option>
+                        <option value="30">Last 30 Days</option>
+                        <option value="90">Last 90 Days</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+                <div class="col-md-3 custom-date d-none">
+                    <label class="form-label">Start Date</label>
+                    <input type="date" class="form-control" name="start_date">
+                </div>
+                <div class="col-md-3 custom-date d-none">
+                    <label class="form-label">End Date</label>
+                    <input type="date" class="form-control" name="end_date">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Apply</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Summary Cards -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Total Alarms</h6>
+                    <h2 class="mb-0">{{ total_alarms }}</h2>
+                    <small>In selected period</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Response Rate</h6>
+                    <h2 class="mb-0">{{ response_rate }}%</h2>
+                    <small>Average response time: {{ avg_response_time }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Peak Hours</h6>
+                    <h2 class="mb-0">{{ peak_hour }}</h2>
+                    <small>Most active time</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Active Subjects</h6>
+                    <h2 class="mb-0">{{ active_subjects }}</h2>
+                    <small>With alarms this period</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Alarm Trends</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="trendChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Distribution by Subject</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="distributionChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Stats Table -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Detailed Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Total Alarms</th>
+                                    <th>Response Rate</th>
+                                    <th>Avg Response Time</th>
+                                    <th>Last Alarm</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in detailed_stats %}
+                                <tr>
+                                    <td>{{ stat.subject.name }}</td>
+                                    <td>{{ stat.total_alarms }}</td>
+                                    <td>{{ stat.response_rate }}%</td>
+                                    <td>{{ stat.avg_response_time }}</td>
+                                    <td>{{ stat.last_alarm|date:"M d, Y H:i" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Initialize trend chart
+const trendCtx = document.getElementById('trendChart').getContext('2d');
+new Chart(trendCtx, {
+    type: 'line',
+    data: {
+        labels: {{ trend_labels|safe }},
+        datasets: [{
+            label: 'Alarms',
+            data: {{ trend_data }},
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+
+// Initialize distribution chart
+const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+new Chart(distributionCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ distribution_labels|safe }},
+        datasets: [{
+            data: {{ distribution_data }},
+            backgroundColor: [
+                'rgb(255, 99, 132)',
+                'rgb(54, 162, 235)',
+                'rgb(255, 205, 86)',
+                'rgb(75, 192, 192)',
+                'rgb(153, 102, 255)'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+
+function updateDateRange(value) {
+    const customDateInputs = document.querySelectorAll('.custom-date');
+    if (value === 'custom') {
+        customDateInputs.forEach(input => input.classList.remove('d-none'));
+    } else {
+        customDateInputs.forEach(input => input.classList.add('d-none'));
+    }
+}
+
+function exportData(format) {
+    const form = document.getElementById('dateRangeForm');
+    const formData = new FormData(form);
+    formData.append('format', format);
+    
+    window.location.href = `/alarms/statistics/export/?${new URLSearchParams(formData)}`;
+}
+</script>
+{% endblock %}
+{% endblock %} 

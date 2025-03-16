@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Delete {{ subject.name }} - Keryu{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Delete Subject
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <p class="lead mb-4">Are you sure you want to delete <strong>{{ subject.name }}</strong>?</p>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        This action cannot be undone. All data associated with this subject will be permanently deleted.
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Subject Information</h5>
+                            <ul class="list-unstyled mb-0">
+                                <li><strong>Name:</strong> {{ subject.name }}</li>
+                                <li><strong>Age:</strong> {{ subject.age }}</li>
+                                <li><strong>Gender:</strong> {{ subject.get_gender_display }}</li>
+                                <li><strong>Status:</strong> {% if subject.is_active %}Active{% else %}Inactive{% endif %}</li>
+                                <li><strong>Created:</strong> {{ subject.created_at|date:"M d, Y" }}</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'subjects:detail' subject.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>Delete Subject
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

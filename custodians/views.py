@@ -53,8 +53,34 @@ def register(request):
 
 @login_required
 def dashboard(request):
+    # Get subjects for this custodian
     subjects = Subject.objects.filter(custodian=request.user.custodian)
-    return render(request, 'custodians/dashboard.html', {'subjects': subjects})
+    
+    # Calculate statistics
+    total_subjects = subjects.count()
+    active_subjects = subjects.filter(is_active=True).count()
+    
+    # Get recent alarms (last 24 hours)
+    recent_alarms = 0  # This will be implemented when alarms model is ready
+    response_rate = 100  # This will be calculated when alarm response data is available
+    
+    # Get recent activities (placeholder for now)
+    recent_activities = []  # This will be populated when activity tracking is implemented
+    
+    # Get notifications (placeholder for now)
+    notifications = []  # This will be populated when notification system is implemented
+    
+    context = {
+        'subjects': subjects,
+        'total_subjects': total_subjects,
+        'active_subjects': active_subjects,
+        'recent_alarms': recent_alarms,
+        'response_rate': response_rate,
+        'recent_activities': recent_activities,
+        'notifications': notifications,
+    }
+    
+    return render(request, 'custodians/dashboard.html', context)
 
 @login_required
 def subject_list(request):

@@ -110,11 +110,6 @@
                     <a href="{% url 'alarms:alarm_list' %}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> Back to List
                     </a>
-                    {% if user.is_staff %}
-                    <a href="{% url 'admin:alarms_alarm_change' alarm.id %}" class="btn btn-primary float-end">
-                        <i class="fas fa-edit"></i> Edit in Admin
-                    </a>
-                    {% endif %}
                 </div>
             </div>
         </div>
