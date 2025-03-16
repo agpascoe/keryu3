@@ -62,23 +62,20 @@ def subject_create(request):
 
 @login_required
 def subject_detail(request, pk):
-    """View to see subject details"""
-    # Get the subject and verify ownership
-    subject = get_object_or_404(Subject, pk=pk)
-    if not request.user.is_staff and subject.custodian.user != request.user:
-        return HttpResponse('Permission denied', status=403)
-    
-    return render(request, 'subjects/subject_detail.html', {
-        'subject': subject
-    })
+    """View to show subject details"""
+    if request.user.is_staff:
+        subject = get_object_or_404(Subject, pk=pk)
+    else:
+        subject = get_object_or_404(Subject, pk=pk, custodian=request.user.custodian)
+    return render(request, 'subjects/subject_detail.html', {'subject': subject})
 
 @login_required
 def subject_edit(request, pk):
     """View to edit a subject"""
-    # Get the subject and verify ownership
-    subject = get_object_or_404(Subject, pk=pk)
-    if not request.user.is_staff and subject.custodian.user != request.user:
-        return HttpResponse('Permission denied', status=403)
+    if request.user.is_staff:
+        subject = get_object_or_404(Subject, pk=pk)
+    else:
+        subject = get_object_or_404(Subject, pk=pk, custodian=request.user.custodian)
     
     if request.method == 'POST':
         form = SubjectForm(request.POST, request.FILES, instance=subject)
@@ -86,35 +83,29 @@ def subject_edit(request, pk):
             subject = form.save()
             messages.success(request, f'Subject "{subject.name}" was updated successfully.')
             return redirect('subjects:detail', pk=subject.pk)
-        else:
-            messages.error(request, 'Please correct the errors below.')
     else:
         form = SubjectForm(instance=subject)
     
     return render(request, 'subjects/subject_form.html', {
         'form': form,
         'subject': subject,
-        'title': f'Edit Subject: {subject.name}',
-        'submit_text': 'Update'
+        'is_edit': True
     })
 
 @login_required
 def subject_delete(request, pk):
     """View to delete a subject"""
-    # Get the subject and verify ownership
-    subject = get_object_or_404(Subject, pk=pk)
-    if not request.user.is_staff and subject.custodian.user != request.user:
-        return HttpResponse('Permission denied', status=403)
+    if request.user.is_staff:
+        subject = get_object_or_404(Subject, pk=pk)
+    else:
+        subject = get_object_or_404(Subject, pk=pk, custodian=request.user.custodian)
     
     if request.method == 'POST':
-        subject_name = subject.name
         subject.delete()
-        messages.success(request, f'Subject "{subject_name}" was deleted successfully.')
+        messages.success(request, f'Subject "{subject.name}" was deleted successfully.')
         return redirect('subjects:list')
     
-    return render(request, 'subjects/subject_confirm_delete.html', {
-        'subject': subject
-    })
+    return render(request, 'subjects/subject_confirm_delete.html', {'subject': subject})
 
 @staff_member_required_403
 def subject_stats(request):
@@ -498,13 +489,26 @@ def assign_qr(request):
 
 @login_required
 def user_subject_list(request):
-    """Regular user view to list their subjects"""
-    subjects = Subject.objects.filter(custodian__user=request.user)
-    stats = {
-        'total_subjects': subjects.count(),
-        'active_subjects': subjects.filter(is_active=True).count()
-    }
-    return render(request, 'subjects/subject_list.html', {
+    """View to list subjects based on user role"""
+    if request.user.is_staff:
+        # Admin can see all subjects
+        subjects = Subject.objects.all().select_related('custodian__user')
+        stats = {
+            'total_subjects': subjects.count(),
+            'total_custodians': User.objects.filter(custodian__subjects__isnull=False).distinct().count(),
+            'active_subjects': subjects.filter(is_active=True).count()
+        }
+        template = 'subjects/admin_subject_list.html'
+    else:
+        # Regular users only see their subjects
+        subjects = Subject.objects.filter(custodian=request.user.custodian)
+        stats = {
+            'total_subjects': subjects.count(),
+            'active_subjects': subjects.filter(is_active=True).count()
+        }
+        template = 'subjects/subject_list.html'
+
+    return render(request, template, {
         'subjects': subjects,
         'stats': stats
     })

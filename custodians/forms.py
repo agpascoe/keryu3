@@ -33,15 +33,8 @@ class CustodianRegistrationForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
-        # Generate username from email
-        username = self.cleaned_data['email'].split('@')[0]
-        base_username = username
-        counter = 1
-        # Ensure username is unique
-        while User.objects.filter(username=username).exists():
-            username = f"{base_username}{counter}"
-            counter += 1
-        user.username = username
+        # Use full email as username
+        user.username = self.cleaned_data['email']
         
         if commit:
             user.save()

@@ -8,7 +8,7 @@ class SubjectForm(forms.ModelForm):
     class Meta:
         model = Subject
         fields = [
-            'name', 'date_of_birth', 'gender', 'custodian',
+            'name', 'date_of_birth', 'gender',
             'medical_conditions', 'allergies', 'medications',
             'doctor_name', 'doctor_phone', 'doctor_address',
             'doctor_speciality', 'photo', 'is_active'

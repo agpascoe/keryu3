@@ -95,21 +95,52 @@ def alarm_statistics(request):
     end_date = timezone.now()
     start_date = end_date - timedelta(days=days)
     
-    # Get alarms in time range
-    alarms = Alarm.objects.filter(timestamp__range=(start_date, end_date))
+    # Get alarms based on user role
+    if request.user.is_staff:
+        alarms = Alarm.objects.all()
+    else:
+        alarms = Alarm.objects.filter(subject__custodian__user=request.user)
+    
+    # Get filtered alarms for the time range
+    filtered_alarms = alarms.filter(timestamp__range=[start_date, end_date])
     
     # Calculate statistics
     stats = {
         'total_alarms': alarms.count(),
-        'notifications_sent': alarms.filter(notification_sent=True).count(),
-        'notifications_failed': alarms.filter(notification_sent=False).count(),
-        'by_subject': alarms.values('subject__name').annotate(count=Count('id')),
-        'by_date': alarms.values('timestamp__date').annotate(count=Count('id')).order_by('timestamp__date'),
+        'recent_alarms': filtered_alarms.count(),
+        'notifications': {
+            'sent': filtered_alarms.filter(notification_sent=True).count(),
+            'failed': filtered_alarms.filter(notification_sent=False, notification_error__isnull=False).count(),
+            'pending': filtered_alarms.filter(notification_sent=False, notification_error__isnull=True).count(),
+        }
+    }
+    
+    # Get subject data
+    subject_stats = filtered_alarms.values('subject__name').annotate(
+        count=Count('id')
+    ).order_by('-count')
+    
+    # Get daily data
+    daily_stats = filtered_alarms.values('timestamp__date').annotate(
+        count=Count('id')
+    ).order_by('timestamp__date')
+    
+    # Prepare chart data
+    chart_data = {
+        'subject_labels': [item['subject__name'] for item in subject_stats],
+        'subject_data': [item['count'] for item in subject_stats],
+        'date_labels': [item['timestamp__date'].strftime('%Y-%m-%d') for item in daily_stats],
+        'date_data': [item['count'] for item in daily_stats],
+        'notifications': stats['notifications']
     }
     
     return render(request, 'alarms/alarm_statistics.html', {
         'stats': stats,
-        'days': days
+        'days': days,
+        'chart_data': chart_data,
+        'total_alarms': stats['total_alarms'],
+        'recent_alarms': stats['recent_alarms'],
+        'total_subjects': Subject.objects.count() if request.user.is_staff else Subject.objects.filter(custodian__user=request.user).count()
     })
 
 @login_required

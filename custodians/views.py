@@ -53,31 +53,72 @@ def register(request):
 
 @login_required
 def dashboard(request):
-    # Get subjects for this custodian
-    subjects = Subject.objects.filter(custodian=request.user.custodian)
+    # Get subjects based on user role
+    if request.user.is_staff:
+        subjects = Subject.objects.all().select_related('custodian__user')
+    else:
+        subjects = Subject.objects.filter(custodian=request.user.custodian)
     
     # Calculate statistics
     total_subjects = subjects.count()
     active_subjects = subjects.filter(is_active=True).count()
+    total_custodians = subjects.values('custodian').distinct().count() if request.user.is_staff else 1
+    
+    # Get QR code statistics
+    from subjects.models import SubjectQR
+    if request.user.is_staff:
+        total_qrs = SubjectQR.objects.count()
+        active_qrs = SubjectQR.objects.filter(is_active=True).count()
+    else:
+        total_qrs = SubjectQR.objects.filter(subject__custodian=request.user.custodian).count()
+        active_qrs = SubjectQR.objects.filter(subject__custodian=request.user.custodian, is_active=True).count()
     
     # Get recent alarms (last 24 hours)
-    recent_alarms = 0  # This will be implemented when alarms model is ready
-    response_rate = 100  # This will be calculated when alarm response data is available
+    from subjects.models import Alarm
+    last_24h = timezone.now() - timezone.timedelta(hours=24)
+    if request.user.is_staff:
+        recent_alarms = Alarm.objects.filter(timestamp__gte=last_24h).count()
+        total_alarms = Alarm.objects.count()
+        response_rate = (Alarm.objects.filter(notification_sent=True).count() / total_alarms * 100) if total_alarms > 0 else 100
+    else:
+        recent_alarms = Alarm.objects.filter(
+            subject__custodian=request.user.custodian,
+            timestamp__gte=last_24h
+        ).count()
+        total_alarms = Alarm.objects.filter(subject__custodian=request.user.custodian).count()
+        response_rate = (Alarm.objects.filter(
+            subject__custodian=request.user.custodian,
+            notification_sent=True
+        ).count() / total_alarms * 100) if total_alarms > 0 else 100
     
-    # Get recent activities (placeholder for now)
-    recent_activities = []  # This will be populated when activity tracking is implemented
+    # Get recent activities
+    if request.user.is_staff:
+        recent_activities = Alarm.objects.select_related('subject', 'subject__custodian__user').order_by('-timestamp')[:10]
+    else:
+        recent_activities = Alarm.objects.filter(
+            subject__custodian=request.user.custodian
+        ).select_related('subject').order_by('-timestamp')[:10]
     
-    # Get notifications (placeholder for now)
-    notifications = []  # This will be populated when notification system is implemented
+    # Format activities for display
+    formatted_activities = [{
+        'subject': activity.subject,
+        'event': f"Alarm triggered at {activity.location or 'Unknown Location'}",
+        'timestamp': activity.timestamp,
+        'status': 'success' if activity.notification_sent else 'warning'
+    } for activity in recent_activities]
     
     context = {
         'subjects': subjects,
         'total_subjects': total_subjects,
         'active_subjects': active_subjects,
+        'total_custodians': total_custodians,
+        'total_qrs': total_qrs,
+        'active_qrs': active_qrs,
+        'total_alarms': total_alarms,
         'recent_alarms': recent_alarms,
-        'response_rate': response_rate,
-        'recent_activities': recent_activities,
-        'notifications': notifications,
+        'response_rate': round(response_rate, 1),
+        'recent_activities': formatted_activities,
+        'is_admin': request.user.is_staff,
     }
     
     return render(request, 'custodians/dashboard.html', context)
