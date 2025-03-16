@@ -34,13 +34,13 @@ TEST_CUSTODIAN = {
 }
 
 TEST_SUBJECT = {
-    'name': 'Test Subject',
-    'date_of_birth': '2000-01-01',
-    'gender': 'M',
-    'medical_conditions': 'None',
-    'allergies': 'None',
-    'medications': 'None'
-}
+            'name': 'Test Subject',
+            'date_of_birth': '2000-01-01',
+            'gender': 'M',
+            'medical_conditions': 'None',
+            'allergies': 'None',
+            'medications': 'None'
+        }
 
 @pytest.fixture
 def auth_headers(auth_client):
@@ -182,7 +182,11 @@ class TestQRCodeAPI:
             'lat': '20.123',
             'lng': '-100.456'
         }
-        response = auth_client.post(f'/subjects/qr/{qr.uuid}/trigger/', data=data)
+        response = auth_client.post(
+            f'/subjects/qr/{qr.uuid}/trigger/', 
+            data=data,
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+        )
         assert response.status_code == 200
         data = json.loads(response.content)
         assert data['status'] == 'success'

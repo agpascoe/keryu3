@@ -5,6 +5,9 @@ from rest_framework.permissions import IsAuthenticated
 from subjects.models import Alarm, Subject
 from .serializers import AlarmSerializer
 from django.utils import timezone
+from django.db.models import Count, Max, Q, FloatField
+from django.db.models.functions import Cast, ExtractHour
+from datetime import timedelta
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
@@ -37,14 +40,31 @@ def alarm_list_api(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+        # Add current timestamp if not provided
+        if 'timestamp' not in data:
+            data['timestamp'] = timezone.now()
+            
+        # Add IP address if available
+        if 'scanned_by_ip' not in data and request.META.get('REMOTE_ADDR'):
+            data['scanned_by_ip'] = request.META.get('REMOTE_ADDR')
+        
         serializer = AlarmSerializer(data=data)
         if serializer.is_valid():
             alarm = serializer.save()
-            # Here you might want to trigger notifications
+            
+            # Queue notification task
+            try:
+                from subjects.tasks import send_whatsapp_notification
+                send_whatsapp_notification.delay(alarm.id)
+            except Exception as e:
+                # Log the error but don't prevent alarm creation
+                alarm.notification_error = str(e)
+                alarm.save()
+            
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET', 'PUT', 'DELETE'])
+@api_view(['GET', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def alarm_detail_api(request, pk):
     try:
@@ -58,19 +78,129 @@ def alarm_detail_api(request, pk):
     if request.method == 'GET':
         serializer = AlarmSerializer(alarm)
         return Response(serializer.data)
-
-    elif request.method == 'PUT':
-        # Only allow updating certain fields
-        data = request.data.copy()
-        data['subject'] = alarm.subject.id  # Can't change the subject
-        data['timestamp'] = alarm.timestamp  # Can't change the timestamp
-        
-        serializer = AlarmSerializer(alarm, data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     elif request.method == 'DELETE':
+        # Only staff can delete alarms
+        if not request.user.is_staff:
+            return Response(
+                {'error': 'Only staff members can delete alarms'},
+                status=status.HTTP_403_FORBIDDEN
+            )
         alarm.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT) 
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def alarm_statistics_api(request):
+    """API endpoint for alarm statistics"""
+    try:
+        days = int(request.GET.get('days', 30))
+        if days <= 0:
+            return Response(
+                {'error': 'Days parameter must be positive'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    except ValueError:
+        return Response(
+            {'error': 'Invalid days parameter'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    end_date = timezone.now()
+    start_date = end_date - timedelta(days=days)
+    
+    if request.user.is_staff:
+        alarms = Alarm.objects.all()
+    else:
+        alarms = Alarm.objects.filter(subject__custodian__user=request.user)
+    
+    # Get filtered data
+    filtered_alarms = alarms.filter(timestamp__range=[start_date, end_date])
+    
+    # Prepare statistics
+    data = {
+        'total_alarms': alarms.count(),
+        'recent_alarms': filtered_alarms.count(),
+        'subject_stats': [],
+        'date_stats': [],
+        'notifications': {
+            'sent': filtered_alarms.filter(notification_sent=True).count(),
+            'failed': filtered_alarms.filter(notification_sent=False, notification_error__isnull=False).count(),
+            'pending': filtered_alarms.filter(notification_sent=False, notification_error__isnull=True).count(),
+        },
+        'time_range': {
+            'start_date': start_date.isoformat(),
+            'end_date': end_date.isoformat(),
+            'days': days
+        }
+    }
+    
+    # Get subject statistics
+    subject_stats = filtered_alarms.values(
+        'subject__name',
+        'subject__id'
+    ).annotate(
+        count=Count('id'),
+        last_alarm=Max('timestamp'),
+        notification_success_rate=Cast(
+            Count('id', filter=Q(notification_sent=True)) * 100.0 / Count('id'),
+            output_field=FloatField()
+        )
+    ).order_by('-count')
+    data['subject_stats'] = list(subject_stats)
+    
+    # Get daily statistics
+    daily_stats = filtered_alarms.values('timestamp__date').annotate(
+        count=Count('id'),
+        notifications_sent=Count('id', filter=Q(notification_sent=True)),
+        notifications_failed=Count('id', filter=Q(notification_sent=False))
+    ).order_by('timestamp__date')
+    data['date_stats'] = list(daily_stats)
+    
+    # Get hourly distribution
+    hour_stats = filtered_alarms.annotate(
+        hour=ExtractHour('timestamp')
+    ).values('hour').annotate(
+        count=Count('id')
+    ).order_by('hour')
+    data['hour_stats'] = list(hour_stats)
+    
+    return Response(data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def retry_notification_api(request, alarm_id):
+    """API endpoint to retry a failed notification"""
+    try:
+        if request.user.is_staff:
+            alarm = Alarm.objects.get(id=alarm_id)
+        else:
+            alarm = Alarm.objects.get(
+                id=alarm_id,
+                subject__custodian__user=request.user
+            )
+    except Alarm.DoesNotExist:
+        return Response(
+            {'error': 'Alarm not found or permission denied'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    if alarm.notification_sent:
+        return Response(
+            {'error': 'Notification was already sent'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        # Queue the notification task
+        from subjects.tasks import send_whatsapp_notification
+        send_whatsapp_notification.delay(alarm.id)
+        
+        return Response({
+            'success': True,
+            'message': 'Notification queued for retry'
+        })
+    except Exception as e:
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        ) 

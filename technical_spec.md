@@ -3,6 +3,365 @@
 ## System Overview
 The Keryu System is a Django-based application designed to manage subjects (such as children, elders, or persons with disabilities), generate QR codes for tracking, and deliver notifications through WhatsApp using the Meta WhatsApp Business API. The system handles user management, QR code generation, alarm creation, and asynchronous message delivery.
 
+## Actors and Use Cases
+
+### System Actors Overview
+
+1. **Human Actors**
+   ```mermaid
+   graph TD
+       A[System Users] --> B[Custodian]
+       A --> C[System Administrator]
+       A --> D[QR Code Scanner]
+       A --> E[Doctor/Medical Professional]
+       B --> F[Parent]
+       B --> G[Guardian]
+       B --> H[Caregiver]
+   ```
+
+2. **System Actors**
+   ```mermaid
+   graph TD
+       A[System Components] --> B[WhatsApp Notification System]
+       A --> C[Celery Worker]
+       A --> D[Database System]
+       A --> E[QR Code Generator]
+   ```
+
+3. **Passive Actors**
+   ```mermaid
+   graph TD
+       A[Monitored Entities] --> B[Subject]
+       B --> C[Child]
+       B --> D[Elder]
+       B --> E[Person with Disability]
+   ```
+
+### Actor Use Cases
+
+1. **Custodian Use Cases**
+   - Subject Management
+     * Register new subjects
+     * Update subject information
+     * View subject details
+     * Manage medical information
+   - QR Code Operations
+     * Generate QR codes
+     * Activate/deactivate codes
+     * Test QR functionality
+   - Alarm Monitoring
+     * Receive notifications
+     * View alarm history
+     * Export reports
+   - Account Management
+     * Update profile
+     * Manage preferences
+     * Reset password
+
+2. **System Administrator Use Cases**
+   - User Management
+     * Create/modify user accounts
+     * Assign roles and permissions
+     * Reset user passwords
+   - System Configuration
+     * Configure WhatsApp integration
+     * Manage system settings
+     * Monitor performance
+   - Data Management
+     * Backup management
+     * Data cleanup
+     * Export system data
+   - Monitoring
+     * View system logs
+     * Monitor notifications
+     * Track system health
+
+3. **QR Code Scanner Use Cases**
+   - Scan Operations
+     * Scan QR codes
+     * Receive scan confirmation
+     * View scan error messages
+   - Location Services
+     * Provide location data
+     * Confirm scan location
+   - Emergency Response
+     * Trigger alarms
+     * Receive emergency instructions
+     * View contact information
+
+4. **Doctor/Medical Professional Use Cases**
+   - Information Management
+     * Provide medical information
+     * Update emergency protocols
+     * Maintain contact details
+   - Emergency Response
+     * Receive emergency notifications
+     * Access patient information
+     * Provide medical guidance
+
+5. **WhatsApp Notification System Use Cases**
+   - Message Handling
+     * Process notification requests
+     * Send messages
+     * Track delivery status
+   - Error Management
+     * Handle delivery failures
+     * Retry failed messages
+     * Report status updates
+
+6. **Celery Worker Use Cases**
+   - Task Processing
+     * Handle async operations
+     * Process notification queue
+     * Manage retries
+   - System Tasks
+     * Clean up old data
+     * Generate reports
+     * Process exports
+
+7. **Database System Use Cases**
+   - Data Operations
+     * Store system data
+     * Handle transactions
+     * Maintain data integrity
+   - Performance
+     * Optimize queries
+     * Handle concurrent access
+     * Manage connections
+
+8. **Subject (Passive Actor) Use Cases**
+   - Profile Management
+     * Have profile maintained
+     * Have QR codes assigned
+     * Have history tracked
+   - Emergency Response
+     * Have alarms triggered
+     * Have notifications sent
+     * Have location tracked
+
+### Cross-Actor Workflows
+
+1. **Emergency Response Flow**
+   ```mermaid
+   sequenceDiagram
+       participant S as Scanner
+       participant Sys as System
+       participant W as WhatsApp
+       participant C as Custodian
+       participant D as Doctor
+       
+       S->>Sys: Scan QR Code
+       Sys->>Sys: Validate & Create Alarm
+       par Notification Flow
+           Sys->>W: Send Alert
+           W->>C: Deliver Message
+       and Medical Response
+           Sys->>D: Send Medical Alert
+       end
+       C->>Sys: View Alarm Details
+       D->>Sys: Acknowledge Alert
+   ```
+
+2. **QR Code Lifecycle**
+   ```mermaid
+   sequenceDiagram
+       participant C as Custodian
+       participant A as Admin
+       participant Sys as System
+       participant S as Scanner
+       
+       C->>Sys: Request QR Code
+       Sys->>A: Validate Request
+       A->>Sys: Approve Generation
+       Sys->>C: Deliver QR Code
+       C->>Sys: Activate QR Code
+       S->>Sys: Scan QR Code
+       Sys->>C: Send Notification
+   ```
+
+### Performance and Security Requirements
+
+1. **Response Time Requirements**
+   | Actor | Operation | Max Time |
+   |-------|-----------|-----------|
+   | Custodian | Page Load | 2s |
+   | Scanner | QR Scan | 3s |
+   | WhatsApp | Message Delivery | 30s |
+   | System | Report Generation | 5s |
+
+2. **Security Requirements**
+   | Actor | Requirement | Implementation |
+   |-------|-------------|----------------|
+   | Custodian | Authentication | Multi-factor |
+   | Admin | Access Control | Role-based |
+   | Scanner | Data Protection | Encryption |
+   | System | Audit | Logging |
+
+3. **Availability Requirements**
+   | Component | Uptime Target |
+   |-----------|---------------|
+   | Web Interface | 99.9% |
+   | WhatsApp | 99.99% |
+   | Database | 99.999% |
+   | QR System | 99.9% |
+
+## Custodian Use Cases
+
+### Primary Actors
+- Custodian (parent, guardian, or caregiver)
+- System Administrator
+- WhatsApp Notification System
+
+### Preconditions
+- Custodian has a registered account
+- Custodian has provided a valid WhatsApp number
+- System is properly configured for WhatsApp notifications
+
+### Main Use Cases
+
+1. **Subject Management**
+   - Register new subjects (children, elders, etc.)
+   - Update subject information
+   - View subject details and history
+   - Upload and manage subject photos
+   - Add/update medical information
+   - Manage doctor's information
+
+2. **QR Code Management**
+   - Generate QR codes for subjects
+   - Activate/deactivate QR codes
+   - Download QR code images
+   - Test QR code functionality
+   - View QR code usage history
+
+3. **Alarm Monitoring**
+   - Receive real-time WhatsApp notifications
+   - View alarm history
+   - Access alarm details (time, location)
+   - Export alarm reports
+   - Review notification status
+
+4. **Account Management**
+   - Update profile information
+   - Change WhatsApp notification number
+   - Manage notification preferences
+   - View activity logs
+   - Reset password
+
+### Workflow Scenarios
+
+1. **Subject Registration**
+   ```mermaid
+   sequenceDiagram
+       participant C as Custodian
+       participant S as System
+       participant D as Database
+       
+       C->>S: Access registration form
+       S->>C: Display form
+       C->>S: Submit subject details
+       S->>S: Validate information
+       S->>D: Store subject data
+       S->>C: Confirm registration
+   ```
+
+2. **QR Code Generation**
+   ```mermaid
+   sequenceDiagram
+       participant C as Custodian
+       participant S as System
+       participant Q as QR Generator
+       
+       C->>S: Request new QR code
+       S->>S: Validate subject status
+       S->>Q: Generate unique QR code
+       Q->>S: Return QR image
+       S->>C: Deliver QR code
+   ```
+
+3. **Alarm Response**
+   ```mermaid
+   sequenceDiagram
+       participant QR as QR Code
+       participant S as System
+       participant W as WhatsApp
+       participant C as Custodian
+       
+       QR->>S: QR code scanned
+       S->>S: Create alarm
+       S->>W: Send notification
+       W->>C: Deliver message
+       C->>S: View alarm details
+   ```
+
+### Exception Scenarios
+
+1. **QR Code Issues**
+   - QR code is inactive
+   - Invalid QR code scan
+   - Multiple rapid scans
+   - System response:
+     - Error message to scanner
+     - Notification to custodian
+     - Log incident
+
+2. **Notification Failures**
+   - WhatsApp delivery failure
+   - Invalid phone number
+   - Network issues
+   - System response:
+     - Retry mechanism
+     - Alternative notification
+     - Error logging
+     - Status tracking
+
+3. **Access Control**
+   - Invalid credentials
+   - Expired sessions
+   - Unauthorized access attempts
+   - System response:
+     - Security alerts
+     - Account locking
+     - Audit logging
+
+### Performance Requirements
+
+1. **Response Times**
+   - QR code generation: < 3 seconds
+   - Notification delivery: < 30 seconds
+   - Page load times: < 2 seconds
+   - Report generation: < 5 seconds
+
+2. **Availability**
+   - System uptime: 99.9%
+   - Notification service: 99.99%
+   - Backup availability: 99.999%
+
+3. **Concurrency**
+   - Multiple simultaneous logins
+   - Parallel QR code processing
+   - Bulk notification handling
+
+### Security Considerations
+
+1. **Data Protection**
+   - Subject information encryption
+   - Secure QR code generation
+   - Private data masking
+   - Access logging
+
+2. **Authentication**
+   - Multi-factor authentication option
+   - Session management
+   - Password policies
+   - Account recovery process
+
+3. **Authorization**
+   - Role-based access control
+   - Feature-based permissions
+   - Data access restrictions
+   - Audit trailing
+
 ## Technology Stack
 
 ### Backend Framework
@@ -272,6 +631,7 @@ POST /subjects/qr/generate/       # Generate new QR code
 POST /subjects/qr/<uuid>/activate/    # Activate QR code
 POST /subjects/qr/<uuid>/deactivate/  # Deactivate QR code
 GET /subjects/qr/<uuid>/download/     # Download QR code image
+POST /subjects/qr/<uuid>/trigger/     # Test QR code alarm
 ```
 
 ### Subject Management
@@ -287,7 +647,60 @@ POST /subjects/<id>/delete/      # Delete subject
 ```
 GET /alarms/list/                # List alarms
 GET /alarms/<id>/details/        # View alarm details
+GET /alarms/statistics/data/     # Get alarm statistics
+GET /alarms/export/csv/          # Export alarms as CSV
+GET /alarms/export/excel/        # Export alarms as Excel
+GET /alarms/export/pdf/          # Export alarms as PDF
+POST /alarms/<id>/retry/         # Retry failed notification
 ```
+
+## Test Alarm Functionality
+
+### Test Alarm Flow
+1. User clicks "Test Alarm" button for a QR code
+2. System verifies QR code is active
+3. Creates alarm with notification_status='TEST'
+4. Sends WhatsApp notification with test indicator
+5. Returns success/failure response
+
+### Test Response Handling
+- Browser requests: HTML response with Bootstrap styling
+- API requests: JSON response with status and message
+- Inactive QR codes: Error response with appropriate message
+
+### Testing Requirements
+- Unit test coverage: >80%
+- Integration tests for all API endpoints
+- End-to-end testing with pytest
+- Performance testing
+- Test environment configuration
+- Automated test suite in CI/CD pipeline
+
+### Test Categories
+1. **API Tests**
+   - Subject management
+   - QR code operations
+   - Alarm handling
+   - Export functionality
+   - Authentication
+
+2. **Integration Tests**
+   - WhatsApp notification flow
+   - QR code generation
+   - Alarm creation and updates
+   - Export file generation
+
+3. **Unit Tests**
+   - Model validations
+   - Form processing
+   - Utility functions
+   - Helper methods
+
+4. **Security Tests**
+   - Authentication checks
+   - Permission validation
+   - Input sanitization
+   - CSRF protection
 
 ## WhatsApp Integration
 
