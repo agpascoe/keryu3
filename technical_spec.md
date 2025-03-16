@@ -1,28 +1,28 @@
-# Technical Specifications - Keryu Notification System
+# Technical Specifications - Keryu System
 
 ## System Overview
-The Keryu Notification System is a Django-based application designed to manage and deliver notifications through WhatsApp using the Twilio API. The system handles user management, notification scheduling, and asynchronous message delivery.
+The Keryu System is a Django-based application designed to manage subjects (such as children, elders, or persons with disabilities), generate QR codes for tracking, and deliver notifications through WhatsApp using the Meta WhatsApp Business API. The system handles user management, QR code generation, alarm creation, and asynchronous message delivery.
 
 ## Technology Stack
 
 ### Backend Framework
-- Django 4.x
-- Python 3.8+
+- Django 5.0+
+- Python 3.11+
 - Celery for asynchronous task processing
 - Redis as message broker and result backend
 
 ### Database
-- SQLite (Development)
-- PostgreSQL (Recommended for Production)
+- PostgreSQL (both Development and Production)
 
 ### External Services
-- Twilio WhatsApp Business API
-- Meta WhatsApp Business Platform (for templates)
+- Meta WhatsApp Business Platform API
+- QR Code generation library
 
 ### Authentication & Security
 - Django's built-in authentication system
 - Environment-based configuration (.env)
-- Token-based API authentication
+- CSRF protection
+- Permission-based access control
 
 ## System Architecture
 
@@ -30,10 +30,10 @@ The Keryu Notification System is a Django-based application designed to manage a
 
 1. **Django Applications**
    - `core/`: Core system functionality and settings
-   - `notifications/`: Notification management and delivery
-   - `subjects/`: Subject/recipient management
-   - `alarms/`: Alarm and trigger management
    - `custodians/`: User and permission management
+   - `subjects/`: Subject management and QR code handling
+   - `alarms/`: Alarm processing and notification triggers
+   - `notifications/`: WhatsApp notification delivery
 
 2. **Asynchronous Processing**
    - Celery worker processes
@@ -41,10 +41,10 @@ The Keryu Notification System is a Django-based application designed to manage a
    - Task scheduling and retry mechanisms
 
 3. **WhatsApp Integration**
-   - Twilio client implementation
+   - Meta WhatsApp Business API client
    - Message template management
-   - Rate limiting handling
-   - Error logging and monitoring
+   - Error handling and retry logic
+   - Delivery status tracking
 
 ## System Diagrams
 
@@ -210,68 +210,138 @@ graph TB
 
 ### Key Tables
 
-1. **Notifications**
+1. **Subjects**
    ```sql
-   - id (UUID)
-   - subject_id (FK)
-   - message_template (Text)
-   - status (CharField)
-   - created_at (DateTime)
-   - scheduled_for (DateTime)
-   - sent_at (DateTime)
-   - retry_count (Integer)
+   CREATE TABLE subjects_subject (
+       id SERIAL PRIMARY KEY,
+       name VARCHAR(100) NOT NULL,
+       date_of_birth DATE NOT NULL,
+       gender VARCHAR(1) NOT NULL,
+       medical_conditions TEXT,
+       allergies TEXT,
+       medications TEXT,
+       custodian_id INTEGER REFERENCES custodians_custodian(id),
+       doctor_name VARCHAR(100),
+       doctor_phone VARCHAR(128),
+       doctor_address TEXT,
+       doctor_speciality VARCHAR(100),
+       created_at TIMESTAMP WITH TIME ZONE,
+       updated_at TIMESTAMP WITH TIME ZONE,
+       photo VARCHAR(100),
+       is_active BOOLEAN DEFAULT TRUE
+   );
    ```
 
-2. **Subjects**
+2. **QR Codes**
    ```sql
-   - id (UUID)
-   - name (CharField)
-   - phone_number (CharField)
-   - is_active (Boolean)
-   - preferences (JSONField)
+   CREATE TABLE subjects_subjectqr (
+       id SERIAL PRIMARY KEY,
+       subject_id INTEGER REFERENCES subjects_subject(id),
+       uuid UUID NOT NULL UNIQUE,
+       created_at TIMESTAMP WITH TIME ZONE,
+       activated_at TIMESTAMP WITH TIME ZONE,
+       last_used TIMESTAMP WITH TIME ZONE,
+       is_active BOOLEAN DEFAULT FALSE,
+       image VARCHAR(100)
+   );
    ```
 
-3. **MessageTemplates**
+3. **Alarms**
    ```sql
-   - id (UUID)
-   - name (CharField)
-   - content (TextField)
-   - variables (JSONField)
-   - status (CharField)
-   - approved (Boolean)
+   CREATE TABLE subjects_alarm (
+       id SERIAL PRIMARY KEY,
+       subject_id INTEGER REFERENCES subjects_subject(id),
+       qr_code_id INTEGER REFERENCES subjects_subjectqr(id),
+       timestamp TIMESTAMP WITH TIME ZONE,
+       location VARCHAR(100),
+       notification_sent BOOLEAN DEFAULT FALSE,
+       notification_error TEXT,
+       notification_attempts INTEGER DEFAULT 0,
+       last_attempt TIMESTAMP WITH TIME ZONE,
+       whatsapp_message_id VARCHAR(255),
+       notification_status VARCHAR(20) DEFAULT 'PENDING'
+   );
    ```
 
 ## API Endpoints
 
-### Notification Management
+### QR Code Management
 ```
-POST /api/notifications/create/
-GET /api/notifications/list/
-GET /api/notifications/<id>/status/
-POST /api/notifications/<id>/retry/
+GET /subjects/qr/<uuid>/scan/     # Handle QR code scanning
+POST /subjects/qr/generate/       # Generate new QR code
+POST /subjects/qr/<uuid>/activate/    # Activate QR code
+POST /subjects/qr/<uuid>/deactivate/  # Deactivate QR code
+GET /subjects/qr/<uuid>/download/     # Download QR code image
 ```
 
 ### Subject Management
 ```
-POST /api/subjects/create/
-GET /api/subjects/list/
-PUT /api/subjects/<id>/update/
-DELETE /api/subjects/<id>/delete/
+GET /subjects/list/               # List subjects
+POST /subjects/create/           # Create new subject
+GET /subjects/<id>/edit/         # Edit subject
+POST /subjects/<id>/update/      # Update subject
+POST /subjects/<id>/delete/      # Delete subject
+```
+
+### Alarm Management
+```
+GET /alarms/list/                # List alarms
+GET /alarms/<id>/details/        # View alarm details
 ```
 
 ## WhatsApp Integration
 
-### Message Templates
-- Template Name: `notification_alert`
-- Variables: 
-  - {{1}} : Subject Name
-  - {{2}} : Alert Type
-  - {{3}} : Message Content
-  - {{4}} : Action Required
+### Message Template
+```json
+{
+    "name": "qr_template_on_m",
+    "language": {
+        "code": "en_US"
+    },
+    "components": [
+        {
+            "type": "body",
+            "parameters": [
+                {
+                    "type": "text",
+                    "text": "{{subject_name}}"
+                },
+                {
+                    "type": "text",
+                    "text": "{{timestamp}}"
+                }
+            ]
+        }
+    ]
+}
+```
 
-### Rate Limiting
-- Sandbox: 1 message per second
-- Production: Based on WhatsApp Business API limits
+### Notification Flow
+1. QR code is scanned
+2. Alarm is created
+3. WhatsApp notification task is queued
+4. Task is processed by Celery worker
+5. Message is sent via WhatsApp API
+6. Delivery status is updated in database
+
+## Error Handling
+
+### Notification Retry Logic
+- Maximum 3 retry attempts
+- Exponential backoff (60 seconds)
+- Error tracking in database
+- Detailed logging
+
+### Status Tracking
+```python
+NOTIFICATION_STATUSES = [
+    ('PENDING', 'Pending'),
+    ('SENT', 'Sent'),
+    ('DELIVERED', 'Delivered'),
+    ('FAILED', 'Failed'),
+    ('ERROR', 'Error')
+]
+```
 
 ## Security Measures
 

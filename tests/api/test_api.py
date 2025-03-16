@@ -2,6 +2,10 @@ import os
 import sys
 import django
 from django.conf import settings
+import pytest
+import json
+import uuid
+from datetime import datetime, date
 
 # Add the project directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -10,156 +14,255 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 django.setup()
 
-import json
-import time
 from django.test import Client
 from django.contrib.auth.models import User
+from custodians.models import Custodian
+from subjects.models import Subject, SubjectQR
+from alarms.models import Alarm
 
-# Create a test client
-client = Client()
+# Test Data
+TEST_USER = {
+    'username': 'testuser',
+    'password': 'testpass123',
+    'email': 'test@example.com'
+}
 
-def test_login():
-    print("\n=== Testing Login ===")
-    try:
-        # Get CSRF token
-        response = client.get('/login/')
-        csrf_token = client.cookies['csrftoken'].value
-        
-        data = {
-            'csrfmiddlewaretoken': csrf_token,
-            'username': 'testadmin',
-            'password': 'Str0ngP@ssw0rd123!'
+TEST_CUSTODIAN = {
+    'phone_number': '+1234567890',
+    'address': 'Test Address',
+    'is_verified': True
+}
+
+TEST_SUBJECT = {
+    'name': 'Test Subject',
+    'date_of_birth': '2000-01-01',
+    'gender': 'M',
+    'medical_conditions': 'None',
+    'allergies': 'None',
+    'medications': 'None'
+}
+
+@pytest.fixture
+def auth_headers(auth_client):
+    """Get authentication headers"""
+    # Make a GET request first to get the CSRF token
+    response = auth_client.get('/api/v1/subjects/')  # Any GET request will do
+    csrf_token = auth_client.cookies.get('csrftoken')
+    if not csrf_token:
+        from django.middleware.csrf import get_token
+        csrf_token = get_token(response.wsgi_request)
+    return {
+        'HTTP_X_CSRFTOKEN': csrf_token,
+        'content_type': 'application/json'
+    }
+
+@pytest.fixture
+def test_custodian(auth_client, django_user_model):
+    """Create a test custodian"""
+    user = django_user_model.objects.get(username=TEST_USER['username'])
+    custodian = user.custodian
+    for field, value in TEST_CUSTODIAN.items():
+        setattr(custodian, field, value)
+    custodian.save()
+    return custodian
+
+@pytest.fixture
+def test_subject(test_custodian):
+    """Create a test subject"""
+    subject = Subject.objects.create(
+        custodian=test_custodian,
+        **TEST_SUBJECT
+    )
+    return subject
+
+@pytest.mark.django_db
+class TestSubjectAPI:
+    """Test Subject API endpoints"""
+    
+    def test_list_subjects(self, auth_client, test_subject):
+        """Test GET /api/v1/subjects/"""
+        response = auth_client.get('/api/v1/subjects/')
+        assert response.status_code == 200
+        data = json.loads(response.content)
+        assert len(data) > 0
+        # Find the test subject in the response data
+        test_subject_data = next((item for item in data if item['id'] == test_subject.id), None)
+        assert test_subject_data is not None
+        assert test_subject_data['name'] == TEST_SUBJECT['name']
+
+    def test_create_subject(self, auth_client, test_custodian, auth_headers):
+        """Test POST /api/v1/subjects/"""
+        new_subject = {
+            **TEST_SUBJECT,
+            'name': 'New Test Subject',
+            'custodian': test_custodian.id
         }
-        response = client.post('/login/', data=data, follow=True)
-        print(f"Login Status: {response.status_code}")
-        
-        # Verify we are logged in
-        if not client.session.get('_auth_user_id'):
-            print("No session found after login")
-            return False
-            
-        print("Successfully logged in")
-        return True
-    except Exception as e:
-        print(f"Login error: {str(e)}")
-        return False
-
-def test_subject_api():
-    print("\n=== Testing Subject API ===")
-    try:
-        # Create subject
-        data = {
-            'name': 'Test Subject',
-            'date_of_birth': '2000-01-01',
-            'gender': 'M',
-            'medical_conditions': 'None',
-            'allergies': 'None',
-            'medications': 'None'
-        }
-        response = client.post(
+        response = auth_client.post(
             '/api/v1/subjects/',
-            data=json.dumps(data),
-            content_type='application/json'
+            data=json.dumps(new_subject),
+            **auth_headers
         )
-        print(f"Create Subject Status: {response.status_code}")
-        print(f"Response: {response.content.decode()}")
-        
-        # List subjects
-        response = client.get('/api/v1/subjects/')
-        print(f"List Subjects Status: {response.status_code}")
-        print(f"Response: {response.content.decode()}")
-        
-        return response.status_code == 200
-    except Exception as e:
-        print(f"Subject API error: {str(e)}")
-        return False
+        assert response.status_code == 201
+        data = json.loads(response.content)
+        assert data['name'] == 'New Test Subject'
 
-def test_alarm_api():
-    print("\n=== Testing Alarm API ===")
-    try:
-        # Get first subject for the alarm
-        response = client.get('/api/v1/subjects/')
-        if response.status_code != 200:
-            print("Failed to get subjects for alarm creation")
-            return False
-            
-        subjects = json.loads(response.content.decode())
-        if not subjects:
-            print("No subjects found for alarm creation")
-            return False
-        
-        subject_id = subjects[0]['id']
-        
-        # Create alarm
-        data = {
-            'subject': subject_id,
-            'location': 'Test Location'
+    def test_get_subject(self, auth_client, test_subject):
+        """Test GET /api/v1/subjects/<id>/"""
+        response = auth_client.get(f'/api/v1/subjects/{test_subject.id}/')
+        assert response.status_code == 200
+        data = json.loads(response.content)
+        assert data['name'] == TEST_SUBJECT['name']
+
+    def test_update_subject(self, auth_client, test_subject, auth_headers):
+        """Test PUT /api/v1/subjects/<id>/"""
+        updated_data = {
+            **TEST_SUBJECT,
+            'name': 'Updated Subject'
         }
-        response = client.post(
-            '/api/v1/alarms/',
-            data=json.dumps(data),
-            content_type='application/json'
+        response = auth_client.put(
+            f'/api/v1/subjects/{test_subject.id}/',
+            data=json.dumps(updated_data),
+            **auth_headers
         )
-        print(f"Create Alarm Status: {response.status_code}")
-        print(f"Response: {response.content.decode()}")
-        
-        # List alarms
-        response = client.get('/api/v1/alarms/')
-        print(f"List Alarms Status: {response.status_code}")
-        print(f"Response: {response.content.decode()}")
-        
-        return response.status_code == 200
-    except Exception as e:
-        print(f"Alarm API error: {str(e)}")
-        return False
+        assert response.status_code == 200
+        data = json.loads(response.content)
+        assert data['name'] == 'Updated Subject'
 
-def test_qr_code():
-    print("\n=== Testing QR Code Generation ===")
-    try:
-        # Get first subject ID
-        response = client.get('/api/v1/subjects/')
-        if response.status_code != 200:
-            print("Failed to get subjects")
-            return False
-            
-        subjects = json.loads(response.content.decode())
-        if not subjects:
-            print("No subjects found")
-            return False
-        
-        subject_id = subjects[0]['id']
-        
-        # Generate QR code
+    def test_delete_subject(self, auth_client, test_subject):
+        """Test DELETE /api/v1/subjects/<id>/"""
+        response = auth_client.delete(f'/api/v1/subjects/{test_subject.id}/')
+        assert response.status_code == 204
+
+@pytest.mark.django_db
+class TestQRCodeAPI:
+    """Test QR Code endpoints"""
+    
+    def test_generate_qr(self, auth_client, test_subject):
+        """Test POST /subjects/qr/generate/"""
         data = {
-            'subject_id': subject_id,
+            'subject_id': test_subject.id,
             'activate': 'on'
         }
-        response = client.post('/subjects/qr/generate/', data=data)
-        print(f"QR Code Status: {response.status_code}")
-        if response.status_code != 200:
-            print(f"Response: {response.content.decode()}")
+        response = auth_client.post('/subjects/qr/generate/', data=data)
+        assert response.status_code == 200
+        data = json.loads(response.content)
+        assert 'uuid' in data
+        assert data['success'] is True
+
+    def test_qr_operations(self, auth_client, test_subject):
+        """Test QR code activation/deactivation"""
+        # Generate QR
+        qr = SubjectQR.objects.create(
+            subject=test_subject,
+            uuid=str(uuid.uuid4()),
+            is_active=True
+        )
         
-        return response.status_code == 200
-    except Exception as e:
-        print(f"QR Code error: {str(e)}")
-        return False
+        # Test deactivate
+        response = auth_client.post(f'/subjects/qr/{qr.uuid}/deactivate/')
+        assert response.status_code == 200
+        qr.refresh_from_db()
+        assert not qr.is_active
 
-def main():
-    success = True
-    
-    # Test login
-    success &= test_login()
-    time.sleep(1)
-    
-    # Test APIs
-    success &= test_subject_api()
-    time.sleep(1)
-    success &= test_alarm_api()
-    time.sleep(1)
-    success &= test_qr_code()
-    
-    print("\n=== Test Summary ===")
-    print("All tests passed!" if success else "Some tests failed!")
+        # Test activate
+        response = auth_client.post(f'/subjects/qr/{qr.uuid}/activate/')
+        assert response.status_code == 200
+        qr.refresh_from_db()
+        assert qr.is_active
 
-if __name__ == "__main__":
-    main() 
+    def test_trigger_alarm(self, auth_client, test_subject):
+        """Test POST /subjects/qr/<uuid>/trigger/"""
+        qr = SubjectQR.objects.create(
+            subject=test_subject,
+            uuid=str(uuid.uuid4()),
+            is_active=True
+        )
+        
+        data = {
+            'lat': '20.123',
+            'lng': '-100.456'
+        }
+        response = auth_client.post(f'/subjects/qr/{qr.uuid}/trigger/', data=data)
+        assert response.status_code == 200
+        data = json.loads(response.content)
+        assert data['status'] == 'success'
+
+@pytest.mark.django_db
+class TestAlarmAPI:
+    """Test Alarm API endpoints"""
+    
+    def test_list_alarms(self, auth_client, test_subject):
+        """Test GET /api/v1/alarms/"""
+        # Create test alarm
+        Alarm.objects.create(subject=test_subject)
+        
+        response = auth_client.get('/api/v1/alarms/')
+        assert response.status_code == 200
+        data = json.loads(response.content)
+        assert len(data) > 0
+
+    def test_create_alarm(self, auth_client, test_subject, auth_headers):
+        """Test POST /api/v1/alarms/"""
+        data = {
+            'subject': test_subject.id,
+            'location': '20.123,-100.456'
+        }
+        response = auth_client.post(
+            '/api/v1/alarms/',
+            data=json.dumps(data),
+            **auth_headers
+        )
+        assert response.status_code == 201
+        data = json.loads(response.content)
+        assert data['subject'] == test_subject.id
+
+    def test_get_alarm(self, auth_client, test_subject):
+        """Test GET /api/v1/alarms/<id>/"""
+        alarm = Alarm.objects.create(subject=test_subject)
+        
+        response = auth_client.get(f'/api/v1/alarms/{alarm.id}/')
+        assert response.status_code == 200
+        data = json.loads(response.content)
+        assert data['subject'] == test_subject.id
+
+    def test_retry_notification(self, auth_client, test_subject):
+        """Test POST /alarms/<id>/retry-notification/"""
+        alarm = Alarm.objects.create(
+            subject=test_subject,
+            notification_sent=False
+        )
+        
+        response = auth_client.post(f'/alarms/{alarm.id}/retry-notification/')
+        assert response.status_code == 200
+        data = json.loads(response.content)
+        assert data['success'] is True
+
+    def test_alarm_statistics(self, auth_client):
+        """Test GET /alarms/statistics/data/"""
+        response = auth_client.get('/alarms/statistics/data/')
+        assert response.status_code == 200
+        data = json.loads(response.content)
+        assert 'total_alarms' in data
+        assert 'notifications' in data
+
+@pytest.mark.django_db
+class TestExportAPI:
+    """Test Export endpoints"""
+    
+    def test_export_csv(self, auth_client):
+        """Test GET /alarms/export/csv/"""
+        response = auth_client.get('/alarms/export/csv/')
+        assert response.status_code == 200
+        assert response['Content-Type'] == 'text/csv'
+
+    def test_export_excel(self, auth_client):
+        """Test GET /alarms/export/excel/"""
+        response = auth_client.get('/alarms/export/excel/')
+        assert response.status_code == 200
+        assert response['Content-Type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+    def test_export_pdf(self, auth_client):
+        """Test GET /alarms/export/pdf/"""
+        response = auth_client.get('/alarms/export/pdf/')
+        assert response.status_code == 200
+        assert response['Content-Type'] == 'application/pdf' 

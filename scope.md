@@ -3,11 +3,19 @@
 ## Project Overview
 Keryu is a comprehensive subject management system designed to help track and manage subjects with their associated QR codes and alarms. The system provides features for both administrators and custodians to manage subjects, generate QR codes, and monitor alarms.
 
-Example of one case (among others) where kareyu is helpful:
-The parent of a child is leting him/her to go to the zoo with his/her school mates (and teachers). Suddenly this child is lost and a Person find him/her. This Person uses de QR that this child has(in his/her badge), and his/her parent (custodian), recieves a Whatsapp message with the alarm. From here the parent call the teacher to check the situation.
-For doing this, the parent had to signup in keryu, create the subject record with his/her child data, see and print the QR that keryu gave him/her.
+Example of one case (among others) where Keryu is helpful:
+A parent of a child is letting them go to the zoo with their school mates (and teachers). If the child gets lost and someone finds them, that person can scan the QR code on the child's badge. The parent (custodian) immediately receives a WhatsApp message with the alarm details. From there, the parent can contact the teacher to check the situation.
 
-Example of Subjects are: children, elders, and especial persons with disabilities
+To use the system, the parent needs to:
+1. Sign up in Keryu
+2. Create a subject record with their child's data
+3. Generate and print the QR code
+4. Attach the QR code to the child's badge or belongings
+
+Examples of Subjects that can be tracked:
+- Children
+- Elderly people
+- Persons with disabilities
 
 ## Core Features
 
@@ -16,17 +24,18 @@ Example of Subjects are: children, elders, and especial persons with disabilitie
 - Track subject details including:
   - Personal information (name, date of birth, gender)
   - Medical information (conditions, allergies, medications)
-  - Doctor information (name, phone, speciality, address)
+  - Doctor information (name, phone, specialty, address)
   - Photo upload capability
   - Active/Inactive status
 
 ### QR Code System
 - Generate unique QR codes for each subject
-- Multiple QR codes per subject support
+- One active QR code per subject at a time
 - QR code activation/deactivation functionality
-- QR code download and image generation
+- QR code download and printing
 - Last used timestamp tracking
 - UUID-based QR code identification
+- Bulk printing capability
 
 ### Alarm System
 - Automatic alarm creation on QR code scanning
@@ -34,6 +43,7 @@ Example of Subjects are: children, elders, and especial persons with disabilitie
 - WhatsApp notification integration
 - Alarm history tracking
 - Notification status monitoring
+- Retry mechanism for failed notifications
 
 ### User Roles and Permissions
 - Admin users with full system access
@@ -41,21 +51,31 @@ Example of Subjects are: children, elders, and especial persons with disabilitie
 - Staff-only access to certain features
 - Role-based view filtering
 
-### Reporting and Statistics
-- Subject statistics dashboard
-- Gender distribution
-- Custodian distribution
-- Active/Inactive subject counts
-- Export capabilities (Excel, PDF)
+### WhatsApp Integration
+- Real-time notifications using Meta WhatsApp Business API
+- Template-based messaging
+- Delivery status tracking
+- Error handling and retry logic
+- Notification history
 
 ## Technical Stack
-- Django 4.2+
+
+### Backend
+- Django 5.0+
+- Python 3.11+
 - PostgreSQL database
-- Redis for caching and Celery tasks
-- Celery for background task processing
-- QR code generation with qrcode library
-- Report generation with reportlab and xlsxwriter
-- Chart visualization with django-chartjs
+- Redis for Celery tasks
+- Celery for background processing
+
+### Frontend
+- Bootstrap 5
+- JavaScript/jQuery
+- Chart.js for visualizations
+- QR code generation library
+
+### External Services
+- Meta WhatsApp Business Platform
+- WhatsApp message templates
 
 ## Security Features
 - Role-based access control
@@ -63,134 +83,49 @@ Example of Subjects are: children, elders, and especial persons with disabilitie
 - Permission checks on all operations
 - Staff-only access to sensitive features
 - Secure file upload handling
+- CSRF protection
+- Secure password handling
 
-## Future Enhancements
-- Enhanced location tracking
-- Mobile application integration
-- Advanced reporting features
-- API endpoints for external integration
-- Enhanced notification system
-- Subject activity timeline
-- Document management system
-
-## User Roles and Access Levels
-
-### Anonymous Users
-- Can access public pages only
-- Can register as a custodian
-- Can log in if they have an account
-
-### Custodians (Authenticated Users)
-- Can manage their own profile information
-- Can view and manage their assigned subjects
-- Can access the dashboard with their subjects' information
-- Cannot access admin features or other custodians' subjects
-
-### Admin Users
-- Full access to all system features
-- Can manage all subjects across all custodians
-- Access to administrative dashboard with statistics
-- Can generate and manage QR codes for all subjects
-- Can create, edit, and delete any subject
-- Access to detailed statistics and reports
-
-## Technical Implementation
-
-### Models
-- User (Django's built-in)
-- Custodian (Profile model)
-- Subject (Main data model)
-
-### Forms
-- Registration forms
-- Subject management forms
-- Profile update forms
-
-### Views
-- Public views
-- Custodian views
-- Admin views
-- API endpoints (future)
-
-### Templates
-- Base templates
-- Admin templates
-- Subject management templates
-- Error pages
-
-## Testing Coverage
-- Unit tests for all models
-- Integration tests for workflows
-- Access control tests
-- Form validation tests
-- Error handling tests
-
-## Future Enhancements
-- API implementation
-- Mobile application
-- Advanced reporting
-- Batch operations
-- Export/Import functionality
-- Email notifications
-- WhatsApp integration
-
-## Technical Requirements
-- Python 3.11+
-- Django 5.0+
-- PostgreSQL (production)
-- Bootstrap 5
-- Chart.js for visualizations
-- Phone number field support
-- File upload handling
-
-## Project Progress
+## Project Status
 
 ### Completed ✅
-1. Project setup
-2. Environment configuration
-3. Basic frontend structure
-4. Template system
-5. Static files organization
-6. Custodian authentication system
-7. Registration and login forms
-8. Dashboard template
-9. Subject management system (CRUD)
-10. Medical information storage
-11. Admin interface configuration
-12. Basic access control implementation
+1. Project setup and configuration
+2. Environment setup
+3. Frontend structure and templates
+4. Authentication system
+5. Subject management (CRUD)
+6. QR code generation and management
+7. WhatsApp integration
+8. Alarm system
+9. Notification tracking
+10. Error handling and logging
 
 ### In Progress 🚧
-1. Enhanced access control for custodians
-2. Subject-custodian relationship enforcement
-3. QR code system
-4. WhatsApp integration setup
-5. Alert system design
+1. Enhanced reporting features
+2. Advanced search capabilities
+3. Mobile responsiveness improvements
+4. Documentation updates
 
-### Pending 📋
-1. WhatsApp integration
-2. Alert system
-3. API endpoints
-4. Testing
-5. Documentation
-
-## Timeline
-- Phase 1: Basic Setup and Structure ✅
-- Phase 2: Core Features Development 🚧
-- Phase 3: Integration and Testing ⏳
-- Phase 4: Deployment and Documentation ⏳
+### Planned 📋
+1. API endpoints for external integration
+2. Mobile application
+3. Enhanced analytics
+4. Batch operations for subjects
+5. Advanced notification preferences
 
 ## Notes
 - The system prioritizes user privacy and data security
-- WhatsApp integration requires Business API access
-- QR codes should be easily printable and durable
-- System should be scalable for future enhancements
+- QR codes contain only UUIDs, no personal information
+- WhatsApp notifications use approved message templates
+- System is designed for scalability
+- Error handling includes retry mechanisms
+- All actions are logged for auditing
 
 ## Legend
 - ✅ Completed
 - 🚧 In Progress
-- ⏳ Pending
+- 📋 Planned
 - 🔒 Security Feature
-- 📋 To Do
 
 ### User Roles and Access Levels
 

@@ -17,7 +17,7 @@ from .tasks import send_whatsapp_notification
 import json
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 
 @login_required
 def alarm_list(request):

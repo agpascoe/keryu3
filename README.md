@@ -1,21 +1,23 @@
-# Keryu - QR Code Monitoring System
+# Keryu - Subject Tracking System
 
-A Django-based system for monitoring QR code scans and sending WhatsApp notifications.
+A Django-based system for managing and tracking subjects (children, elders, or persons with disabilities) using QR codes and WhatsApp notifications.
 
 ## Features
 
-- QR Code scanning and validation
+- Subject management (personal and medical information)
+- QR code generation and management
+- QR code scanning and alarm creation
 - Real-time WhatsApp notifications
-- Asynchronous task processing with Celery
-- Template-based messaging system
+- Location tracking support
+- Custodian dashboard
 - Comprehensive error handling and logging
 
 ## Prerequisites
 
-- Python 3.8+
+- Python 3.11+
 - PostgreSQL
 - Redis (for Celery)
-- WhatsApp Business API access
+- Meta WhatsApp Business API access
 - Meta Developer Account
 
 ## Installation
@@ -66,17 +68,22 @@ ALLOWED_HOSTS=localhost,127.0.0.1
 python manage.py migrate
 ```
 
-6. Start Redis server:
+6. Create a superuser:
+```bash
+python manage.py createsuperuser
+```
+
+7. Start Redis server:
 ```bash
 redis-server
 ```
 
-7. Start Celery worker:
+8. Start Celery worker:
 ```bash
 celery -A keryu worker -l info
 ```
 
-8. Run the development server:
+9. Run the development server:
 ```bash
 python manage.py runserver
 ```
@@ -84,40 +91,61 @@ python manage.py runserver
 ## WhatsApp Template Setup
 
 1. Log in to your Meta Developer Account
-2. Navigate to WhatsApp > Getting Started
+2. Navigate to WhatsApp > Message Templates
 3. Create a new template with the following details:
-   - Name: qr_is_on
+   - Name: qr_template_on_m
    - Language: en_US
    - Category: UTILITY
-   - Body: "Hello, the qr of {{Subject}} has been read at {{Timestamp}}"
+   - Body: "Alert: {{1}} has been located at {{2}}"
+   - Variables:
+     - {{1}}: Subject name
+     - {{2}}: Timestamp
 4. Wait for template approval (usually takes 24-48 hours)
 
-## Testing
+## Usage
 
-1. Run the test script to verify WhatsApp integration:
-```bash
-python test_whatsapp.py
-```
-
-2. Run Django tests:
-```bash
-python manage.py test
-```
+1. Log in as a custodian
+2. Create a subject with their details
+3. Generate a QR code for the subject
+4. Print or download the QR code
+5. When the QR code is scanned:
+   - An alarm is created
+   - Location is recorded (if available)
+   - WhatsApp notification is sent to the custodian
 
 ## Project Structure
 
 ```
 keryu/
-├── alarms/              # Alarm monitoring system
-├── notifications/       # Notification providers
-├── subjects/           # Subject management
-├── core/               # Core functionality
+├── alarms/              # Alarm and notification handling
+├── core/               # Core settings and configuration
+├── custodians/         # User management
+├── notifications/      # WhatsApp integration
+├── subjects/           # Subject and QR code management
 ├── templates/          # HTML templates
 ├── static/            # Static files
+├── media/             # User-uploaded files
 ├── manage.py
 ├── requirements.txt
 └── .env
 ```
+
+## Development
+
+### Running Tests
+```bash
+python manage.py test
+```
+
+### Creating Test Data
+```bash
+python manage.py create_test_data
+```
+
+### Code Style
+- Follow PEP 8 guidelines
+- Use Black for code formatting
+- Run flake8 for linting
 
 ## Contributing
 
