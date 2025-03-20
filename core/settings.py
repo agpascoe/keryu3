@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'phonenumber_field',
+    'core',
     'custodians',
     'subjects',
     'alarms',
@@ -243,3 +244,16 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
 }
+
+# Email settings
+EMAIL_BACKEND = 'core.email_backend.PopupEmailBackend'  # Custom backend for development
+DEFAULT_FROM_EMAIL = 'Keryu System <noreply@keryu.com>'
+EMAIL_SUBJECT_PREFIX = '[Keryu] '
+
+# For production, uncomment and configure these settings:
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.your-email-provider.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your-email@example.com'
+# EMAIL_HOST_PASSWORD = 'your-email-password'

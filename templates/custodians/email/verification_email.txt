@@ -1,0 +1,14 @@
+Welcome to Keryu System!
+
+Hi {{ user.first_name|default:user.username }},
+
+Thank you for registering with Keryu. To complete your registration and activate your account, please click the link below:
+
+{{ domain }}{% url 'custodians:verify_email' uidb64=uid token=token %}
+
+This verification link will expire in 24 hours.
+
+If you didn't register for a Keryu account, you can safely ignore this email.
+
+Best regards,
+The Keryu Team 

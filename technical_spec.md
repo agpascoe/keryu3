@@ -1,7 +1,7 @@
 # Technical Specifications - Keryu System
 
 ## System Overview
-The Keryu System is a Django-based application designed to manage subjects (such as children, elders, or persons with disabilities), generate QR codes for tracking, and deliver notifications through WhatsApp using the Meta WhatsApp Business API. The system handles user management, QR code generation, alarm creation, and asynchronous message delivery.
+The Keryu System is a Django-based application designed to manage subjects (such as children, elders, or persons with disabilities), generate QR codes for tracking, and deliver notifications through WhatsApp using the Meta WhatsApp Business API. The system handles user management with email verification, QR code generation, alarm creation, and asynchronous message delivery.
 
 ## Actors and Use Cases
 
@@ -878,4 +878,33 @@ ALLOWED_HOSTS
 - Regular updates
 - Version tracking
 - Change logs
-- Update procedures 
+- Update procedures
+
+## Authentication and Security
+
+### Email Verification System
+1. **Registration Flow**
+   - User submits registration form
+   - Account created in inactive state
+   - Verification email sent with secure token
+   - Account activated upon verification
+   - Development mode supports instant verification
+
+2. **Token Generation**
+   - Secure token generation using Django's TokenGenerator
+   - Token includes user ID and timestamp
+   - 24-hour expiration period
+   - One-time use only
+
+3. **Verification Process**
+   - Token validation on verification attempt
+   - Automatic account activation
+   - Redirect to login upon success
+   - Error handling for invalid/expired tokens
+
+### Dashboard Security
+1. **Access Control**
+   - Role-based access (Admin/Custodian)
+   - Staff users excluded from custodian counts
+   - Filtered data based on user role
+   - Secure statistical calculations 

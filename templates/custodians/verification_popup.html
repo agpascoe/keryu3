@@ -1,0 +1,36 @@
+{% if verification_email %}
+<div class="modal fade" id="verificationModal" tabindex="-1" aria-labelledby="verificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="verificationModalLabel">Email Verification Required</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Development Mode:</strong> Instead of sending an email, you can verify your account directly using the button below.
+                </div>
+                <p>An email would be sent to: <strong>{{ verification_email.to }}</strong></p>
+                <hr>
+                <div class="text-center">
+                    <p class="mb-3">Click the button below to verify your email address and activate your account:</p>
+                    <a href="{{ verification_url }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-check-circle me-2"></i>Verify Email Address
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var verificationModal = new bootstrap.Modal(document.getElementById('verificationModal'));
+        verificationModal.show();
+    });
+</script>
+{% endif %} 

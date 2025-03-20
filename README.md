@@ -9,8 +9,18 @@ A Django-based system for managing and tracking subjects (children, elders, or p
 - QR code scanning and alarm creation
 - Real-time WhatsApp notifications
 - Location tracking support
-- Custodian dashboard
+- Email verification for new custodians
+- Admin dashboard with real-time statistics
+- Custodian dashboard with personalized views
 - Comprehensive error handling and logging
+
+## Security Features
+
+- Email verification required for new accounts
+- Secure token-based verification system
+- Development mode with instant verification option
+- Staff users excluded from custodian statistics
+- Role-based access control
 
 ## Prerequisites
 
