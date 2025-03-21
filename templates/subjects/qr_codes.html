@@ -98,15 +98,11 @@
                                     {% endif %}
                                 </span>
                             </div>
-                            {% if qr.is_active %}
-                            <div class="mb-2">
-                                <form method="get" action="{% url 'subjects:trigger_qr' qr.uuid %}" style="display: inline;">
-                                    <button type="submit" class="btn btn-warning btn-sm">
-                                        <i class="fas fa-bell me-2"></i>Test Alarm
-                                    </button>
-                                </form>
+                            <!-- Add URL display -->
+                            <div class="mt-3 mb-3">
+                                <small class="text-muted">QR URL:</small><br>
+                                <a href="{{ qr.scan_url }}" class="text-break">{{ qr.scan_url }}</a>
                             </div>
-                            {% endif %}
                             <div class="mb-3">
                                 <span class="badge {% if qr.subject %}bg-success{% else %}bg-warning{% endif %}">
                                     {% if qr.subject %}

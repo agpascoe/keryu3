@@ -234,7 +234,11 @@ The Keryu System is a Django-based application designed to manage subjects (such
    - Activate/deactivate QR codes
    - Download QR code images
    - Test QR code functionality
+     * Direct URL access for testing
+     * Browser-based QR simulation
+     * Complete notification flow testing
    - View QR code usage history
+   - Print QR codes for physical use
 
 3. **Alarm Monitoring**
    - Receive real-time WhatsApp notifications

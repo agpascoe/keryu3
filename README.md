@@ -150,8 +150,11 @@ To stop all services, you can either:
 1. Log in as a custodian
 2. Create a subject with their details
 3. Generate a QR code for the subject
-4. Print or download the QR code
-5. When the QR code is scanned:
+4. Test or use the QR code:
+   - View the QR code's direct URL for testing
+   - Click the URL to simulate QR code scanning
+   - Print or download for physical use
+5. When the QR code is scanned (or URL is accessed):
    - An alarm is created
    - Location is recorded (if available)
    - Notification is sent via configured channel:

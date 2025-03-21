@@ -151,6 +151,14 @@ The system uses a template named "qr_template_on_m" with two variables:
 
 ## Testing
 
+### QR Code Testing
+The system provides direct URL access for QR code testing:
+- Each QR code displays its corresponding scan URL
+- URLs can be clicked directly to simulate QR code scanning
+- Useful for testing the complete notification flow without physical QR codes
+- Browser-native features (copy URL, open in new tab) are supported
+
+### Automated Tests
 Run the messaging tests:
 ```bash
 python -m pytest tests/test_messaging.py -vv
@@ -162,6 +170,7 @@ The test suite covers:
 3. Channel selection
 4. Error handling
 5. Template message structure
+6. QR code URL generation and scanning
 
 ## Monitoring
 

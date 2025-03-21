@@ -147,6 +147,10 @@ def qr_codes(request):
     # Get all subjects for the filter dropdown
     subjects = Subject.objects.filter(custodian=request.user.custodian)
     
+    # Add scan URLs for each QR code
+    for qr in qr_codes:
+        qr.scan_url = request.build_absolute_uri(reverse('subjects:scan_qr', args=[qr.uuid]))
+    
     context = {
         'qr_codes': qr_codes,
         'subjects': subjects,

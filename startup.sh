@@ -77,16 +77,26 @@ export CELERY_BROKER_URL="redis://localhost:6379/0"
 export CELERY_RESULT_BACKEND="redis://localhost:6379/0"
 export PYTHONPATH=$PWD:$PYTHONPATH
 
+# Verify celery is available
+if ! command -v $CONDA_PREFIX/bin/celery &> /dev/null; then
+    print_error "Celery not found in conda environment"
+    exit 1
+fi
+
 # Start Celery worker (single instance)
 print_status "Starting Celery worker..."
 WORKER_NAME="keryu_worker_$(date +%s)"
 $CONDA_PREFIX/bin/celery -A keryu3 worker -l INFO -P solo -Q subjects,alarms,default --hostname=$WORKER_NAME --purge --without-mingle --without-gossip &
 WORKER_PID=$!
 
-# Wait for worker to start
-sleep 10
+# Wait for worker to start and verify it's running
+sleep 5
 if ! ps -p $WORKER_PID > /dev/null; then
     print_error "Celery worker failed to start"
+    exit 1
+fi
+if ! $CONDA_PREFIX/bin/celery -A keryu3 status | grep -q "keryu_worker"; then
+    print_error "Celery worker is not responding"
     exit 1
 fi
 print_status "Celery worker is running with name: $WORKER_NAME"
@@ -96,8 +106,8 @@ print_status "Starting Celery beat scheduler..."
 $CONDA_PREFIX/bin/celery -A keryu3 beat -l INFO &
 BEAT_PID=$!
 
-# Wait for beat to start
-sleep 10
+# Wait for beat to start and verify it's running
+sleep 5
 if ! ps -p $BEAT_PID > /dev/null; then
     print_error "Celery beat scheduler failed to start"
     exit 1
