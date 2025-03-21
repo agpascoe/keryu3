@@ -1,14 +1,14 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.contrib import messages
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.contrib.auth.models import User
 from .decorators import staff_member_required_403
-from .forms import SubjectForm
+from .forms import SubjectForm, SubjectQRForm
 from django.urls import reverse
 import logging
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from django.utils import timezone
 from django.conf import settings
 import qrcode
@@ -16,9 +16,20 @@ import qrcode.image.svg
 import uuid
 import io
 from PIL import Image
-from .models import Subject, SubjectQR, Alarm
-from .tasks import send_whatsapp_notification
+from .models import Subject, SubjectQR
+from alarms.models import Alarm
+from alarms.tasks import send_whatsapp_notification
+from .tasks import create_test_alarm
 from django.views.decorators.csrf import csrf_exempt
+from django.db import transaction
+from django.db.utils import OperationalError
+import time
+import os
+from io import BytesIO
+from django.core.paginator import Paginator
+from django.core.cache import cache
+from functools import wraps
+from django.db import DatabaseError
 
 logger = logging.getLogger(__name__)
 
@@ -120,212 +131,168 @@ def subject_stats(request):
 
 @login_required
 def qr_codes(request):
-    """View for managing QR codes"""
-    # Get subjects based on user role
-    if request.user.is_staff:
-        subjects = Subject.objects.all()
-    else:
-        subjects = Subject.objects.filter(custodian__user=request.user)
+    """List QR codes for subjects."""
+    # Get the subject ID from query parameters
+    subject_id = request.GET.get('subject')
     
-    # Filter QR codes by subject if specified
-    selected_subject = request.GET.get('subject')
-    qr_codes = SubjectQR.objects.select_related('subject')
+    # Base queryset
+    qr_codes = SubjectQR.objects.select_related('subject').filter(
+        subject__custodian=request.user.custodian
+    )
     
-    if not request.user.is_staff:
-        qr_codes = qr_codes.filter(subject__custodian__user=request.user)
+    # Filter by subject if specified
+    if subject_id:
+        qr_codes = qr_codes.filter(subject_id=subject_id)
     
-    if selected_subject:
-        qr_codes = qr_codes.filter(subject_id=selected_subject)
+    # Get all subjects for the filter dropdown
+    subjects = Subject.objects.filter(custodian=request.user.custodian)
     
     context = {
+        'qr_codes': qr_codes,
         'subjects': subjects,
-        'qr_codes': qr_codes.order_by('-created_at'),
-        'selected_subject': int(selected_subject) if selected_subject else None,
+        'selected_subject': subject_id
     }
+    
     return render(request, 'subjects/qr_codes.html', context)
 
 @login_required
 def generate_qr(request):
-    """Generate a new QR code for a subject"""
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
-    
-    subject_id = request.POST.get('subject_id')
-    activate = request.POST.get('activate') == 'on'
-    
-    if not subject_id:
-        return JsonResponse({'success': False, 'error': 'Subject ID is required'}, status=400)
-    
-    try:
-        # Get subject and verify permissions
-        subject = get_object_or_404(Subject, id=subject_id)
-        if not request.user.is_staff and subject.custodian.user != request.user:
-            return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
-        
-        # Generate unique UUID
-        qr_uuid = str(uuid.uuid4())
-        
-        # Create QR code instance
-        qr = SubjectQR.objects.create(
-            subject=subject,
-            uuid=qr_uuid,
-            is_active=activate
-        )
-        
-        # If activating, deactivate other QR codes
-        if activate:
-            SubjectQR.objects.filter(subject=subject).exclude(id=qr.id).update(is_active=False)
-        
-        # Generate QR code image with API endpoint
-        api_endpoint = request.build_absolute_uri(
-            reverse('subjects:trigger_alarm', args=[qr_uuid])
-        )
+    """Generate a new QR code for a subject."""
+    if request.method == 'POST':
+        subject_id = request.POST.get('subject')
+        subject = get_object_or_404(Subject, id=subject_id, custodian=request.user.custodian)
         
         # Generate QR code
-        qr_img = qrcode.QRCode(
+        qr = SubjectQR.objects.create(
+            subject=subject,
+            uuid=uuid.uuid4(),
+            is_active=True  # This will deactivate other QR codes
+        )
+        
+        # Generate QR code image
+        qr_image = qr_image(request, qr.uuid)
+        
+        # Save the image
+        image_name = f'qr_{qr.uuid}.png'
+        image_path = os.path.join('qr_codes', image_name)
+        qr.image.save(image_name, qr_image, save=True)
+        
+        messages.success(request, 'QR code generated successfully.')
+        return redirect('qr_codes')
+        
+    return redirect('qr_codes')
+
+@login_required
+def qr_image(request, uuid):
+    """Generate and return a QR code image."""
+    qr = get_object_or_404(SubjectQR, uuid=uuid)
+    
+    # Check if user has permission to view this QR code
+    if qr.subject.custodian != request.user.custodian:
+        return HttpResponse(status=403)
+    
+    # Generate QR code if it doesn't exist
+    if not qr.image:
+        # Create QR code instance
+        qr_code = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
             box_size=10,
             border=4,
         )
-        qr_img.add_data(api_endpoint)
-        qr_img.make(fit=True)
         
-        # Create image
-        img = qr_img.make_image(fill_color="black", back_color="white")
+        # Add the URL data
+        url = request.build_absolute_uri(reverse('scan_qr', args=[uuid]))
+        qr_code.add_data(url)
+        qr_code.make(fit=True)
         
-        # Save image to QR instance
-        img_io = io.BytesIO()
-        img.save(img_io, format='PNG')
-        qr.image.save(f'qr_{qr_uuid}.png', io.BytesIO(img_io.getvalue()))
+        # Create the image
+        img = qr_code.make_image(fill_color="black", back_color="white")
         
-        return JsonResponse({
-            'success': True,
-            'uuid': qr_uuid,
-            'image_url': request.build_absolute_uri(qr.image.url)
-        })
+        # Save to BytesIO
+        buffer = BytesIO()
+        img.save(buffer, format='PNG')
         
-    except Exception as e:
-        logger.error(f"Error generating QR code: {str(e)}")
-        return JsonResponse({
-            'success': False,
-            'error': 'Failed to generate QR code'
-        }, status=500)
-
-@login_required
-def qr_image(request, uuid):
-    """View QR code image"""
-    qr = get_object_or_404(SubjectQR, uuid=uuid)
+        # Save to model
+        image_name = f'qr_{uuid}.png'
+        qr.image.save(image_name, buffer, save=True)
     
-    # Check permissions
-    if not request.user.is_staff and qr.subject.custodian.user != request.user:
-        return HttpResponse('Permission denied', status=403)
-    
-    # Return image
-    if qr.image:
-        return FileResponse(qr.image.open(), content_type='image/png')
-    
-    # Generate image if not exists
-    qr_url = request.build_absolute_uri(
-        reverse('subjects:scan_qr', args=[uuid])
-    )
-    img = generate_qr_image(qr_url)
-    
+    # Return the image
     response = HttpResponse(content_type='image/png')
-    img.save(response, 'PNG')
+    qr.image.open()
+    response.write(qr.image.read())
+    qr.image.close()
     return response
 
 @login_required
 def download_qr(request, uuid):
-    """Download QR code image"""
+    """Download a QR code image."""
     qr = get_object_or_404(SubjectQR, uuid=uuid)
     
-    # Check permissions
-    if not request.user.is_staff and qr.subject.custodian.user != request.user:
-        return HttpResponse('Permission denied', status=403)
+    # Check if user has permission to download this QR code
+    if qr.subject.custodian != request.user.custodian:
+        return HttpResponse(status=403)
     
-    # Get or generate image
-    if qr.image:
-        response = FileResponse(qr.image.open(), content_type='image/png')
-    else:
-        qr_url = request.build_absolute_uri(
-            reverse('subjects:scan_qr', args=[uuid])
-        )
-        img = generate_qr_image(qr_url)
-        response = HttpResponse(content_type='image/png')
-        img.save(response, 'PNG')
+    # Generate QR code if it doesn't exist
+    if not qr.image:
+        qr_image(request, uuid)
     
+    # Prepare response
+    response = HttpResponse(content_type='image/png')
     response['Content-Disposition'] = f'attachment; filename="qr_{uuid}.png"'
+    
+    # Write image to response
+    qr.image.open()
+    response.write(qr.image.read())
+    qr.image.close()
+    
     return response
 
 @login_required
 @require_POST
 def activate_qr(request, uuid):
-    """Activate a QR code"""
+    """Activate a QR code."""
     qr = get_object_or_404(SubjectQR, uuid=uuid)
     
-    # Check permissions
-    if not request.user.is_staff and qr.subject.custodian.user != request.user:
-        return JsonResponse({
-            'success': False,
-            'error': 'Permission denied'
-        }, status=403)
+    # Check if user has permission to activate this QR code
+    if qr.subject.custodian != request.user.custodian:
+        return HttpResponse(status=403)
     
-    try:
-        # Deactivate other QR codes for this subject
-        SubjectQR.objects.filter(subject=qr.subject).update(is_active=False)
-        
-        # Activate this QR code
-        qr.is_active = True
-        qr.activated_at = timezone.now()
-        qr.save()
-        
-        return JsonResponse({'success': True})
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
+    qr.is_active = True
+    qr.save()  # This will deactivate other QR codes
+    
+    messages.success(request, 'QR code activated successfully.')
+    return redirect('qr_codes')
 
 @login_required
 @require_POST
 def deactivate_qr(request, uuid):
-    """Deactivate a QR code"""
+    """Deactivate a QR code."""
     qr = get_object_or_404(SubjectQR, uuid=uuid)
     
-    # Check permissions
-    if not request.user.is_staff and qr.subject.custodian.user != request.user:
-        return JsonResponse({
-            'success': False,
-            'error': 'Permission denied'
-        }, status=403)
+    # Check if user has permission to deactivate this QR code
+    if qr.subject.custodian != request.user.custodian:
+        return HttpResponse(status=403)
     
-    try:
-        qr.is_active = False
-        qr.save()
-        return JsonResponse({'success': True})
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
+    qr.is_active = False
+    qr.save()
+    
+    messages.success(request, 'QR code deactivated successfully.')
+    return redirect('qr_codes')
 
 @login_required
 @require_POST
 def delete_qr(request, uuid):
-    """Delete QR code"""
+    """Delete a QR code."""
     qr = get_object_or_404(SubjectQR, uuid=uuid)
     
-    # Check permissions
-    if not request.user.is_staff and qr.subject.custodian.user != request.user:
-        return HttpResponse('Permission denied', status=403)
+    # Check if user has permission to delete this QR code
+    if qr.subject.custodian != request.user.custodian:
+        return HttpResponse(status=403)
     
-    if request.method == 'POST':
-        qr.delete()
-        messages.success(request, 'QR code deleted successfully')
-        return redirect('subjects:qr_codes')
-    
-    return HttpResponse('Invalid request method', status=405)
+    qr.delete()
+    messages.success(request, 'QR code deleted successfully.')
+    return redirect('qr_codes')
 
 def generate_qr_image(url):
     """Helper function to generate QR code image"""
@@ -343,149 +310,241 @@ def generate_qr_image(url):
 @csrf_exempt
 def scan_qr(request, uuid):
     """Handle QR code scanning and create alarm if active"""
-    qr = get_object_or_404(SubjectQR, uuid=uuid)
-    alarm = None
-    
-    if qr.is_active:
-        # Get location from request if available
-        location = None
-        if request.method == 'POST':
-            location = f"{request.POST.get('lat')},{request.POST.get('lng')}"
-        elif request.method == 'GET':
-            location = f"{request.GET.get('lat')},{request.GET.get('lng')}"
-        
-        # Create alarm
-        alarm = Alarm.objects.create(
-            subject=qr.subject,
-            qr_code=qr,
-            location=location
-        )
-        
-        # Update QR code last used timestamp
-        qr.last_used = timezone.now()
-        qr.save()
-        
-        # Send WhatsApp notification immediately in test mode
-        try:
-            # Since CELERY_TASK_ALWAYS_EAGER is True, this will execute immediately
-            send_whatsapp_notification.delay(alarm.id)
-            logger.info(f"WhatsApp notification queued for alarm {alarm.id}")
-        except Exception as e:
-            logger.error(f"Failed to queue WhatsApp notification for alarm {alarm.id}: {e}")
-    
-    # Return JSON response for API requests
-    if request.content_type == 'application/json' or request.headers.get('Accept') == 'application/json':
-        return JsonResponse({
-            'status': 'success' if qr.is_active else 'error',
-            'message': 'Alarm triggered successfully' if qr.is_active else 'QR code is not active',
-            'alarm_id': alarm.id if alarm else None
-        })
-    
-    # Return HTML response for browser requests
-    return render(request, 'subjects/scan_result.html', {
-        'qr': qr,
-        'alarm': alarm
-    })
+    try:
+        with transaction.atomic():
+            # Get QR with lock to prevent race conditions
+            qr = get_object_or_404(SubjectQR.objects.select_for_update(nowait=True), uuid=uuid)
+            
+            if not qr.is_active:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'QR code is not active',
+                    'alarm_id': None
+                })
 
-@require_POST
-def trigger_alarm(request, uuid):
-    """API endpoint for triggering an alarm from a QR code scan"""
-    qr = get_object_or_404(SubjectQR, uuid=uuid)
-    
-    # Return HTML response for browser requests
-    if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return render(request, 'subjects/test_alarm.html', {'qr': qr})
-    
-    # For API requests, continue with JSON response
-    if not qr.is_active:
+            # Check for recent alarms to prevent duplicates
+            recent_alarm = Alarm.objects.filter(
+                qr_code=qr,
+                timestamp__gte=timezone.now() - timezone.timedelta(minutes=1)
+            ).first()
+
+            if recent_alarm:
+                logger.info(f"Recent alarm exists for QR {uuid}, returning existing alarm {recent_alarm.id}")
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Recent alarm exists',
+                    'alarm_id': recent_alarm.id
+                })
+
+            # Get location from request if available
+            location = None
+            if request.method == 'POST':
+                location = f"{request.POST.get('lat')},{request.POST.get('lng')}"
+            elif request.method == 'GET':
+                location = f"{request.GET.get('lat')},{request.GET.get('lng')}"
+            
+            # Create alarm with proper status
+            alarm = Alarm.objects.create(
+                subject=qr.subject,
+                qr_code=qr,
+                location=location,
+                notification_status='PENDING',
+                notification_attempts=0,
+                timestamp=timezone.now(),
+                is_test=False  # Regular scan is not a test
+            )
+            
+            # Update QR code last used timestamp
+            qr.last_used = timezone.now()
+            qr.save(update_fields=['last_used'])
+            
+            # Schedule notification after transaction commits
+            transaction.on_commit(lambda: send_whatsapp_notification.delay(alarm.id, is_test=False))
+            
+            logger.info(f"Created new alarm {alarm.id} for QR {uuid}")
+            
+            # Return JSON response for API requests
+            if request.content_type == 'application/json' or request.headers.get('Accept') == 'application/json':
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Alarm triggered successfully',
+                    'alarm_id': alarm.id
+                })
+            
+            # Return HTML response for browser requests
+            return render(request, 'subjects/scan_result.html', {
+                'qr': qr,
+                'alarm': alarm
+            })
+            
+    except DatabaseError as e:
+        logger.error(f"Database error in scan_qr: {str(e)}")
         return JsonResponse({
             'status': 'error',
-            'message': 'This QR code is not active'
-        }, status=400)
-    
-    # Get location from request if available
-    location = None
-    if request.POST.get('lat') and request.POST.get('lng'):
-        location = f"{request.POST.get('lat')},{request.POST.get('lng')}"
-    
-    # Create alarm with test flag
-    alarm = Alarm.objects.create(
-        subject=qr.subject,
-        qr_code=qr,
-        location=location,
-        notification_status='TEST'  # Mark as test alarm
-    )
-    
-    # Update QR code last used timestamp
-    qr.last_used = timezone.now()
-    qr.save()
-    
-    # Queue WhatsApp notification
+            'message': 'System is busy, please try again in a moment',
+            'alarm_id': None
+        }, status=503)
+
+def prevent_duplicate_submission(timeout=5):
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapped(request, *args, **kwargs):
+            if request.method == "POST":
+                # Create a unique key based on user, URL, and QR UUID
+                cache_key = f"submission:{request.path}:{kwargs.get('uuid', '')}"
+                if cache.get(cache_key):
+                    return JsonResponse({"error": "Please wait before retrying"}, status=429)
+                cache.set(cache_key, True, timeout)
+            return view_func(request, *args, **kwargs)
+        return wrapped
+    return decorator
+
+@require_http_methods(["GET", "POST"])
+@prevent_duplicate_submission(timeout=5)
+def trigger_qr(request, uuid):
+    """View to trigger a QR code scan"""
     try:
-        send_whatsapp_notification.delay(alarm.id)
-    except Exception as e:
-        logger.error(f"Failed to queue WhatsApp notification for alarm {alarm.id}: {e}")
-    
-    return JsonResponse({
-        'status': 'success',
-        'message': 'Test alarm triggered successfully'
-    })
+        with transaction.atomic():
+            # Get QR code with select_for_update to prevent race conditions
+            qr = get_object_or_404(SubjectQR.objects.select_for_update(nowait=True), uuid=uuid)
+            
+            if request.method == "POST":
+                # Check if there's a recent pending alarm for this QR code
+                recent_alarm = Alarm.objects.filter(
+                    qr_code=qr,
+                    timestamp__gte=timezone.now() - timezone.timedelta(minutes=1)
+                ).first()
+
+                if recent_alarm:
+                    logger.info(f"Recent alarm exists for QR {uuid}, returning existing alarm {recent_alarm.id}")
+                    return JsonResponse({"status": "success", "alarm_id": recent_alarm.id})
+
+                # Create alarm with transaction
+                alarm = Alarm.objects.create(
+                    subject=qr.subject,
+                    qr_code=qr,
+                    is_test=True,
+                    notification_status='PENDING',
+                    notification_attempts=0,
+                    timestamp=timezone.now()
+                )
+                
+                # Schedule notification after transaction commits
+                transaction.on_commit(lambda: send_whatsapp_notification.delay(alarm.id, is_test=True))
+                
+                logger.info(f"Created new test alarm {alarm.id} for QR {uuid}")
+                return JsonResponse({"status": "success", "alarm_id": alarm.id})
+            
+            return render(request, 'subjects/qr_trigger.html', {'qr': qr})
+            
+    except DatabaseError as e:
+        # Log the error and return a user-friendly message
+        logger.error(f"Database error in trigger_qr: {str(e)}")
+        return JsonResponse(
+            {"error": "System is busy, please try again in a moment"},
+            status=503
+        )
 
 @login_required
-def print_qr(request):
-    """Print QR code page"""
-    uuid = request.GET.get('uuid')
-    if not uuid:
-        return HttpResponse('QR code UUID is required', status=400)
-    
-    qr = get_object_or_404(SubjectQR, uuid=uuid)
-    
-    # Check permissions
-    if not request.user.is_staff and qr.subject.custodian.user != request.user:
-        return HttpResponse('Permission denied', status=403)
-    
-    return render(request, 'subjects/print_qr.html', {
-        'qr': qr
-    })
-
-@login_required
-def assign_qr(request):
-    """Assign QR code to a subject"""
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
-    
-    qr_id = request.POST.get('qr_id')
-    subject_id = request.POST.get('subject_id')
-    
-    if not qr_id or not subject_id:
-        return JsonResponse({'success': False, 'error': 'QR ID and Subject ID are required'}, status=400)
+def print_qr(request, uuid=None):
+    """View to print a QR code"""
+    # If no UUID provided, check query parameters
+    if uuid is None:
+        uuid = request.GET.get('uuid')
+        if not uuid:
+            return JsonResponse({
+                'success': False,
+                'error': 'UUID is required'
+            }, status=400)
     
     try:
-        qr = get_object_or_404(SubjectQR, id=qr_id)
-        subject = get_object_or_404(Subject, id=subject_id)
+        # Get QR code and verify ownership
+        qr = get_object_or_404(SubjectQR, 
+                             uuid=uuid, 
+                             subject__custodian=request.user.custodian)
         
-        # Check permissions
-        if not request.user.is_staff:
-            if qr.subject and qr.subject.custodian.user != request.user:
-                return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
-            if subject.custodian.user != request.user:
-                return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
-        
-        # Assign subject to QR
-        qr.subject = subject
-        qr.save()
-        
-        return JsonResponse({
-            'success': True,
-            'message': f'QR code assigned to {subject.name}'
+        # Render print template
+        return render(request, 'subjects/print_qr.html', {
+            'qr': qr,
+            'qr_image_url': request.build_absolute_uri(
+                reverse('subjects:qr_image', args=[qr.uuid])
+            )
         })
         
-    except Exception as e:
-        logger.error(f"Error assigning QR code: {str(e)}")
+    except SubjectQR.DoesNotExist:
         return JsonResponse({
             'success': False,
-            'error': 'Failed to assign QR code'
+            'error': 'QR code not found'
+        }, status=404)
+    except Exception as e:
+        logger.error(f"Error printing QR code: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': 'Failed to print QR code'
         }, status=500)
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def assign_qr(request, uuid=None):
+    """View to assign QR codes to subjects"""
+    if request.method == "POST":
+        try:
+            with transaction.atomic():
+                # If UUID is provided, get that specific QR code
+                if uuid:
+                    qr = get_object_or_404(SubjectQR.objects.select_for_update(), 
+                                         uuid=uuid, 
+                                         subject__custodian=request.user.custodian)
+                    subject_id = request.POST.get('subject')
+                    if not subject_id:
+                        return JsonResponse({
+                            'success': False,
+                            'error': 'Subject ID is required'
+                        }, status=400)
+                else:
+                    # Create new QR code for the subject
+                    subject_id = request.POST.get('subject')
+                    if not subject_id:
+                        return JsonResponse({
+                            'success': False,
+                            'error': 'Subject ID is required'
+                        }, status=400)
+                    
+                    qr = SubjectQR.objects.create(
+                        subject_id=subject_id,
+                        uuid=uuid.uuid4(),
+                        is_active=True
+                    )
+                
+                # Get the subject and verify ownership
+                subject = get_object_or_404(Subject, 
+                                          id=subject_id, 
+                                          custodian=request.user.custodian)
+                
+                # Update QR code
+                qr.subject = subject
+                qr.save()
+                
+                # Return success response
+                return JsonResponse({
+                    'success': True,
+                    'message': 'QR code assigned successfully',
+                    'qr_uuid': str(qr.uuid)
+                })
+                
+        except Exception as e:
+            logger.error(f"Error assigning QR code: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'error': 'Failed to assign QR code'
+            }, status=500)
+    
+    # GET request - return the form
+    subjects = Subject.objects.filter(custodian=request.user.custodian)
+    return render(request, 'subjects/assign_qr.html', {
+        'subjects': subjects,
+        'qr_uuid': uuid
+    })
 
 @login_required
 def user_subject_list(request):

@@ -170,8 +170,8 @@ class TestQRCodeAPI:
         qr.refresh_from_db()
         assert qr.is_active
 
-    def test_trigger_alarm(self, auth_client, test_subject):
-        """Test POST /subjects/qr/<uuid>/trigger/"""
+    def test_trigger_qr(self, auth_client, test_subject):
+        """Test triggering a QR code alarm"""
         qr = SubjectQR.objects.create(
             subject=test_subject,
             uuid=str(uuid.uuid4()),

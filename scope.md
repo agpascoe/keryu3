@@ -202,14 +202,32 @@ Examples of Subjects that can be tracked:
    - REST API endpoints for QR scanning
    - WhatsApp API integration
    - Celery for async tasks
+   - Redis for message broker and result backend
+   - Process management via startup script
+   - Single instance management for critical services
 
-2. **Frontend**
+2. **Process Management**
+   - Automated service startup and shutdown
+   - Health checks for all services
+   - Instance verification
+   - Process cleanup
+   - Conda environment management
+   - Service dependency handling
+
+3. **Services**
+   - Redis server (message broker)
+   - Celery worker (task processing)
+   - Celery beat (scheduled tasks)
+   - Django development server
+   - All services managed via unified script
+
+4. **Frontend**
    - Bootstrap-based responsive design
    - JavaScript for dynamic interactions
    - QR code generation and management
    - Charts and statistics visualization
 
-3. **External Services**
+5. **External Services**
    - WhatsApp Business API
    - QR code generation library
    - Geolocation services (optional)
@@ -226,4 +244,6 @@ Examples of Subjects that can be tracked:
 2. QR codes can be scanned with standard mobile phones
 3. WhatsApp notifications are delivered within 1 minute of scanning
 4. System maintains accurate alarm history
-5. Statistics and reports are accurate and up-to-date 
+5. Statistics and reports are accurate and up-to-date
+6. All services start and run reliably via startup script
+7. No duplicate service instances running simultaneously 

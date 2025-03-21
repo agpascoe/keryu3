@@ -103,7 +103,7 @@ class QRCodeTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertFalse(SubjectQR.objects.filter(id=self.qr.id).exists())
 
-    @patch('subjects.tasks.send_whatsapp_notification.delay')
+    @patch('alarms.tasks.send_whatsapp_notification.delay')
     def test_scan_qr(self, mock_send_notification):
         """Test QR code scanning"""
         # Test scanning active QR code

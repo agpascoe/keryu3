@@ -33,7 +33,7 @@
             <div class="row g-4">
                 {% for qr in qr_codes %}
                 <div class="col-md-6 col-lg-4">
-                    <div class="card shadow-sm h-100">
+                    <div class="card shadow-sm h-100 {% if not qr.is_active %}border-danger{% endif %}">
                         <div class="card-header bg-light">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h5 class="card-title mb-0 text-accent">
@@ -65,17 +65,18 @@
                                             </button>
                                         </li>
                                         {% endif %}
+                                        {% if qr.is_active %}
                                         <li>
-                                            <form method="post" action="{% url 'subjects:trigger_alarm' qr.uuid %}" style="display: inline;">
-                                                {% csrf_token %}
+                                            <form method="get" action="{% url 'subjects:trigger_qr' qr.uuid %}" style="display: inline;">
                                                 <button type="submit" class="btn btn-warning btn-sm">
                                                     <i class="fas fa-bell me-2"></i>Test Alarm
                                                 </button>
                                             </form>
                                         </li>
+                                        {% endif %}
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
-                                            <button class="dropdown-item text-danger" onclick="deleteQR('{{ qr.id }}')">
+                                            <button class="dropdown-item text-danger" onclick="deleteQR('{{ qr.uuid }}')">
                                                 <i class="fas fa-trash me-2"></i>Delete
                                             </button>
                                         </li>
@@ -85,19 +86,27 @@
                         </div>
                         <div class="card-body text-center">
                             <div class="qr-container mb-3">
-                                <img src="{% url 'subjects:qr_image' qr.uuid %}" alt="QR Code" class="img-fluid">
+                                <img src="{% url 'subjects:qr_image' qr.uuid %}" alt="QR Code" class="img-fluid {% if not qr.is_active %}opacity-50{% endif %}">
                             </div>
                             <div class="mb-2">
                                 <span class="badge bg-secondary">ID: {{ qr.uuid|slice:"-4:" }}</span>
+                                <span class="badge {% if qr.is_active %}bg-success{% else %}bg-danger{% endif %} ms-2">
+                                    {% if qr.is_active %}
+                                        <i class="fas fa-check me-1"></i>Active
+                                    {% else %}
+                                        <i class="fas fa-times me-1"></i>Inactive
+                                    {% endif %}
+                                </span>
                             </div>
+                            {% if qr.is_active %}
                             <div class="mb-2">
-                                <form method="post" action="{% url 'subjects:trigger_alarm' qr.uuid %}" style="display: inline;">
-                                    {% csrf_token %}
+                                <form method="get" action="{% url 'subjects:trigger_qr' qr.uuid %}" style="display: inline;">
                                     <button type="submit" class="btn btn-warning btn-sm">
                                         <i class="fas fa-bell me-2"></i>Test Alarm
                                     </button>
                                 </form>
                             </div>
+                            {% endif %}
                             <div class="mb-3">
                                 <span class="badge {% if qr.subject %}bg-success{% else %}bg-warning{% endif %}">
                                     {% if qr.subject %}
@@ -303,9 +312,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- Add Bootstrap JavaScript -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
 function generateQR() {
     const form = document.getElementById('generateQRForm');
@@ -321,7 +327,6 @@ function generateQR() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Reload the page to show the new QR code
             window.location.reload();
         } else {
             alert(data.error || 'Failed to generate QR code');
@@ -359,32 +364,52 @@ function assignQR() {
 }
 
 function printQR(uuid) {
-    const printWindow = window.open(`{% url "subjects:print_qr" %}?uuid=${uuid}`, '_blank');
+    // Use the print endpoint with UUID as query parameter
+    const printUrl = `/subjects/qr/print/?uuid=${uuid}`;
+    const printWindow = window.open(printUrl, '_blank');
     printWindow.focus();
 }
 
-function deleteQR(qrId) {
-    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    const form = document.getElementById('deleteForm');
-    form.action = `/subjects/qr-codes/${qrId}/delete/`;
-    modal.show();
+function deleteQR(uuid) {
+    if (confirm('Are you sure you want to delete this QR code? This action cannot be undone.')) {
+        fetch(`/subjects/qr/${uuid}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.error || 'Failed to delete QR code');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the QR code');
+        });
+    }
 }
 
-// Initialize modals and tooltips
+// Initialize tooltips and modals
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
     
-    // Initialize assign modal
-    const assignModal = document.getElementById('assignModal');
-    assignModal.addEventListener('show.bs.modal', function(event) {
-        const button = event.relatedTarget;
-        const qrId = button.getAttribute('data-qr-id');
-        document.getElementById('assignQRId').value = qrId;
-    });
+    // Handle assign modal
+    var assignModal = document.getElementById('assignModal');
+    if (assignModal) {
+        assignModal.addEventListener('show.bs.modal', function(event) {
+            var button = event.relatedTarget;
+            var qrId = button.getAttribute('data-qr-id');
+            document.getElementById('assignQRId').value = qrId;
+        });
+    }
 });
 </script>
 {% endblock %} 

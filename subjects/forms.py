@@ -1,5 +1,5 @@
 from django import forms
-from .models import Subject
+from .models import Subject, SubjectQR
 from phonenumber_field.formfields import PhoneNumberField
 
 class SubjectForm(forms.ModelForm):
@@ -19,4 +19,12 @@ class SubjectForm(forms.ModelForm):
             'allergies': forms.Textarea(attrs={'rows': 3}),
             'medications': forms.Textarea(attrs={'rows': 3}),
             'doctor_address': forms.Textarea(attrs={'rows': 3}),
+        }
+
+class SubjectQRForm(forms.ModelForm):
+    class Meta:
+        model = SubjectQR
+        fields = ['subject']
+        widgets = {
+            'subject': forms.Select(attrs={'class': 'form-control'}),
         } 

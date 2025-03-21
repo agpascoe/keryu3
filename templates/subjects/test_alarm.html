@@ -1,58 +1,75 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Test Alarm - {{ block.super }}{% endblock %}
+{% block title %}{% if error_message %}Error{% elif show_form %}Test Alarm{% else %}Alarm Triggered{% endif %} - {{ block.super }}{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            {% if qr.is_active %}
+        <div class="col-md-8" id="alarm-container">
+            {% if show_form %}
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-bell"></i> Confirm Test Alarm
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-bell fa-4x text-warning"></i>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <p class="mb-0 text-center">
+                            <i class="fas fa-info-circle"></i> 
+                            You are about to trigger a test alarm for: <strong>{{ qr.subject.name }}</strong>
+                        </p>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <p class="text-muted mb-3">
+                            This will send a test notification to the custodian. The notification will be marked as "TEST".
+                        </p>
+                        <form method="post" id="test-alarm-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="test" value="true">
+                            <button type="submit" class="btn btn-warning btn-lg" id="trigger-button">
+                                <i class="fas fa-bell me-2"></i>Trigger Test Alarm
+                            </button>
+                            <a href="{% url 'subjects:qr_codes' %}" class="btn btn-secondary btn-lg ms-2">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% elif error_message %}
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-circle"></i> Error
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-danger mb-0">{{ error_message }}</p>
+                </div>
+            </div>
+            {% else %}
             <div class="card border-success">
                 <div class="card-header bg-success text-white">
                     <h4 class="mb-0">
-                        <i class="fas fa-bell"></i> Test Alarm Sent Successfully
+                        <i class="fas fa-check-circle"></i> Alarm Triggered
                     </h4>
                 </div>
                 <div class="card-body">
                     <div class="text-center mb-4">
                         <i class="fas fa-check-circle fa-4x text-success"></i>
                     </div>
-                    
-                    <div class="alert alert-info">
-                        <p class="mb-0 text-center">
-                            <i class="fas fa-info-circle"></i> Test notification sent to: <strong>{{ qr.subject.name }}</strong>
-                        </p>
-                    </div>
-                    
-                    <div class="text-center mt-4">
-                        <p class="text-muted mb-0">
-                            This was a test alarm. The custodian will receive a notification marked as "TEST".
-                        </p>
-                        <a href="{% url 'subjects:qr_codes' %}" class="btn btn-primary mt-3">
-                            <i class="fas fa-arrow-left me-2"></i>Back to QR Codes
-                        </a>
-                    </div>
-                </div>
-            </div>
-            {% else %}
-            <div class="card border-danger">
-                <div class="card-header bg-danger text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-exclamation-circle"></i> Test Failed
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <div class="text-center mb-4">
-                        <i class="fas fa-times-circle fa-4x text-danger"></i>
-                    </div>
-                    <div class="alert alert-warning">
-                        <p class="mb-0 text-center">
-                            <i class="fas fa-exclamation-triangle me-2"></i>This QR code is not active. Test alarms can only be sent for active QR codes.
-                        </p>
+                    <div class="alert alert-success">
+                        <p class="mb-0 text-center">{{ message }}</p>
                     </div>
                     <div class="text-center mt-4">
-                        <a href="{% url 'subjects:qr_codes' %}" class="btn btn-primary">
+                        <a href="{% url 'subjects:qr_codes' %}" class="btn btn-primary btn-lg">
                             <i class="fas fa-arrow-left me-2"></i>Back to QR Codes
                         </a>
                     </div>
@@ -62,4 +79,107 @@
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('test-alarm-form');
+    const button = document.getElementById('trigger-button');
+    const container = document.getElementById('alarm-container');
+    
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Triggering...';
+            
+            const formData = new FormData(form);
+            const searchParams = new URLSearchParams();
+            for (const [key, value] of formData) {
+                searchParams.append(key, value);
+            }
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: searchParams.toString()
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Create success card
+                container.innerHTML = `
+                    <div class="card border-success">
+                        <div class="card-header bg-success text-white">
+                            <h4 class="mb-0">
+                                <i class="fas fa-check-circle"></i> Alarm Triggered
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-4">
+                                <i class="fas fa-check-circle fa-4x text-success"></i>
+                            </div>
+                            <div class="alert alert-success">
+                                <p class="mb-0 text-center">${data.message}</p>
+                            </div>
+                            <div class="text-center mt-4">
+                                <a href="/subjects/qr-codes/" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to QR Codes
+                                </a>
+                            </div>
+                        </div>
+                    </div>`;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                container.innerHTML = `
+                    <div class="card border-danger">
+                        <div class="card-header bg-danger text-white">
+                            <h4 class="mb-0">
+                                <i class="fas fa-exclamation-circle"></i> Error
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-danger mb-0">Error: ${error.message}</p>
+                        </div>
+                    </div>`;
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-bell me-2"></i>Trigger Test Alarm';
+            });
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.card {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border: none;
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+}
+
+.fa-4x {
+    margin: 1rem 0;
+}
+
+.alert {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+</style>
+{% endblock %}
 {% endblock %} 

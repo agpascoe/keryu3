@@ -6,5 +6,5 @@ alwaysApply: true
 
 # Your rule content
 
-- ALWWAYS be sure and environment is activated. If not, activated.
+- ALWWAYS be sure that an environment is activated. If not, activate it.
  

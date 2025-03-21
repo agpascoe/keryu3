@@ -3,21 +3,28 @@ from django.http import HttpResponse, JsonResponse, FileResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.paginator import Paginator
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.utils import timezone
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from datetime import timedelta
 import csv
 import xlsxwriter
 import io
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
-from subjects.models import Alarm, Subject, SubjectQR
+from subjects.models import Subject, SubjectQR
 from .tasks import send_whatsapp_notification
 import json
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from .models import Alarm
+from django.conf import settings
+from django.contrib import messages
+from django.urls import reverse
+from django.shortcuts import redirect
+from django.views.decorators.csrf import csrf_exempt
+from django.core.exceptions import PermissionDenied
 
 @login_required
 def alarm_list(request):

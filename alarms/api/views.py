@@ -1,13 +1,17 @@
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from subjects.models import Alarm, Subject
+from django.shortcuts import get_object_or_404
+from subjects.models import Subject
+from ..models import Alarm
 from .serializers import AlarmSerializer
+from ..tasks import send_whatsapp_notification
 from django.utils import timezone
 from django.db.models import Count, Max, Q, FloatField
 from django.db.models.functions import Cast, ExtractHour
 from datetime import timedelta
+import json
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
@@ -54,7 +58,6 @@ def alarm_list_api(request):
             
             # Queue notification task
             try:
-                from subjects.tasks import send_whatsapp_notification
                 send_whatsapp_notification.delay(alarm.id)
             except Exception as e:
                 # Log the error but don't prevent alarm creation
@@ -192,7 +195,6 @@ def retry_notification_api(request, alarm_id):
     
     try:
         # Queue the notification task
-        from subjects.tasks import send_whatsapp_notification
         send_whatsapp_notification.delay(alarm.id)
         
         return Response({

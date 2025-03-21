@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Trigger QR Code</h2>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">{{ qr.subject.name }}</h5>
+            <p class="card-text">
+                QR Code ID: {{ qr.uuid }}<br>
+                Created: {{ qr.created_at }}
+            </p>
+            <form id="triggerForm" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary trigger-button" id="triggerButton">
+                    Trigger Alarm
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('triggerForm');
+        const button = document.getElementById('triggerButton');
+        let isSubmitting = false;
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (isSubmitting) {
+                return;
+            }
+            
+            isSubmitting = true;
+            button.disabled = true;
+            button.innerHTML = 'Triggering...';
+
+            try {
+                const response = await fetch(window.location.href, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    window.location.href = '{% url "alarms:alarm_list" %}';
+                } else {
+                    throw new Error('Network response was not ok');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                button.innerHTML = 'Error - Try Again';
+            } finally {
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    isSubmitting = false;
+                    button.disabled = false;
+                    button.innerHTML = 'Trigger Alarm';
+                }, 2000);
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %} 

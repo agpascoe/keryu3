@@ -1,0 +1,9 @@
+---
+description: When you need to restart all servers
+globs: 
+alwaysApply: false
+---
+
+# Your rule content
+
+When you need to restart all services in a controled,verified way, run the startup shell startup.sh

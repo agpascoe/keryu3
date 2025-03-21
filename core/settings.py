@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     'chartjs',
     'rest_framework',
     'drf_yasg',
+    'corsheaders',
+    'notifications',
 ]
 
 MIDDLEWARE = [
@@ -94,7 +96,11 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'OPTIONS': {
+            'timeout': 20,  # Seconds
+        },
         'ATOMIC_REQUESTS': True,
+        'CONN_MAX_AGE': 0,  # Close connections after each request
     }
 }
 
@@ -212,6 +218,12 @@ NOTIFICATION_PROVIDER = 'whatsapp_api'  # Only WhatsApp API is supported
 WHATSAPP_PHONE_NUMBER_ID = os.getenv('WHATSAPP_PHONE_NUMBER_ID', '')
 WHATSAPP_ACCESS_TOKEN = os.getenv('WHATSAPP_ACCESS_TOKEN', '')
 
+# Twilio Configuration
+TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID', '')
+TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN', '')
+TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER', '')
+TWILIO_WHATSAPP_NUMBER = os.getenv('TWILIO_WHATSAPP_NUMBER', '')
+
 # QR Code Configuration
 QR_CODE_DIR = os.path.join(MEDIA_ROOT, 'qr_codes')
 os.makedirs(QR_CODE_DIR, exist_ok=True)
@@ -225,14 +237,27 @@ CACHES = {
 }
 
 # Celery Configuration
-CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
-CELERY_TASK_ALWAYS_EAGER = True  # Execute tasks immediately in test mode
-CELERY_TASK_EAGER_PROPAGATES = True  # Propagate exceptions in eager mode
+CELERY_TASK_ALWAYS_EAGER = False  # Run tasks asynchronously
+CELERY_TASK_EAGER_PROPAGATES = False
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_IMPORTS = [
+    'subjects.tasks',
+    'alarms.tasks',
+]
+CELERY_TASK_DEFAULT_QUEUE = 'default'
+CELERY_TASK_DEFAULT_EXCHANGE = 'default'
+CELERY_TASK_DEFAULT_ROUTING_KEY = 'default'
+CELERY_TASK_CREATE_MISSING_QUEUES = True
+CELERY_TASK_ROUTES = {
+    'subjects.tasks.*': {'queue': 'subjects'},
+    'alarms.tasks.*': {'queue': 'alarms'},
+}
 
 # REST Framework settings
 REST_FRAMEWORK = {

@@ -26,6 +26,7 @@ from django.contrib.auth.models import User
 from core.email_backend import PopupEmailBackend
 import re
 from custodians.models import Custodian
+from alarms.models import Alarm
 
 logger = logging.getLogger(__name__)
 
@@ -143,7 +144,6 @@ def dashboard(request):
         active_qrs = SubjectQR.objects.filter(subject__custodian=request.user.custodian, is_active=True).count()
     
     # Get recent alarms (last 24 hours)
-    from subjects.models import Alarm
     last_24h = timezone.now() - timezone.timedelta(hours=24)
     if request.user.is_staff:
         recent_alarms = Alarm.objects.filter(timestamp__gte=last_24h).count()

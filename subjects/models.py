@@ -59,36 +59,3 @@ class SubjectQR(models.Model):
             # Deactivate other QR codes for this subject
             SubjectQR.objects.filter(subject=self.subject).exclude(pk=self.pk).update(is_active=False)
         super().save(*args, **kwargs)
-
-class Alarm(models.Model):
-    """Model for tracking alarms triggered by QR code scans."""
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='alarms')
-    qr_code = models.ForeignKey(SubjectQR, on_delete=models.SET_NULL, null=True, related_name='alarms')
-    timestamp = models.DateTimeField(auto_now_add=True)
-    location = models.CharField(max_length=100, null=True, blank=True)
-    
-    # Notification tracking fields
-    notification_sent = models.BooleanField(default=False)
-    notification_error = models.TextField(null=True, blank=True)
-    notification_attempts = models.IntegerField(default=0)
-    last_attempt = models.DateTimeField(null=True, blank=True)
-    whatsapp_message_id = models.CharField(max_length=255, null=True, blank=True)
-    notification_status = models.CharField(
-        max_length=20,
-        choices=[
-            ('PENDING', 'Pending'),
-            ('SENT', 'Sent'),
-            ('DELIVERED', 'Delivered'),
-            ('FAILED', 'Failed'),
-            ('ERROR', 'Error'),
-        ],
-        default='PENDING'
-    )
-
-    class Meta:
-        ordering = ['-timestamp']
-        verbose_name = 'Alarm'
-        verbose_name_plural = 'Alarms'
-
-    def __str__(self):
-        return f"Alarm for {self.subject.name} at {self.timestamp}"

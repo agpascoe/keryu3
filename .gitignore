@@ -45,3 +45,6 @@ venv.bak/
 # OS
 .DS_Store
 Thumbs.db qr_test.png
+
+# Twilio test environment
+twilio_test/.env

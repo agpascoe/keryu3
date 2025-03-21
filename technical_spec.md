@@ -1,7 +1,7 @@
 # Technical Specifications - Keryu System
 
 ## System Overview
-The Keryu System is a Django-based application designed to manage subjects (such as children, elders, or persons with disabilities), generate QR codes for tracking, and deliver notifications through WhatsApp using the Meta WhatsApp Business API. The system handles user management with email verification, QR code generation, alarm creation, and asynchronous message delivery.
+The Keryu System is a Django-based application designed to manage subjects (such as children, elders, or persons with disabilities), generate QR codes for tracking, and deliver notifications through WhatsApp using the Meta WhatsApp Business API. The system handles user management with email verification, QR code generation, alarm creation, and asynchronous message delivery with robust race condition prevention and status tracking.
 
 ## Actors and Use Cases
 
@@ -26,6 +26,8 @@ The Keryu System is a Django-based application designed to manage subjects (such
        A --> C[Celery Worker]
        A --> D[Database System]
        A --> E[QR Code Generator]
+       A --> F[Redis Server]
+       A --> G[Celery Beat]
    ```
 
 3. **Passive Actors**
@@ -405,6 +407,61 @@ The Keryu System is a Django-based application designed to manage subjects (such
    - Error handling and retry logic
    - Delivery status tracking
 
+### Process Management
+
+The system relies on several concurrent processes that work together:
+
+1. **Redis Server**
+   - Acts as message broker for Celery
+   - Provides result backend storage
+   - Single instance required
+
+2. **Celery Worker**
+   - Handles asynchronous tasks
+   - Processes multiple queues:
+     * subjects: Subject-related tasks
+     * alarms: Alarm processing tasks
+     * default: General tasks
+   - Single worker instance with solo pool
+
+3. **Celery Beat**
+   - Manages scheduled tasks
+   - Runs periodic task scheduling
+   - Single instance required
+
+4. **Django Development Server**
+   - Runs with two processes by design:
+     * Main process: Handles HTTP requests
+     * Autoreloader: Watches for file changes
+   - Both processes are normal and expected
+
+### Process Management Tools
+
+1. **Startup Script (`startup.sh`)**
+   - Manages service lifecycle
+   - Features:
+     * Process cleanup
+     * Conda environment activation
+     * Service startup sequence
+     * Health checks
+     * Instance verification
+   - Ensures single instances (except Django)
+   - Provides proper error handling
+
+2. **Process Verification**
+   - Checks running instances
+   - Validates process counts
+   - Ensures clean environment
+
+3. **Service Dependencies**
+   ```mermaid
+   graph TD
+       A[Redis Server] --> B[Celery Worker]
+       A --> C[Celery Beat]
+       B --> D[Django Server]
+       C --> D
+   ```
+
 ## System Diagrams
 
 ### High-Level System Architecture
@@ -749,10 +806,11 @@ POST /alarms/<id>/retry/         # Retry failed notification
 ```python
 NOTIFICATION_STATUSES = [
     ('PENDING', 'Pending'),
+    ('PROCESSING', 'Processing'),
     ('SENT', 'Sent'),
     ('DELIVERED', 'Delivered'),
     ('FAILED', 'Failed'),
-    ('ERROR', 'Error')
+    ('ERROR', 'Error'),
 ]
 ```
 
@@ -907,4 +965,50 @@ ALLOWED_HOSTS
    - Role-based access (Admin/Custodian)
    - Staff users excluded from custodian counts
    - Filtered data based on user role
-   - Secure statistical calculations 
+   - Secure statistical calculations
+
+## Notification System Architecture
+
+### Task Architecture
+```mermaid
+graph TD
+    A[Alarm Created] --> B[send_whatsapp_notification Task]
+    B --> C{Check Status}
+    C -->|Already Sent| D[Return Success]
+    C -->|In Progress| E[Return Success]
+    C -->|New| F[Process Notification]
+    F --> G{Send Message}
+    G -->|Success| H[Update Status: SENT]
+    G -->|Failure| I[Update Status: FAILED]
+    I -->|Retries < 3| J[Retry Task]
+    I -->|Retries >= 3| K[Log Error]
+```
+
+### Status Tracking
+The system uses a comprehensive status tracking system:
+```python
+notification_status = models.CharField(
+    max_length=20,
+    choices=[
+        ('PENDING', 'Pending'),
+        ('PROCESSING', 'Processing'),
+        ('SENT', 'Sent'),
+        ('DELIVERED', 'Delivered'),
+        ('FAILED', 'Failed'),
+        ('ERROR', 'Error'),
+    ],
+    default='PENDING'
+)
+```
+
+### Race Condition Prevention
+- Database-level locking using `select_for_update`
+- Transaction isolation
+- Status-based duplicate prevention
+- Atomic updates for notification fields
+
+### Retry Mechanism
+- Maximum 3 retry attempts
+- Exponential backoff
+- Detailed error tracking
+- Status preservation between attempts 
