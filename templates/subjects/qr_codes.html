@@ -90,7 +90,11 @@
                             </div>
                             <div class="mb-2">
                                 <span class="badge bg-secondary">ID: {{ qr.uuid|slice:"-4:" }}</span>
-                                <span class="badge {% if qr.is_active %}bg-success{% else %}bg-danger{% endif %} ms-2">
+                                <span class="badge {% if qr.is_active %}bg-success{% else %}bg-danger{% endif %} ms-2 status-badge" 
+                                      role="button" 
+                                      onclick="toggleQRStatus('{{ qr.uuid }}')" 
+                                      data-qr-uuid="{{ qr.uuid }}"
+                                      style="cursor: pointer;">
                                     {% if qr.is_active %}
                                         <i class="fas fa-check me-1"></i>Active
                                     {% else %}
@@ -388,6 +392,54 @@ function deleteQR(uuid) {
             alert('An error occurred while deleting the QR code');
         });
     }
+}
+
+function toggleQRStatus(uuid) {
+    fetch(`/subjects/qr/${uuid}/toggle/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Fetch the updated QR codes list
+            fetch(window.location.href, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Create a temporary container
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+                
+                // Get all QR cards from the response
+                const newQRCards = temp.querySelectorAll('.col-md-6.col-lg-4');
+                const currentQRCards = document.querySelectorAll('.col-md-6.col-lg-4');
+                
+                // Update each card with its new state
+                currentQRCards.forEach((currentCard, index) => {
+                    if (newQRCards[index]) {
+                        currentCard.innerHTML = newQRCards[index].innerHTML;
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error updating QR cards:', error);
+                window.location.reload(); // Fallback to page reload if update fails
+            });
+        } else {
+            alert(data.error || 'Failed to toggle QR code status');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while toggling the QR code status');
+    });
 }
 
 // Initialize tooltips and modals

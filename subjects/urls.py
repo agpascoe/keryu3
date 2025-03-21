@@ -25,6 +25,7 @@ urlpatterns = [
     path('qr/print/', views.print_qr, name='print_qr'),  # Default print endpoint
     path('qr/<uuid:uuid>/scan/', views.scan_qr, name='scan_qr'),
     path('qr/<uuid:uuid>/trigger/', views.trigger_qr, name='trigger_qr'),
+    path('qr/<uuid:uuid>/toggle/', views.toggle_qr_status, name='toggle_qr_status'),
     
     # Admin views (prefixed with admin/)
     path('admin/subjects/', views.subject_list, name='subject_list'),

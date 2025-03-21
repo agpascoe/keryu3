@@ -4,8 +4,14 @@ A Django-based system for managing and tracking subjects (children, elders, or p
 
 ## Features
 
+- **Subject Management**: Create, update, and manage subjects in the system
+- **QR Code Management**: 
+  - Generate and manage QR codes for subjects
+  - Toggle QR code active/inactive status with real-time updates
+  - Visual status indicators for easy management
+  - Automatic state management ensuring only one active QR per subject
+- **Alarm System**: Configure and manage alarms for subjects
 - Subject management (personal and medical information)
-- QR code generation and management
 - QR code scanning and alarm creation
 - Multi-channel messaging support:
   - Meta WhatsApp API (Primary)

@@ -575,3 +575,16 @@ def user_subject_list(request):
         'subjects': subjects,
         'stats': stats
     })
+
+@login_required
+@require_POST
+def toggle_qr_status(request, uuid):
+    """Simple toggle of QR active status with JSON response"""
+    qr = get_object_or_404(SubjectQR, uuid=uuid, subject__custodian=request.user.custodian)
+    with transaction.atomic():
+        qr.is_active = not qr.is_active
+        qr.save()
+    return JsonResponse({
+        'success': True,
+        'is_active': qr.is_active
+    })

@@ -1016,3 +1016,19 @@ notification_status = models.CharField(
 - Exponential backoff
 - Detailed error tracking
 - Status preservation between attempts 
+
+### QR Code Management
+
+QR codes in the system can be managed through a user-friendly interface that provides the following functionality:
+
+1. **QR Code Status Toggle**
+   - Each QR code has an active/inactive status that can be toggled directly from the QR code list view
+   - The toggle is implemented as a clickable badge that updates in real-time using AJAX
+   - Only one QR code can be active per subject at a time
+   - Visual indicators include:
+     - Green badge for active status
+     - Red badge for inactive status
+     - Opacity changes for the QR code image
+     - Border color changes for the card
+
+2. **QR Code Generation** 
