@@ -9,6 +9,10 @@ print_error() {
     echo -e "\033[1;31m>>> ERROR: $1\033[0m"
 }
 
+print_debug() {
+    echo -e "\033[1;33m>>> DEBUG: $1\033[0m"
+}
+
 # Verify single instance of a process
 verify_single_instance() {
     local process_name=$1
@@ -27,6 +31,18 @@ verify_single_instance() {
     fi
 }
 
+# Check if conda is installed
+if ! command -v conda &> /dev/null; then
+    print_error "Conda is not installed. Please install Miniconda or Anaconda first."
+    exit 1
+fi
+
+# Check if Redis is installed
+if ! command -v redis-cli &> /dev/null; then
+    print_error "Redis is not installed. Please install Redis first (brew install redis)"
+    exit 1
+fi
+
 # Kill all existing processes
 print_status "Cleaning up existing processes..."
 pkill -9 -f "celery worker" 
@@ -35,21 +51,60 @@ pkill -9 -f "runserver"
 brew services stop redis
 sleep 2
 
-# Initialize and activate conda environment first
-print_status "Initializing Conda environment..."
-# Ensure conda is initialized in zsh
-source $HOME/miniconda3/etc/profile.d/conda.sh
-conda activate keryu || { print_error "Failed to activate keryu environment"; exit 1; }
+# Initialize conda for the current shell
+print_status "Initializing conda..."
+CONDA_SH="$HOME/miniconda3/etc/profile.d/conda.sh"
+if [[ ! -f "$CONDA_SH" ]]; then
+    CONDA_SH="/usr/local/miniconda3/etc/profile.d/conda.sh"
+fi
 
-# Verify conda environment is activated
-if [[ "$CONDA_DEFAULT_ENV" != "keryu" ]]; then
-    print_error "Conda environment 'keryu' is not activated"
+if [[ ! -f "$CONDA_SH" ]]; then
+    print_error "Could not find conda.sh. Please ensure Conda is properly installed."
     exit 1
 fi
-print_status "Successfully activated keryu environment"
 
-# Export the conda environment path for subprocesses
-export PATH="$CONDA_PREFIX/bin:$PATH"
+# Source conda.sh and activate environment in a subshell to ensure it's properly activated
+if ! (source "$CONDA_SH" && conda activate keryu && which celery > /dev/null); then
+    print_error "Failed to activate conda environment or celery not found"
+    exit 1
+fi
+
+# Set the absolute path to the conda environment
+CONDA_ENV_PATH="$HOME/miniconda3/envs/keryu"
+if [[ ! -d "$CONDA_ENV_PATH" ]]; then
+    CONDA_ENV_PATH="/usr/local/miniconda3/envs/keryu"
+fi
+
+if [[ ! -d "$CONDA_ENV_PATH" ]]; then
+    print_error "Could not find conda environment directory"
+    exit 1
+fi
+
+# Set absolute paths for binaries
+CELERY_BIN="$CONDA_ENV_PATH/bin/celery"
+PYTHON_BIN="$CONDA_ENV_PATH/bin/python"
+
+# Verify celery is available
+if [[ ! -x "$CELERY_BIN" ]]; then
+    print_error "Celery executable not found at $CELERY_BIN"
+    exit 1
+fi
+
+# Verify all required packages are installed
+print_status "Verifying required packages..."
+required_packages=(
+    "django"
+    "celery"
+    "redis"
+    "psycopg2"
+)
+
+for package in "${required_packages[@]}"; do
+    if ! python -c "import $package" &> /dev/null; then
+        print_error "Required package '$package' is not installed"
+        exit 1
+    fi
+done
 
 # Start Redis
 print_status "Starting Redis server..."
@@ -77,41 +132,88 @@ export CELERY_BROKER_URL="redis://localhost:6379/0"
 export CELERY_RESULT_BACKEND="redis://localhost:6379/0"
 export PYTHONPATH=$PWD:$PYTHONPATH
 
-# Verify celery is available
-if ! command -v $CONDA_PREFIX/bin/celery &> /dev/null; then
-    print_error "Celery not found in conda environment"
-    exit 1
-fi
-
 # Start Celery worker (single instance)
 print_status "Starting Celery worker..."
 WORKER_NAME="keryu_worker_$(date +%s)"
-$CONDA_PREFIX/bin/celery -A keryu3 worker -l INFO -P solo -Q subjects,alarms,default --hostname=$WORKER_NAME --purge --without-mingle --without-gossip &
+
+# Create a log file for celery worker
+WORKER_LOG="celery_worker.log"
+touch $WORKER_LOG
+
+print_debug "Starting worker with name: $WORKER_NAME"
+print_debug "Using celery binary: $CELERY_BIN"
+print_debug "Worker log file: $WORKER_LOG"
+
+(
+    source "$CONDA_SH" && \
+    conda activate keryu && \
+    $CELERY_BIN -A keryu3 worker \
+        -l INFO \
+        -P solo \
+        -Q subjects,alarms,default \
+        --hostname=$WORKER_NAME \
+        --purge \
+        --without-mingle \
+        --without-gossip > $WORKER_LOG 2>&1
+) &
 WORKER_PID=$!
 
 # Wait for worker to start and verify it's running
+print_status "Waiting for worker to start..."
 sleep 5
+
 if ! ps -p $WORKER_PID > /dev/null; then
     print_error "Celery worker failed to start"
+    print_debug "Worker log contents:"
+    cat $WORKER_LOG
     exit 1
 fi
-if ! $CONDA_PREFIX/bin/celery -A keryu3 status | grep -q "keryu_worker"; then
-    print_error "Celery worker is not responding"
-    exit 1
-fi
+
+# Try multiple times to check worker status
+max_attempts=30
+attempt=1
+while ! $CELERY_BIN -A keryu3 status | grep -q "keryu_worker"; do
+    if [ $attempt -ge $max_attempts ]; then
+        print_error "Celery worker failed to respond after $max_attempts attempts"
+        print_debug "Worker log contents:"
+        cat $WORKER_LOG
+        exit 1
+    fi
+    echo -n "."
+    sleep 1
+    attempt=$((attempt + 1))
+done
+
 print_status "Celery worker is running with name: $WORKER_NAME"
 
 # Start Celery beat scheduler (single instance)
 print_status "Starting Celery beat scheduler..."
-$CONDA_PREFIX/bin/celery -A keryu3 beat -l INFO &
+
+# Create a log file for celery beat
+BEAT_LOG="celery_beat.log"
+touch $BEAT_LOG
+
+print_debug "Using celery binary: $CELERY_BIN"
+print_debug "Beat log file: $BEAT_LOG"
+
+(
+    source "$CONDA_SH" && \
+    conda activate keryu && \
+    $CELERY_BIN -A keryu3 beat -l INFO > $BEAT_LOG 2>&1
+) &
 BEAT_PID=$!
 
 # Wait for beat to start and verify it's running
+print_status "Waiting for beat to start..."
 sleep 5
+
 if ! ps -p $BEAT_PID > /dev/null; then
     print_error "Celery beat scheduler failed to start"
+    print_debug "Beat log contents:"
+    cat $BEAT_LOG
     exit 1
 fi
+
 print_status "Celery beat scheduler is running"
 
 # Start Django development server
@@ -120,8 +222,8 @@ print_status "Starting Django development server..."
 pkill -f "manage.py runserver"
 sleep 2
 
-# Start the Django server (will auto-spawn second process for reloader)
-$CONDA_PREFIX/bin/python manage.py runserver > django.log 2>&1 &
+# Start the Django server
+(source "$CONDA_SH" && conda activate keryu && $PYTHON_BIN manage.py runserver > django.log 2>&1) &
 DJANGO_PID=$!
 
 # Wait for Django to start and verify it's running properly
@@ -149,13 +251,13 @@ print_status "Django server is running"
 # Verify single instances with more precise matching
 print_status "Verifying single instances of all services..."
 verify_single_instance "/usr/local/opt/redis/bin/redis-server"
-verify_single_instance "celery -A keryu3 worker.*--hostname=$WORKER_NAME"
-verify_single_instance "celery -A keryu3 beat"
+verify_single_instance "$CELERY_BIN -A keryu3 worker.*--hostname=$WORKER_NAME"
+verify_single_instance "$CELERY_BIN -A keryu3 beat"
 verify_single_instance "manage.py runserver" 2  # Allow 2 processes for Django
 
 print_status "All services are running with expected number of instances"
 print_status "System is ready for testing"
 
-# Keep the script running and clean up on exit
-trap "pkill -f 'celery worker' && pkill -f 'celery beat' && pkill -f 'runserver' && rm django.log" EXIT
+# Update cleanup to include log files
+trap "pkill -f 'celery worker' && pkill -f 'celery beat' && pkill -f 'runserver' && rm -f django.log celery_worker.log celery_beat.log" EXIT
 wait $DJANGO_PID 
