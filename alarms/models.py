@@ -1,6 +1,23 @@
 from django.db import models
 from django.utils import timezone
 
+class NotificationStatus:
+    PENDING = 'PENDING'
+    PROCESSING = 'PROCESSING'
+    SENT = 'SENT'
+    DELIVERED = 'DELIVERED'
+    FAILED = 'FAILED'
+    ERROR = 'ERROR'
+
+    CHOICES = [
+        (PENDING, 'Pending'),
+        (PROCESSING, 'Processing'),
+        (SENT, 'Sent'),
+        (DELIVERED, 'Delivered'),
+        (FAILED, 'Failed'),
+        (ERROR, 'Error'),
+    ]
+
 class Alarm(models.Model):
     """Model for tracking alarms triggered by QR code scans."""
     subject = models.ForeignKey('subjects.Subject', on_delete=models.CASCADE, related_name='alarms_new')
@@ -17,15 +34,8 @@ class Alarm(models.Model):
     whatsapp_message_id = models.CharField(max_length=255, null=True, blank=True)
     notification_status = models.CharField(
         max_length=20,
-        choices=[
-            ('PENDING', 'Pending'),
-            ('PROCESSING', 'Processing'),
-            ('SENT', 'Sent'),
-            ('DELIVERED', 'Delivered'),
-            ('FAILED', 'Failed'),
-            ('ERROR', 'Error'),
-        ],
-        default='PENDING'
+        choices=NotificationStatus.CHOICES,
+        default=NotificationStatus.PENDING
     )
     
     created_at = models.DateTimeField(auto_now_add=True)

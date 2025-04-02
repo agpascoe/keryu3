@@ -9,7 +9,7 @@ import requests
 from notifications.providers import get_notification_service
 from core.celery import app
 from django.db import transaction
-from .models import Alarm
+from .models import Alarm, NotificationStatus
 
 logger = logging.getLogger(__name__)
 
@@ -25,15 +25,15 @@ def send_whatsapp_notification(self, alarm_id, is_test=False):
             alarm = Alarm.objects.select_for_update(nowait=True).get(id=alarm_id)
             
             # Check if notification is already sent or in progress
-            if alarm.notification_status == 'SENT':
+            if alarm.notification_status == NotificationStatus.SENT:
                 logger.info(f"Notification for alarm {alarm_id} already sent")
                 return True
-            elif alarm.notification_status == 'IN_PROGRESS':
+            elif alarm.notification_status == NotificationStatus.PROCESSING:
                 logger.info(f"Notification for alarm {alarm_id} is already in progress")
                 return True
             
             # Mark as in progress
-            alarm.notification_status = 'IN_PROGRESS'
+            alarm.notification_status = NotificationStatus.PROCESSING
             alarm.save(update_fields=['notification_status'])
             
             # Get notification service
@@ -63,7 +63,7 @@ def send_whatsapp_notification(self, alarm_id, is_test=False):
                 
                 # Update alarm status based on response
                 if result['status'] == 'success':
-                    alarm.notification_status = 'SENT'
+                    alarm.notification_status = NotificationStatus.SENT
                     alarm.notification_sent = True
                     alarm.last_attempt = timezone.now()
                     alarm.notification_attempts += 1
@@ -83,7 +83,7 @@ def send_whatsapp_notification(self, alarm_id, is_test=False):
                 
             except Exception as e:
                 # Handle notification failure
-                alarm.notification_status = 'FAILED'
+                alarm.notification_status = NotificationStatus.FAILED
                 alarm.notification_attempts += 1
                 alarm.notification_error = str(e)
                 alarm.save(update_fields=[
@@ -114,11 +114,9 @@ def retry_failed_notifications():
     """
     Retry sending notifications for alarms where notification failed.
     """
-    from .models import Alarm
-    
     # Get alarms where notification wasn't sent or failed
     failed_alarms = Alarm.objects.filter(
-        Q(notification_sent=False) | Q(notification_status__in=['ERROR', 'FAILED']),
+        Q(notification_sent=False) | Q(notification_status__in=[NotificationStatus.ERROR, NotificationStatus.FAILED]),
         notification_attempts__lt=3,  # Limit retries to 3 attempts
         timestamp__gte=timezone.now() - timezone.timedelta(days=1)  # Only last 24 hours
     )
@@ -132,13 +130,11 @@ def process_pending_alarms(self):
     """
     Process all pending alarms and send notifications
     """
-    from .models import Alarm
-    
     logger.info("Starting to process pending alarms...")
     
     # Get all pending alarms
     pending_alarms = Alarm.objects.filter(
-        notification_status='PENDING',
+        notification_status=NotificationStatus.PENDING,
         notification_attempts__lt=3
     )
     
@@ -184,13 +180,13 @@ def process_pending_alarms(self):
             
             # Process the response
             if response['status'] == 'success':
-                alarm.notification_status = 'SENT'
+                alarm.notification_status = NotificationStatus.SENT
                 alarm.notification_sent = True
                 alarm.notification_error = None
                 processed_count += 1
                 logger.info(f"Notification sent successfully for alarm {alarm.id} via {response.get('channel', 'unknown')}")
             else:
-                alarm.notification_status = 'ERROR'
+                alarm.notification_status = NotificationStatus.ERROR
                 alarm.notification_error = f"Error: {response.get('error', 'Unknown error')}"
                 error_count += 1
                 logger.error(f"Failed to send notification for alarm {alarm.id}. Error: {response.get('error')}")
@@ -201,7 +197,7 @@ def process_pending_alarms(self):
             error_count += 1
             logger.error(f"Error processing alarm {alarm.id}: {str(e)}")
             try:
-                alarm.notification_status = 'ERROR'
+                alarm.notification_status = NotificationStatus.ERROR
                 alarm.notification_error = str(e)
                 alarm.save()
             except Exception:

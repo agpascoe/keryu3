@@ -4,7 +4,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from subjects.models import Subject
-from ..models import Alarm
+from ..models import Alarm, NotificationStatus
 from .serializers import AlarmSerializer
 from ..tasks import send_whatsapp_notification
 from django.utils import timezone
@@ -126,9 +126,10 @@ def alarm_statistics_api(request):
         'subject_stats': [],
         'date_stats': [],
         'notifications': {
-            'sent': filtered_alarms.filter(notification_sent=True).count(),
-            'failed': filtered_alarms.filter(notification_sent=False, notification_error__isnull=False).count(),
-            'pending': filtered_alarms.filter(notification_sent=False, notification_error__isnull=True).count(),
+            'sent': filtered_alarms.filter(notification_status=NotificationStatus.SENT).count(),
+            'delivered': filtered_alarms.filter(notification_status=NotificationStatus.DELIVERED).count(),
+            'failed': filtered_alarms.filter(notification_status__in=[NotificationStatus.FAILED, NotificationStatus.ERROR]).count(),
+            'pending': filtered_alarms.filter(notification_status__in=[NotificationStatus.PENDING, NotificationStatus.PROCESSING]).count(),
         },
         'time_range': {
             'start_date': start_date.isoformat(),
@@ -145,7 +146,7 @@ def alarm_statistics_api(request):
         count=Count('id'),
         last_alarm=Max('timestamp'),
         notification_success_rate=Cast(
-            Count('id', filter=Q(notification_sent=True)) * 100.0 / Count('id'),
+            Count('id', filter=Q(notification_status=NotificationStatus.SENT)) * 100.0 / Count('id'),
             output_field=FloatField()
         )
     ).order_by('-count')
@@ -154,8 +155,8 @@ def alarm_statistics_api(request):
     # Get daily statistics
     daily_stats = filtered_alarms.values('timestamp__date').annotate(
         count=Count('id'),
-        notifications_sent=Count('id', filter=Q(notification_sent=True)),
-        notifications_failed=Count('id', filter=Q(notification_sent=False))
+        notifications_sent=Count('id', filter=Q(notification_status=NotificationStatus.SENT)),
+        notifications_failed=Count('id', filter=Q(notification_status__in=[NotificationStatus.FAILED, NotificationStatus.ERROR]))
     ).order_by('timestamp__date')
     data['date_stats'] = list(daily_stats)
     
@@ -187,7 +188,7 @@ def retry_notification_api(request, alarm_id):
             status=status.HTTP_404_NOT_FOUND
         )
     
-    if alarm.notification_sent:
+    if alarm.notification_status == NotificationStatus.SENT:
         return Response(
             {'error': 'Notification was already sent'},
             status=status.HTTP_400_BAD_REQUEST
