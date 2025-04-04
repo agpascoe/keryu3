@@ -30,4 +30,5 @@ urlpatterns = [
     # Admin views (prefixed with admin/)
     path('admin/subjects/', views.subject_list, name='subject_list'),
     path('admin/subjects/stats/', views.subject_stats, name='subject_stats'),
+    path('admin/qr/regenerate-all/', views.regenerate_all_qr_images, name='regenerate_all_qr_images'),
 ] 

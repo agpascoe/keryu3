@@ -30,6 +30,7 @@ from django.core.paginator import Paginator
 from django.core.cache import cache
 from functools import wraps
 from django.db import DatabaseError
+from django.core.files.base import ContentFile
 
 logger = logging.getLogger(__name__)
 
@@ -177,12 +178,16 @@ def generate_qr(request):
 
             subject = get_object_or_404(Subject, id=subject_id, custodian=request.user.custodian)
             
+            logger.debug(f"Generating new QR code for subject: {subject.name} (ID: {subject.id})")
+            
             # Generate QR code
             qr = SubjectQR.objects.create(
                 subject=subject,
                 uuid=uuid.uuid4(),
                 is_active=True  # This will deactivate other QR codes
             )
+            
+            logger.debug(f"QR code created with UUID: {qr.uuid}")
             
             success_msg = 'QR code generated successfully'
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -198,6 +203,7 @@ def generate_qr(request):
             
         except Subject.DoesNotExist:
             error_msg = 'Subject not found'
+            logger.error(f"QR generation error: {error_msg}")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 messages.error(request, error_msg)  # Add message even for AJAX
                 return JsonResponse({
@@ -207,10 +213,9 @@ def generate_qr(request):
             messages.error(request, error_msg)
             return redirect('subjects:qr_codes')
         except Exception as e:
-            logger.error(f"Error generating QR code: {str(e)}")
-            error_msg = 'Failed to generate QR code'
+            error_msg = f"Failed to generate QR code: {str(e)}"
+            logger.error(f"QR generation error: {error_msg}")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                messages.error(request, error_msg)  # Add message even for AJAX
                 return JsonResponse({
                     'success': False,
                     'error': error_msg
@@ -223,68 +228,126 @@ def generate_qr(request):
 @login_required
 def qr_image(request, uuid):
     """Generate and return a QR code image."""
-    qr = get_object_or_404(SubjectQR, uuid=uuid)
-    
-    # Check if user has permission to view this QR code
-    if qr.subject.custodian != request.user.custodian:
-        return HttpResponse(status=403)
-    
-    # Generate QR code if it doesn't exist
-    if not qr.image:
-        # Create QR code instance
-        qr_code = qrcode.QRCode(
-            version=1,
-            error_correction=qrcode.constants.ERROR_CORRECT_L,
-            box_size=10,
-            border=4,
-        )
+    try:
+        qr = get_object_or_404(SubjectQR, uuid=uuid)
         
-        # Add the URL data
-        url = request.build_absolute_uri(reverse('subjects:scan_qr', args=[uuid]))
-        qr_code.add_data(url)
-        qr_code.make(fit=True)
+        # Check if user has permission to view this QR code
+        if qr.subject.custodian != request.user.custodian:
+            return HttpResponse(status=403)
         
-        # Create the image
-        img = qr_code.make_image(fill_color="black", back_color="white")
+        # Force regeneration if requested
+        force_regenerate = request.GET.get('regenerate') == '1'
         
-        # Save to BytesIO
-        buffer = BytesIO()
-        img.save(buffer, format='PNG')
+        # More thorough check for image existence
+        image_exists = False
+        if qr.image:
+            try:
+                # Try to access the file to confirm it truly exists and is valid
+                if qr.image.storage.exists(qr.image.path):
+                    with qr.image.open('rb') as f:
+                        # Check if file has content
+                        if f.read(10):  # Read first 10 bytes to check for empty file
+                            image_exists = True
+                            f.seek(0)  # Reset file pointer for future reads
+            except (ValueError, FileNotFoundError, OSError) as e:
+                logger.warning(f"Image file validation failed for QR {uuid}: {str(e)}")
+                image_exists = False
         
-        # Save to model
-        image_name = f'qr_{uuid}.png'
-        qr.image.save(image_name, buffer, save=True)
-    
-    # Return the image
-    response = HttpResponse(content_type='image/png')
-    qr.image.open()
-    response.write(qr.image.read())
-    qr.image.close()
-    return response
+        # Generate QR code if it doesn't exist, is invalid, or regeneration is forced
+        if force_regenerate or not image_exists:
+            logger.debug(f"Generating new QR code image for {uuid} (forced: {force_regenerate}, exists: {image_exists})")
+            
+            # Clear existing image if there is one
+            if qr.image:
+                try:
+                    qr.image.delete(save=False)
+                except:
+                    pass
+            
+            # Create QR code instance
+            qr_code = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_M,  # Use Medium error correction
+                box_size=10,
+                border=4,
+            )
+            
+            # Add the URL data
+            url = request.build_absolute_uri(reverse('subjects:scan_qr', args=[uuid]))
+            qr_code.add_data(url)
+            qr_code.make(fit=True)
+            
+            # Create the image
+            img = qr_code.make_image(fill_color="black", back_color="white")
+            
+            # Save to BytesIO
+            buffer = BytesIO()
+            img.save(buffer, format='PNG')
+            buffer.seek(0)  # Reset buffer position to beginning
+            
+            # Calculate file size for logging
+            file_size = buffer.getbuffer().nbytes
+            logger.debug(f"Generated QR image with size: {file_size} bytes")
+            
+            if file_size < 100:
+                logger.error(f"Generated QR image is suspiciously small: {file_size} bytes")
+                return HttpResponse("Invalid QR image generated", status=500)
+            
+            # Save to model
+            image_name = f'qr_{uuid}.png'
+            qr.image.save(image_name, ContentFile(buffer.getvalue()), save=True)
+            logger.debug(f"QR code image saved to {qr.image.path}")
+            
+        # Use FileResponse for better file handling
+        response = FileResponse(qr.image.open(), content_type='image/png')
+        
+        # Add cache control headers to prevent caching
+        response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response['Pragma'] = 'no-cache'
+        response['Expires'] = '0'
+        
+        return response
+            
+    except Exception as e:
+        logger.error(f"Error serving QR image for {uuid}: {str(e)}")
+        # Return a placeholder SVG as an inline fallback
+        svg_content = """<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+            <rect width="200" height="200" fill="#f5f5f5" />
+            <rect x="20" y="20" width="160" height="160" stroke="#cccccc" stroke-width="2" fill="none" />
+            <text x="100" y="100" font-family="Arial" font-size="14" text-anchor="middle" fill="#999999">Error Loading QR</text>
+            <path d="M100,70 L100,130 M70,100 L130,100" stroke="#999999" stroke-width="2" />
+        </svg>"""
+        return HttpResponse(svg_content, content_type='image/svg+xml')
 
 @login_required
 def download_qr(request, uuid):
     """Download a QR code image."""
-    qr = get_object_or_404(SubjectQR, uuid=uuid)
-    
-    # Check if user has permission to download this QR code
-    if qr.subject.custodian != request.user.custodian:
-        return HttpResponse(status=403)
-    
-    # Generate QR code if it doesn't exist
-    if not qr.image:
-        qr_image(request, uuid)
-    
-    # Prepare response
-    response = HttpResponse(content_type='image/png')
-    response['Content-Disposition'] = f'attachment; filename="qr_{uuid}.png"'
-    
-    # Write image to response
-    qr.image.open()
-    response.write(qr.image.read())
-    qr.image.close()
-    
-    return response
+    try:
+        qr = get_object_or_404(SubjectQR, uuid=uuid)
+        
+        # Check if user has permission to download this QR code
+        if qr.subject.custodian != request.user.custodian:
+            return HttpResponse(status=403)
+        
+        # Generate QR code if it doesn't exist or file is missing
+        if not qr.image or not qr.image.storage.exists(qr.image.path):
+            # Generate the image using the qr_image view
+            qr_image(request, uuid)
+            qr.refresh_from_db()  # Refresh to get the updated image
+        
+        # Prepare response
+        response = FileResponse(
+            qr.image.open(),
+            content_type='image/png',
+            as_attachment=True,
+            filename=f"qr_{qr.subject.name}_{uuid}.png"
+        )
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error downloading QR image for {uuid}: {str(e)}")
+        return HttpResponse(status=500)
 
 @login_required
 @require_POST
@@ -336,13 +399,14 @@ def generate_qr_image(url):
     """Helper function to generate QR code image"""
     qr = qrcode.QRCode(
         version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,  # Use Medium error correction
         box_size=10,
         border=4,
     )
     qr.add_data(url)
     qr.make(fit=True)
     
+    # Create and return the image
     return qr.make_image(fill_color="black", back_color="white")
 
 @csrf_exempt
@@ -622,3 +686,62 @@ def toggle_qr_status(request, uuid):
         'success': True,
         'is_active': qr.is_active
     })
+
+@login_required
+@staff_member_required_403
+def regenerate_all_qr_images(request):
+    """Admin-only function to regenerate all QR code images"""
+    if request.method == 'POST':
+        try:
+            count = 0
+            failed = 0
+            
+            # Get all QR codes
+            qr_codes = SubjectQR.objects.all()
+            
+            for qr in qr_codes:
+                try:
+                    # Delete existing image
+                    if qr.image:
+                        qr.image.delete(save=False)
+                    
+                    # Create QR code instance
+                    qr_code = qrcode.QRCode(
+                        version=1,
+                        error_correction=qrcode.constants.ERROR_CORRECT_M,
+                        box_size=10,
+                        border=4,
+                    )
+                    
+                    # Add the URL data
+                    url = request.build_absolute_uri(reverse('subjects:scan_qr', args=[qr.uuid]))
+                    qr_code.add_data(url)
+                    qr_code.make(fit=True)
+                    
+                    # Create the image
+                    img = qr_code.make_image(fill_color="black", back_color="white")
+                    
+                    # Save to BytesIO
+                    buffer = BytesIO()
+                    img.save(buffer, format='PNG')
+                    buffer.seek(0)  # Reset buffer position to beginning
+                    
+                    # Save to model
+                    image_name = f'qr_{qr.uuid}.png'
+                    qr.image.save(image_name, ContentFile(buffer.getvalue()), save=True)
+                    
+                    count += 1
+                    
+                except Exception as e:
+                    logger.error(f"Failed to regenerate QR image for {qr.uuid}: {str(e)}")
+                    failed += 1
+            
+            messages.success(request, f"Successfully regenerated {count} QR code images. Failed: {failed}")
+            return redirect('subjects:qr_codes')
+        
+        except Exception as e:
+            messages.error(request, f"Error regenerating QR images: {str(e)}")
+            return redirect('subjects:qr_codes')
+    
+    # GET request - show confirmation form
+    return render(request, 'subjects/regenerate_qr_images.html')

@@ -5,6 +5,31 @@
 
 {% block content %}
 <div class="container py-4">
+    {% if user.is_staff %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="card-title mb-0">
+                <i class="fas fa-tools me-2"></i>Admin Tools
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">QR Code Maintenance</h5>
+                            <p class="card-text">Use these tools to fix QR code image issues across the system.</p>
+                            <a href="{% url 'subjects:regenerate_all_qr_images' %}" class="btn btn-warning">
+                                <i class="fas fa-sync-alt me-2"></i>Regenerate All QR Images
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-accent text-white">
             <div class="d-flex justify-content-between align-items-center">
@@ -86,7 +111,16 @@
                         </div>
                         <div class="card-body text-center">
                             <div class="qr-container mb-3">
-                                <img src="{% url 'subjects:qr_image' qr.uuid %}" alt="QR Code" class="img-fluid {% if not qr.is_active %}opacity-50{% endif %}">
+                                <img src="{% url 'subjects:qr_image' qr.uuid %}" alt="QR Code" 
+                                     class="img-fluid {% if not qr.is_active %}opacity-50{% endif %}" 
+                                     onerror="handleImageError(this, '{{ qr.uuid }}')"
+                                     data-qr-uuid="{{ qr.uuid }}"
+                                     loading="lazy">
+                                <div class="mt-2">
+                                    <button onclick="regenerateQR('{{ qr.uuid }}')" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-sync-alt me-1"></i> Refresh
+                                    </button>
+                                </div>
                             </div>
                             <div class="mb-2">
                                 <span class="badge bg-secondary">ID: {{ qr.uuid|slice:"-4:" }}</span>
@@ -442,6 +476,69 @@ function toggleQRStatus(uuid) {
 
 function printQR(uuid) {
     window.open(`/subjects/qr/${uuid}/print/`, '_blank');
+}
+
+function handleImageError(imgElement, qrUuid) {
+    console.error(`Failed to load QR code image for ${qrUuid}`);
+    
+    // Track retries for this element
+    imgElement.dataset.retryCount = (parseInt(imgElement.dataset.retryCount || '0') + 1).toString();
+    const retryCount = parseInt(imgElement.dataset.retryCount);
+    
+    // Add a placeholder
+    imgElement.src = '/static/images/qr-placeholder.svg';
+    
+    // Try to reload the image after a short delay with a cache-busting parameter
+    // On second retry, force regeneration with regenerate=1 parameter
+    setTimeout(() => {
+        const timestamp = new Date().getTime();
+        const regenerateParam = retryCount > 1 ? '&regenerate=1' : '';
+        imgElement.src = `{% url 'subjects:qr_image' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', qrUuid) + `?t=${timestamp}${regenerateParam}`;
+        
+        // If we've tried too many times, show a reload button
+        if (retryCount >= 3) {
+            const container = imgElement.closest('.qr-container');
+            if (container) {
+                const reloadButton = document.createElement('button');
+                reloadButton.className = 'btn btn-sm btn-warning mt-2';
+                reloadButton.innerHTML = '<i class="fas fa-sync-alt me-1"></i> Reload QR';
+                reloadButton.onclick = function(e) {
+                    e.preventDefault();
+                    imgElement.dataset.retryCount = '0';
+                    imgElement.src = `{% url 'subjects:qr_image' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', qrUuid) + `?t=${timestamp}&regenerate=1`;
+                    this.remove();
+                };
+                
+                // Only add the button if it doesn't already exist
+                if (!container.querySelector('.btn-warning')) {
+                    container.appendChild(reloadButton);
+                }
+            }
+        }
+    }, 1000);
+    
+    // Show a warning message
+    if (retryCount <= 1) {
+        showMessage(`QR code image may be loading slowly. Please wait...`, 'warning');
+    } else if (retryCount == 2) {
+        showMessage(`Attempting to regenerate QR code image...`, 'warning');
+    } else {
+        showMessage(`Unable to load QR image automatically. Try the reload button.`, 'danger');
+    }
+}
+
+function regenerateQR(uuid) {
+    const imgElement = document.querySelector(`img[data-qr-uuid="${uuid}"]`);
+    if (imgElement) {
+        // Show a loading indicator
+        imgElement.src = '/static/images/qr-placeholder.svg';
+        
+        // Force regeneration of the QR code with cache busting parameter
+        const timestamp = new Date().getTime();
+        imgElement.src = `{% url 'subjects:qr_image' '00000000-0000-0000-0000-000000000000' %}`.replace('00000000-0000-0000-0000-000000000000', uuid) + `?t=${timestamp}&regenerate=1`;
+        
+        showMessage('Regenerating QR code image...', 'info');
+    }
 }
 
 // Initialize all modals
