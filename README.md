@@ -1,5 +1,5 @@
 # Keryu - Subject Tracking System
-
+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
 A Django-based system for managing and tracking subjects (children, elders, or persons with disabilities) using QR codes and multi-channel messaging notifications.
 
 ## Features
