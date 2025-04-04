@@ -248,13 +248,28 @@ def subject_detail(request, pk):
 @login_required
 def profile(request):
     if request.method == 'POST':
-        user_form = CustodianUpdateForm(request.POST, instance=request.user)
-        profile_form = CustodianProfileForm(request.POST, instance=request.user.custodian)
-        if user_form.is_valid() and profile_form.is_valid():
-            user_form.save()
-            profile_form.save()
-            messages.success(request, 'Your profile was successfully updated!')
+        form_type = request.POST.get('form_type')
+        
+        if form_type == 'contact_info':
+            profile_form = CustodianProfileForm(request.POST, instance=request.user.custodian)
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, 'Your contact information was successfully updated!')
+                return redirect('custodians:custodian_profile')
+            user_form = CustodianUpdateForm(instance=request.user)  # For template rendering
+            
+        elif form_type == 'account_settings':
+            user_form = CustodianUpdateForm(request.POST, instance=request.user)
+            if user_form.is_valid():
+                user_form.save()
+                messages.success(request, 'Your account settings were successfully updated!')
+                return redirect('custodians:custodian_profile')
+            profile_form = CustodianProfileForm(instance=request.user.custodian)  # For template rendering
+            
+        else:
+            messages.error(request, 'Invalid form submission.')
             return redirect('custodians:custodian_profile')
+            
     else:
         user_form = CustodianUpdateForm(instance=request.user)
         profile_form = CustodianProfileForm(instance=request.user.custodian)

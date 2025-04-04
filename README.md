@@ -83,7 +83,7 @@ CELERY_RESULT_BACKEND=redis://localhost:6379/0
 # Django Configuration
 SECRET_KEY=your_secret_key
 DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
+ALLOWED_HOSTS=localhost,127.0.0.1,your_ec2_ip
 ```
 
 4. Run migrations:
@@ -104,6 +104,7 @@ The application uses multiple services that need to run together:
 - Celery beat (for scheduled tasks)
 - Django development server
 
+### Local Development
 We provide a startup script that manages all these services:
 
 1. Make the startup script executable:
@@ -115,6 +116,21 @@ chmod +x startup.sh
 ```bash
 ./startup.sh
 ```
+
+### Production/EC2 Deployment
+To run the application on an EC2 instance and make it accessible from outside:
+
+1. Add your EC2's public IP to ALLOWED_HOSTS in settings.py or .env file
+2. Run the Django server with:
+```bash
+python manage.py runserver 0.0.0.0:8000
+```
+3. Access the application using your EC2's public IP:
+```
+http://your_ec2_ip:8000
+```
+
+Note: Make sure your EC2 security group allows inbound traffic on port 8000.
 
 The script will:
 - Clean up any existing processes

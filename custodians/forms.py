@@ -38,10 +38,14 @@ class CustodianRegistrationForm(UserCreationForm):
         
         if commit:
             user.save()
-            # Update custodian profile
-            custodian = user.custodian
-            custodian.phone_number = self.cleaned_data['phone_number']
-            custodian.save()
+        else:
+            user.save()  # We need to save the user to create the custodian profile
+            
+        # Always update custodian profile
+        custodian = user.custodian
+        custodian.phone_number = self.cleaned_data['phone_number']
+        custodian.save()
+        
         return user
 
 class SubjectForm(forms.ModelForm):
@@ -74,9 +78,36 @@ class CustodianUpdateForm(forms.ModelForm):
         fields = ('first_name', 'last_name', 'email')
 
 class CustodianProfileForm(forms.ModelForm):
+    phone_number = PhoneNumberField(
+        required=True,
+        help_text='WhatsApp number with country code (e.g., +1234567890)',
+        error_messages={
+            'invalid': 'Enter a valid phone number (e.g., +1234567890)',
+        },
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '+1234567890'
+        })
+    )
+    emergency_phone = PhoneNumberField(
+        required=False,
+        help_text='Alternative emergency contact number (optional)',
+        error_messages={
+            'invalid': 'Enter a valid phone number (e.g., +1234567890)',
+        },
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '+1234567890'
+        })
+    )
+
     class Meta:
         model = Custodian
         fields = ('phone_number', 'emergency_phone', 'address')
         widgets = {
-            'address': forms.Textarea(attrs={'rows': 3}),
+            'address': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Enter your address'
+            }),
         } 

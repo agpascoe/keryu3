@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-gy=7)$hs$5@hs$5@hs$5@hs$5@hs$5@hs$5@hs$5@hs$5@'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['testserver', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '3.129.211.128', '0.0.0.0']
 
 
 # Application definition
@@ -212,7 +212,7 @@ LOGIN_REDIRECT_URL = '/custodians/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
 # Notification Provider Configuration
-NOTIFICATION_PROVIDER = 'whatsapp_api'  # Only WhatsApp API is supported
+NOTIFICATION_PROVIDER = 'twilio_sms'  # Changed from 'whatsapp_api' to 'twilio_sms'
 
 # WhatsApp API Configuration (Meta WhatsApp Business API)
 WHATSAPP_PHONE_NUMBER_ID = os.getenv('WHATSAPP_PHONE_NUMBER_ID', '')

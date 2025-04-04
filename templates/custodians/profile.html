@@ -60,17 +60,21 @@
                             <span class="input-group-text">
                                 <i class="fab fa-whatsapp"></i>
                             </span>
-                            <input type="text" class="form-control" value="{{ user.phone }}" readonly>
+                            <input type="text" class="form-control" value="{{ user.custodian.phone_number }}" readonly>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label text-muted">Email Address</label>
+                        <label class="form-label text-muted">Emergency Phone</label>
                         <div class="input-group">
                             <span class="input-group-text">
-                                <i class="fas fa-envelope"></i>
+                                <i class="fas fa-phone"></i>
                             </span>
-                            <input type="text" class="form-control" value="{{ user.email }}" readonly>
+                            <input type="text" class="form-control" value="{{ user.custodian.emergency_phone|default:'' }}" readonly>
                         </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Address</label>
+                        <textarea class="form-control" rows="2" readonly>{{ user.custodian.address|default:'' }}</textarea>
                     </div>
                     <div class="d-grid">
                         <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#contactModal">
@@ -90,8 +94,10 @@
                     </h5>
                 </div>
                 <div class="card-body">
+                    <!-- Account Settings Form -->
                     <form method="post" class="needs-validation" novalidate>
                         {% csrf_token %}
+                        <input type="hidden" name="form_type" value="account_settings">
                         
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -253,30 +259,59 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form>
+                {% if profile_form.errors %}
+                <div class="alert alert-danger">
+                    Please correct the errors below.
+                </div>
+                {% endif %}
+                <form method="post" action="{% url 'custodians:custodian_profile' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="form_type" value="contact_info">
                     <div class="mb-3">
-                        <label for="newPhone" class="form-label">Phone Number</label>
-                        <div class="input-group">
+                        <label for="id_phone_number" class="form-label">WhatsApp Phone Number <span class="text-danger">*</span></label>
+                        <div class="input-group {% if profile_form.phone_number.errors %}has-validation{% endif %}">
                             <span class="input-group-text">
                                 <i class="fab fa-whatsapp"></i>
                             </span>
-                            <input type="tel" class="form-control" id="newPhone" value="{{ user.phone }}">
+                            {{ profile_form.phone_number }}
+                            {% if profile_form.phone_number.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ profile_form.phone_number.errors }}
+                            </div>
+                            {% endif %}
                         </div>
+                        <small class="text-muted">{{ profile_form.phone_number.help_text }}</small>
                     </div>
                     <div class="mb-3">
-                        <label for="newEmail" class="form-label">Email Address</label>
-                        <div class="input-group">
+                        <label for="id_emergency_phone" class="form-label">Emergency Contact Phone (Optional)</label>
+                        <div class="input-group {% if profile_form.emergency_phone.errors %}has-validation{% endif %}">
                             <span class="input-group-text">
-                                <i class="fas fa-envelope"></i>
+                                <i class="fas fa-phone"></i>
                             </span>
-                            <input type="email" class="form-control" id="newEmail" value="{{ user.email }}">
+                            {{ profile_form.emergency_phone }}
+                            {% if profile_form.emergency_phone.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ profile_form.emergency_phone.errors }}
+                            </div>
+                            {% endif %}
                         </div>
+                        <small class="text-muted">{{ profile_form.emergency_phone.help_text }}</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_address" class="form-label">Address (Optional)</label>
+                        {{ profile_form.address }}
+                        <small class="text-muted">Your current residential address</small>
+                        {% if profile_form.address.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ profile_form.address.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
                     </div>
                 </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary">Save Changes</button>
             </div>
         </div>
     </div>
