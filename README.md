@@ -27,6 +27,7 @@ A Django-based system for managing and tracking subjects (children, elders, or p
 
 ## Security Features
 
+- SSL/TLS encryption with Let's Encrypt
 - Email verification required for new accounts
 - Secure token-based verification system
 - Development mode with instant verification option
@@ -35,12 +36,15 @@ A Django-based system for managing and tracking subjects (children, elders, or p
 
 ## Prerequisites
 
-- Python 3.11+
+- Python 3.12+
 - PostgreSQL
 - Redis (for Celery)
+- Nginx
+- Let's Encrypt SSL certificates
 - Meta WhatsApp Business API access
 - Meta Developer Account
 - Twilio Account (optional, for fallback channels)
+- Domain name (for SSL certificates)
 
 ## Installation
 
@@ -82,8 +86,8 @@ CELERY_RESULT_BACKEND=redis://localhost:6379/0
 
 # Django Configuration
 SECRET_KEY=your_secret_key
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1,your_ec2_ip
+DEBUG=False
+ALLOWED_HOSTS=keryu.mx,www.keryu.mx
 ```
 
 4. Run migrations:
@@ -99,12 +103,13 @@ python manage.py createsuperuser
 ## Running the Application
 
 The application uses multiple services that need to run together:
+- Nginx (web server and reverse proxy)
 - Redis server (for Celery broker and result backend)
 - Celery worker (for background tasks)
 - Celery beat (for scheduled tasks)
-- Django development server
+- Gunicorn (WSGI server)
 
-### Local Development
+### Production Deployment
 We provide a startup script that manages all these services:
 
 1. Make the startup script executable:
@@ -117,40 +122,28 @@ chmod +x startup.sh
 ./startup.sh
 ```
 
-### Production/EC2 Deployment
-To run the application on an EC2 instance and make it accessible from outside:
-
-1. Add your EC2's public IP to ALLOWED_HOSTS in settings.py or .env file
-2. Run the Django server with:
-```bash
-python manage.py runserver 0.0.0.0:8000
-```
-3. Access the application using your EC2's public IP:
-```
-http://your_ec2_ip:8000
-```
-
-Note: Make sure your EC2 security group allows inbound traffic on port 8000.
-
 The script will:
+- Check for required services (Nginx, Redis, etc.)
+- Verify SSL certificates
 - Clean up any existing processes
 - Activate the conda environment
 - Start Redis server
+- Collect static files and set permissions
 - Start Celery worker with proper queues
 - Start Celery beat scheduler
-- Start Django development server
-- Verify all services are running with the correct number of instances
-
-Note: Django runs with two processes by default (main process + autoreloader), which is normal and expected behavior.
+- Start Gunicorn with multiple workers
+- Start and configure Nginx
+- Verify all services are running correctly
 
 To stop all services, you can either:
 - Press Ctrl+C in the terminal where startup.sh is running
 - Run these commands:
   ```bash
+  sudo systemctl stop nginx
   pkill -f "celery worker"
   pkill -f "celery beat"
-  pkill -f "runserver"
-  brew services stop redis
+  pkill -f "gunicorn"
+  sudo service redis-server stop
   ```
 
 ## WhatsApp Template Setup

@@ -48,3 +48,20 @@ Thumbs.db qr_test.png
 
 # Twilio test environment
 twilio_test/.env
+
+# Celery
+celerybeat-schedule
+celerybeat-schedule.*
+celerybeat.pid
+
+# Static files
+staticfiles/
+
+# SSL
+ssl/
+
+# Deployment
+gunicorn_access.log
+gunicorn_error.log
+celery_worker.log
+celery_beat.log

@@ -1,263 +1,168 @@
 #!/bin/bash
 
-# Print colorful status messages
-print_status() {
-    echo -e "\033[1;34m>>> $1\033[0m"
+echo "Starting Keryu services startup sequence..."
+
+# Kill any existing processes first
+echo "Cleaning up existing processes..."
+sudo pkill -f "celery worker" || true
+sudo pkill -f "celery beat" || true
+sudo pkill -f "gunicorn" || true
+sudo pkill -f "runserver" || true
+sleep 2
+
+# Stop services first
+echo "Stopping services..."
+sudo systemctl stop nginx || true
+sudo systemctl stop redis || true
+sleep 2
+
+# Function to check if port is in use
+check_port() {
+    local port=$1
+    ss -tuln | grep -q ":$port "
+    return $?
 }
 
-print_error() {
-    echo -e "\033[1;31m>>> ERROR: $1\033[0m"
-}
-
-print_debug() {
-    echo -e "\033[1;33m>>> DEBUG: $1\033[0m"
-}
-
-# Verify single instance of a process
-verify_single_instance() {
-    local process_name=$1
-    local expected_count=${2:-1}  # Default to 1 if not specified
-    local count=$(ps aux | grep -E "$process_name" | grep -v grep | wc -l)
+# Function to wait for port to be available
+wait_for_port() {
+    local port=$1
+    local max_attempts=10
+    local attempt=1
     
-    if [ $count -gt $expected_count ]; then
-        print_error "Too many instances of $process_name detected ($count instances, expected $expected_count)"
-        return 1
-    elif [ $count -eq 0 ]; then
-        print_error "No instance of $process_name is running"
-        return 1
-    else
-        print_status "Verified $count instance(s) of $process_name"
+    while [ $attempt -le $max_attempts ]; do
+        if ! check_port "$port"; then
         return 0
     fi
+        echo "Port $port is still in use, waiting... (attempt $attempt/$max_attempts)"
+        sleep 1
+        attempt=$((attempt + 1))
+    done
+    return 1
 }
 
-# Check if conda is installed
-if ! command -v conda &> /dev/null; then
-    print_error "Conda is not installed. Please install Miniconda or Anaconda first."
-    exit 1
-fi
-
-# Check if Redis is installed
-if ! command -v redis-cli &> /dev/null; then
-    print_error "Redis is not installed. Please install Redis first (apt-get install redis-server)"
-    exit 1
-fi
-
-# Kill all existing processes
-print_status "Cleaning up existing processes..."
-pkill -9 -f "celery worker" 
-pkill -9 -f "celery beat" 
-pkill -9 -f "runserver" 
-sudo service redis-server stop
-sleep 2
-
-# Initialize conda for the current shell
-print_status "Initializing conda..."
-CONDA_SH="$HOME/miniconda3/etc/profile.d/conda.sh"
-if [[ ! -f "$CONDA_SH" ]]; then
-    CONDA_SH="/usr/local/miniconda3/etc/profile.d/conda.sh"
-fi
-
-if [[ ! -f "$CONDA_SH" ]]; then
-    print_error "Could not find conda.sh. Please ensure Conda is properly installed."
-    exit 1
-fi
-
-# Source conda.sh and activate environment in a subshell to ensure it's properly activated
-if ! (source "$CONDA_SH" && conda activate keryu && which celery > /dev/null); then
-    print_error "Failed to activate conda environment or celery not found"
-    exit 1
-fi
-
-# Set the absolute path to the conda environment
-CONDA_ENV_PATH="$HOME/miniconda3/envs/keryu"
-if [[ ! -d "$CONDA_ENV_PATH" ]]; then
-    CONDA_ENV_PATH="/usr/local/miniconda3/envs/keryu"
-fi
-
-if [[ ! -d "$CONDA_ENV_PATH" ]]; then
-    print_error "Could not find conda environment directory"
-    exit 1
-fi
-
-# Set absolute paths for binaries
-CELERY_BIN="$CONDA_ENV_PATH/bin/celery"
-PYTHON_BIN="$CONDA_ENV_PATH/bin/python"
-
-# Verify celery is available
-if [[ ! -x "$CELERY_BIN" ]]; then
-    print_error "Celery executable not found at $CELERY_BIN"
-    exit 1
-fi
-
-# Verify all required packages are installed
-print_status "Verifying required packages..."
-required_packages=(
-    "django"
-    "celery"
-    "redis"
-    "psycopg2"
-)
-
-for package in "${required_packages[@]}"; do
-    if ! python -c "import $package" &> /dev/null; then
-        print_error "Required package '$package' is not installed"
-        exit 1
-    fi
-done
+# Function to check if a process is running
+check_process() {
+    local pattern=$1
+    local count=$(pgrep -f "$pattern" | wc -l)
+    return $(( count == 0 ))
+}
 
 # Start Redis
-print_status "Starting Redis server..."
-sudo service redis-server start || { print_error "Failed to start Redis"; exit 1; }
+echo "Starting Redis..."
+sudo systemctl start redis
 sleep 2
+if ! systemctl is-active --quiet redis; then
+    echo "✗ Failed to start Redis"
+    exit 1
+fi
+echo "✓ Redis started"
 
-# Wait for Redis to be ready
-print_status "Waiting for Redis to be ready..."
-max_attempts=30
-attempt=1
-while ! redis-cli ping > /dev/null 2>&1; do
-    if [ $attempt -ge $max_attempts ]; then
-        print_error "Redis failed to become ready after $max_attempts attempts"
-        exit 1
-    fi
-    echo -n "."
-    sleep 1
-    attempt=$((attempt + 1))
-done
-echo
-print_status "Redis is ready"
-
-# Set environment variables
-export CELERY_BROKER_URL="redis://localhost:6379/0"
-export CELERY_RESULT_BACKEND="redis://localhost:6379/0"
-export PYTHONPATH=$PWD:$PYTHONPATH
-
-# Start Celery worker (single instance)
-print_status "Starting Celery worker..."
-WORKER_NAME="keryu_worker_$(date +%s)"
-
-# Create a log file for celery worker
-WORKER_LOG="celery_worker.log"
-touch $WORKER_LOG
-
-print_debug "Starting worker with name: $WORKER_NAME"
-print_debug "Using celery binary: $CELERY_BIN"
-print_debug "Worker log file: $WORKER_LOG"
-
-(
-    source "$CONDA_SH" && \
-    conda activate keryu && \
-    $CELERY_BIN -A keryu3 worker \
-        -l INFO \
-        -P solo \
-        -Q subjects,alarms,default \
-        --hostname=$WORKER_NAME \
-        --purge \
-        --without-mingle \
-        --without-gossip > $WORKER_LOG 2>&1
-) &
-WORKER_PID=$!
-
-# Wait for worker to start and verify it's running
-print_status "Waiting for worker to start..."
+# Start Celery worker
+echo "Starting Celery worker..."
+cd /home/ubuntu/keryu3
+celery -A core worker --loglevel=info > celery_worker.log 2>&1 &
 sleep 5
+if ! grep -q "celery@.*ready" celery_worker.log; then
+    echo "✗ Failed to start Celery worker"
+    cat celery_worker.log
+    exit 1
+fi
+echo "✓ Celery worker started"
 
-if ! ps -p $WORKER_PID > /dev/null; then
-    print_error "Celery worker failed to start"
-    print_debug "Worker log contents:"
-    cat $WORKER_LOG
+# Start Celery beat
+echo "Starting Celery beat..."
+celery -A core beat --loglevel=info > celery_beat.log 2>&1 &
+sleep 3
+if ! check_process "celery.*beat"; then
+    echo "✗ Failed to start Celery beat"
+    cat celery_beat.log
+    exit 1
+fi
+echo "✓ Celery beat started"
+
+# Wait for port 8000 to be available
+echo "Checking port 8000..."
+if ! wait_for_port 8000; then
+    echo "✗ Port 8000 is still in use"
     exit 1
 fi
 
-# Try multiple times to check worker status
-max_attempts=30
-attempt=1
-while ! $CELERY_BIN -A keryu3 status | grep -q "keryu_worker"; do
-    if [ $attempt -ge $max_attempts ]; then
-        print_error "Celery worker failed to respond after $max_attempts attempts"
-        print_debug "Worker log contents:"
-        cat $WORKER_LOG
-        exit 1
-    fi
-    echo -n "."
-    sleep 1
-    attempt=$((attempt + 1))
-done
+# Start Gunicorn
+echo "Starting Gunicorn..."
+gunicorn core.wsgi:application --bind 0.0.0.0:8000 --workers 3 --access-logfile gunicorn_access.log --error-logfile gunicorn_error.log --daemon
+sleep 3
+if ! check_process "gunicorn"; then
+    echo "✗ Failed to start Gunicorn"
+    cat gunicorn_error.log
+    exit 1
+fi
+echo "✓ Gunicorn started"
 
-print_status "Celery worker is running with name: $WORKER_NAME"
+# Start Nginx last
+echo "Starting Nginx..."
+sudo systemctl start nginx
+sleep 2
+if ! systemctl is-active --quiet nginx; then
+    echo "✗ Failed to start Nginx"
+    sudo journalctl -u nginx --no-pager | tail -n 10
+    exit 1
+fi
+echo "✓ Nginx started"
 
-# Start Celery beat scheduler (single instance)
-print_status "Starting Celery beat scheduler..."
+# Final verification
+echo -e "\nVerifying all processes..."
+failed=0
 
-# Create a log file for celery beat
-BEAT_LOG="celery_beat.log"
-touch $BEAT_LOG
+# Check processes
+if ! grep -q "celery@.*ready" celery_worker.log; then
+    echo "! Warning: Celery worker not running properly"
+    failed=1
+fi
 
-print_debug "Using celery binary: $CELERY_BIN"
-print_debug "Beat log file: $BEAT_LOG"
+if ! check_process "celery.*beat"; then
+    echo "! Warning: Celery beat not running"
+    failed=1
+fi
 
-(
-    source "$CONDA_SH" && \
-    conda activate keryu && \
-    $CELERY_BIN -A keryu3 beat -l INFO > $BEAT_LOG 2>&1
-) &
-BEAT_PID=$!
+if ! check_process "gunicorn"; then
+    echo "! Warning: Gunicorn not running"
+    failed=1
+fi
 
-# Wait for beat to start and verify it's running
-print_status "Waiting for beat to start..."
-sleep 5
+# Check services
+if ! systemctl is-active --quiet nginx; then
+    echo "! Warning: Nginx not running"
+    failed=1
+fi
 
-if ! ps -p $BEAT_PID > /dev/null; then
-    print_error "Celery beat scheduler failed to start"
-    print_debug "Beat log contents:"
-    cat $BEAT_LOG
+if ! systemctl is-active --quiet redis; then
+    echo "! Warning: Redis not running"
+    failed=1
+fi
+
+# Check port 8000 through Nginx
+echo "Checking application response..."
+if ! curl -s -I http://localhost/ | grep -q "200 OK\|301 Moved Permanently"; then
+    echo "! Warning: Application not responding through Nginx"
+    failed=1
+else
+    echo "✓ Application responding correctly"
+fi
+
+if [ $failed -eq 1 ]; then
+    echo -e "\n✗ Some services failed to start properly"
     exit 1
 fi
 
-print_status "Celery beat scheduler is running"
+echo -e "\n✓ All services and processes successfully started"
+echo "You can monitor the logs using:"
+echo "- Celery Worker: tail -f celery_worker.log"
+echo "- Celery Beat: tail -f celery_beat.log"
+echo "- Gunicorn Access: tail -f gunicorn_access.log"
+echo "- Gunicorn Error: tail -f gunicorn_error.log"
+echo "- Nginx: sudo journalctl -f -u nginx"
+echo "- Redis: sudo journalctl -f -u redis"
 
-# Start Django development server
-print_status "Starting Django development server..."
-# Kill any existing Django servers first
-pkill -f "manage.py runserver"
-sleep 2
-
-# Start the Django server
-(source "$CONDA_SH" && conda activate keryu && $PYTHON_BIN manage.py runserver 0.0.0.0:8000 > django.log 2>&1) &
-DJANGO_PID=$!
-
-# Wait for Django to start and verify it's running properly
-print_status "Waiting for Django server to start..."
-max_attempts=30
-attempt=1
-while ! curl -s http://127.0.0.1:8000 > /dev/null 2>&1; do
-    if [ $attempt -ge $max_attempts ]; then
-        print_error "Django server failed to start after $max_attempts attempts"
-        cat django.log
-        exit 1
-    fi
-    if ! ps -p $DJANGO_PID > /dev/null; then
-        print_error "Django server process died"
-        cat django.log
-        exit 1
-    fi
-    echo -n "."
-    sleep 1
-    attempt=$((attempt + 1))
-done
-echo
-print_status "Django server is running"
-
-# Verify single instances with more precise matching
-print_status "Verifying single instances of all services..."
-verify_single_instance "/usr/local/opt/redis/bin/redis-server"
-verify_single_instance "$CELERY_BIN -A keryu3 worker.*--hostname=$WORKER_NAME"
-verify_single_instance "$CELERY_BIN -A keryu3 beat"
-verify_single_instance "manage.py runserver" 2  # Allow 2 processes for Django
-
-print_status "All services are running with expected number of instances"
-print_status "System is ready for testing"
-
-# Update cleanup to include log files
-trap "pkill -f 'celery worker' && pkill -f 'celery beat' && pkill -f 'runserver' && rm -f django.log celery_worker.log celery_beat.log" EXIT
-wait $DJANGO_PID 
+# Show current status
+echo -e "\nCurrent process status:"
+ps aux | grep -E "celery|gunicorn|nginx" | grep -v grep 

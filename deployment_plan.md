@@ -2,7 +2,7 @@
 
 ## Prerequisites
 - AWS Account with EC2 access
-- Domain name (optional, but recommended)
+- Domain name (required for SSL)
 - Meta WhatsApp Business API credentials
 - Twilio credentials (for fallback)
 
@@ -20,7 +20,6 @@ Inbound Rules:
 - SSH (Port 22) from your IP
 - HTTP (Port 80) from anywhere
 - HTTPS (Port 443) from anywhere
-- Custom TCP (Port 8000) for development (optional)
 ```
 
 ## 2. Initial Server Setup
@@ -42,6 +41,15 @@ sudo systemctl start redis-server
 
 # Verify Redis is running
 sudo systemctl status redis
+
+# Install Miniconda
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh
+source ~/.bashrc
+
+# Create and activate conda environment
+conda env create -f environment.yml
+conda activate keryu
 ```
 
 ## 3. PostgreSQL Setup
@@ -243,39 +251,62 @@ sudo journalctl -u celerybeat -n 50
 
 ## 8. Nginx Setup
 ```bash
+# Install Certbot first
+sudo apt install -y certbot python3-certbot-nginx
+
 # Create Nginx configuration
-sudo nano /etc/nginx/sites-available/keryu
+sudo nano /etc/nginx/sites-available/keryu.mx
 
 server {
     listen 80;
-    server_name your-domain.com;
+    server_name keryu.mx www.keryu.mx;
+    return 301 https://$server_name$request_uri;
+}
 
-    location = /favicon.ico { 
-        access_log off; 
-        log_not_found off; 
-    }
-    
+server {
+    listen 443 ssl;
+    server_name keryu.mx www.keryu.mx;
+
+    ssl_certificate /etc/letsencrypt/live/keryu.mx/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/keryu.mx/privkey.pem;
+
+    client_max_body_size 4G;
+    keepalive_timeout 5;
+
+    access_log /var/log/nginx/keryu.access.log;
+    error_log /var/log/nginx/keryu.error.log;
+
     location /static/ {
-        root /var/www/keryu;
+        alias /home/ubuntu/keryu3/staticfiles/;
+        autoindex off;
+        expires 30d;
+        add_header Cache-Control "public";
     }
 
     location /media/ {
-        root /var/www/keryu;
+        alias /home/ubuntu/keryu3/media/;
+        autoindex off;
+        expires 30d;
+        add_header Cache-Control "public";
+    }
+
+    location = /favicon.ico {
+        alias /home/ubuntu/keryu3/staticfiles/images/favicon.ico;
+        access_log off;
+        expires 30d;
     }
 
     location / {
-        include proxy_params;
-        proxy_pass http://unix:/var/www/keryu/keryu.sock;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Host $http_host;
+        proxy_redirect off;
+        proxy_pass http://127.0.0.1:8000;
     }
 }
 
 # Create symbolic link
-sudo ln -s /etc/nginx/sites-available/keryu /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/keryu.mx /etc/nginx/sites-enabled/
 
 # Remove default nginx site if exists
 sudo rm /etc/nginx/sites-enabled/default
@@ -289,20 +320,20 @@ sudo systemctl restart nginx
 
 ## 9. SSL Configuration (Let's Encrypt)
 ```bash
-# Install Certbot
-sudo apt install -y certbot python3-certbot-nginx
-
 # Stop nginx temporarily
 sudo systemctl stop nginx
 
 # Obtain SSL certificate
-sudo certbot --nginx -d your-domain.com
+sudo certbot certonly --standalone -d keryu.mx -d www.keryu.mx
+
+# Start nginx
+sudo systemctl start nginx
 
 # Verify auto-renewal
 sudo systemctl status certbot.timer
 
-# Start nginx
-sudo systemctl start nginx
+# Test renewal process
+sudo certbot renew --dry-run
 ```
 
 ## 10. Django Setup

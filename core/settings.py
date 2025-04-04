@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-gy=7)$hs$5@hs$5@hs$5@hs$5@hs$5@hs$5@hs$5@hs$5@'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '3.129.211.128', '0.0.0.0']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '18.217.144.210', '0.0.0.0', 'ec2-18-217-144-210.us-east-2.compute.amazonaws.com', 'keryu.mx', 'www.keryu.mx']
 
 
 # Application definition
@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'corsheaders',
     'notifications',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -139,11 +140,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Media files
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
@@ -282,3 +284,12 @@ EMAIL_SUBJECT_PREFIX = '[Keryu] '
 # EMAIL_USE_TLS = True
 # EMAIL_HOST_USER = 'your-email@example.com'
 # EMAIL_HOST_PASSWORD = 'your-email-password'
+
+# Security Settings
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True

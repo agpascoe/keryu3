@@ -3,6 +3,54 @@
 ## System Overview
 The Keryu System is a Django-based application designed to manage subjects (such as children, elders, or persons with disabilities), generate QR codes for tracking, and deliver notifications through WhatsApp using the Meta WhatsApp Business API. The system handles user management with email verification, QR code generation, alarm creation, and asynchronous message delivery with robust race condition prevention and status tracking.
 
+## Architecture Overview
+
+### Production Stack
+```mermaid
+graph TD
+    Client[Client Browser] --> Nginx[Nginx Reverse Proxy]
+    Nginx --> |SSL Termination| Gunicorn[Gunicorn WSGI Server]
+    Gunicorn --> Django[Django Application]
+    Django --> |Static Files| Nginx
+    Django --> |Database| PostgreSQL[PostgreSQL Database]
+    Django --> |Cache/Queue| Redis[Redis Server]
+    Redis --> CeleryWorker[Celery Worker]
+    Redis --> CeleryBeat[Celery Beat]
+    CeleryWorker --> |WhatsApp API| External[External Services]
+```
+
+### Component Roles
+1. **Nginx**
+   - SSL/TLS termination with Let's Encrypt certificates
+   - Static file serving
+   - Reverse proxy to Gunicorn
+   - HTTP/2 support
+   - Caching and compression
+
+2. **Gunicorn**
+   - WSGI server
+   - Multiple worker processes
+   - Request handling
+   - Process management
+
+3. **Django**
+   - Core application logic
+   - URL routing
+   - Template rendering
+   - ORM and database interactions
+
+4. **Redis**
+   - Message broker for Celery
+   - Result backend for Celery
+   - Caching (optional)
+   - Session storage (optional)
+
+5. **Celery**
+   - Asynchronous task processing
+   - Scheduled tasks
+   - Background job management
+   - Message delivery
+
 ## Actors and Use Cases
 
 ### System Actors Overview
