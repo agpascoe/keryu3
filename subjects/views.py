@@ -163,28 +163,62 @@ def qr_codes(request):
 def generate_qr(request):
     """Generate a new QR code for a subject."""
     if request.method == 'POST':
-        subject_id = request.POST.get('subject')
-        subject = get_object_or_404(Subject, id=subject_id, custodian=request.user.custodian)
-        
-        # Generate QR code
-        qr = SubjectQR.objects.create(
-            subject=subject,
-            uuid=uuid.uuid4(),
-            is_active=True  # This will deactivate other QR codes
-        )
-        
-        # Generate QR code image
-        qr_image = qr_image(request, qr.uuid)
-        
-        # Save the image
-        image_name = f'qr_{qr.uuid}.png'
-        image_path = os.path.join('qr_codes', image_name)
-        qr.image.save(image_name, qr_image, save=True)
-        
-        messages.success(request, 'QR code generated successfully.')
-        return redirect('qr_codes')
-        
-    return redirect('qr_codes')
+        try:
+            subject_id = request.POST.get('subject_id')
+            if not subject_id:
+                error_msg = 'Subject ID is required'
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': False,
+                        'error': error_msg
+                    }, status=400)
+                messages.error(request, error_msg)
+                return redirect('subjects:qr_codes')
+
+            subject = get_object_or_404(Subject, id=subject_id, custodian=request.user.custodian)
+            
+            # Generate QR code
+            qr = SubjectQR.objects.create(
+                subject=subject,
+                uuid=uuid.uuid4(),
+                is_active=True  # This will deactivate other QR codes
+            )
+            
+            success_msg = 'QR code generated successfully'
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                messages.success(request, success_msg)  # Add message even for AJAX
+                return JsonResponse({
+                    'success': True,
+                    'message': success_msg,
+                    'uuid': str(qr.uuid)
+                })
+            
+            messages.success(request, success_msg)
+            return redirect('subjects:qr_codes')
+            
+        except Subject.DoesNotExist:
+            error_msg = 'Subject not found'
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                messages.error(request, error_msg)  # Add message even for AJAX
+                return JsonResponse({
+                    'success': False,
+                    'error': error_msg
+                }, status=404)
+            messages.error(request, error_msg)
+            return redirect('subjects:qr_codes')
+        except Exception as e:
+            logger.error(f"Error generating QR code: {str(e)}")
+            error_msg = 'Failed to generate QR code'
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                messages.error(request, error_msg)  # Add message even for AJAX
+                return JsonResponse({
+                    'success': False,
+                    'error': error_msg
+                }, status=500)
+            messages.error(request, error_msg)
+            return redirect('subjects:qr_codes')
+    
+    return redirect('subjects:qr_codes')
 
 @login_required
 def qr_image(request, uuid):
@@ -206,7 +240,7 @@ def qr_image(request, uuid):
         )
         
         # Add the URL data
-        url = request.build_absolute_uri(reverse('scan_qr', args=[uuid]))
+        url = request.build_absolute_uri(reverse('subjects:scan_qr', args=[uuid]))
         qr_code.add_data(url)
         qr_code.make(fit=True)
         

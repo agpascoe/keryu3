@@ -16,16 +16,9 @@ class MessageChannel(Enum):
 def format_phone_number(phone_number: str, channel: MessageChannel) -> str:
     """
     Format phone number according to the channel requirements.
-    Adds '1' after '+52' only for Twilio channels with Mexican numbers.
     """
     # Remove any existing prefixes or formatting
     clean_number = phone_number.replace("whatsapp:", "").strip()
-    
-    # For Mexican numbers in Twilio channels, add 1 after +52
-    if channel in [MessageChannel.TWILIO_WHATSAPP, MessageChannel.TWILIO_SMS]:
-        if clean_number.startswith("+52"):
-            clean_number = "+521" + clean_number[3:]
-    
     return clean_number
 
 def format_message(message: str) -> str:
@@ -48,7 +41,12 @@ class MessageService:
         account_sid = settings.TWILIO_ACCOUNT_SID
         auth_token = settings.TWILIO_AUTH_TOKEN
         if account_sid and auth_token:
-            self.twilio_client = Client(account_sid, auth_token)
+            # Initialize client with explicit basic auth
+            self.twilio_client = Client(
+                username=account_sid,
+                password=auth_token,
+                account_sid=account_sid
+            )
     
     def _send_twilio_whatsapp(self, to_number: str, message: str) -> dict:
         """Send WhatsApp message using Twilio"""
@@ -86,14 +84,11 @@ class MessageService:
             return {"status": "error", "error": "Twilio client not initialized"}
         
         try:
-            formatted_number = format_phone_number(to_number, MessageChannel.TWILIO_SMS)
-            # Format message to match Meta API style
-            formatted_message = format_message(message)
-            
+            # Send message directly without extra formatting
             message = self.twilio_client.messages.create(
-                body=formatted_message,
+                body=message,
                 from_=settings.TWILIO_PHONE_NUMBER,
-                to=formatted_number
+                to=to_number
             )
             
             return {

@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 # Print colorful status messages
 print_status() {
@@ -39,7 +39,7 @@ fi
 
 # Check if Redis is installed
 if ! command -v redis-cli &> /dev/null; then
-    print_error "Redis is not installed. Please install Redis first (brew install redis)"
+    print_error "Redis is not installed. Please install Redis first (apt-get install redis-server)"
     exit 1
 fi
 
@@ -48,7 +48,7 @@ print_status "Cleaning up existing processes..."
 pkill -9 -f "celery worker" 
 pkill -9 -f "celery beat" 
 pkill -9 -f "runserver" 
-brew services stop redis
+sudo service redis-server stop
 sleep 2
 
 # Initialize conda for the current shell
@@ -108,7 +108,7 @@ done
 
 # Start Redis
 print_status "Starting Redis server..."
-brew services start redis || { print_error "Failed to start Redis"; exit 1; }
+sudo service redis-server start || { print_error "Failed to start Redis"; exit 1; }
 sleep 2
 
 # Wait for Redis to be ready
@@ -223,7 +223,7 @@ pkill -f "manage.py runserver"
 sleep 2
 
 # Start the Django server
-(source "$CONDA_SH" && conda activate keryu && $PYTHON_BIN manage.py runserver > django.log 2>&1) &
+(source "$CONDA_SH" && conda activate keryu && $PYTHON_BIN manage.py runserver 0.0.0.0:8000 > django.log 2>&1) &
 DJANGO_PID=$!
 
 # Wait for Django to start and verify it's running properly
