@@ -10,6 +10,15 @@ A Django-based system for managing and tracking subjects (children, elders, or p
   - Toggle QR code active/inactive status with real-time updates
   - Visual status indicators for easy management
   - Automatic state management ensuring only one active QR per subject
+  - **Recent Fixes and Improvements:**
+    - Fixed buffer handling by resetting buffer position before saving images
+    - Improved error handling with try/except blocks and proper error responses
+    - Enhanced media handling using FileResponse and cache control headers
+    - Added frontend resilience with error handlers and placeholder images
+    - Implemented automatic retry mechanism with cache-busting
+    - Improved logging with additional debug information and size tracking
+    - Consolidated QR code generation with consistent parameters
+    - Fixed file system permissions for staticfiles directory
 - **Alarm System**: Configure and manage alarms for subjects
 - Subject management (personal and medical information)
 - QR code scanning and alarm creation

@@ -54,6 +54,15 @@ Examples of Subjects that can be tracked:
 - Last used timestamp tracking
 - UUID-based QR code identification
 - Bulk printing capability
+- **Recent Fixes and Improvements:**
+  - Fixed buffer handling by resetting buffer position before saving images
+  - Improved error handling with try/except blocks and proper error responses
+  - Enhanced media handling using FileResponse and cache control headers
+  - Added frontend resilience with error handlers and placeholder images
+  - Implemented automatic retry mechanism with cache-busting
+  - Improved logging with additional debug information and size tracking
+  - Consolidated QR code generation with consistent parameters
+  - Fixed file system permissions for staticfiles directory
 
 ### Alarm System
 - Automatic alarm creation on QR code scanning

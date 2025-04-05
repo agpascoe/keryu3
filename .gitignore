@@ -56,6 +56,9 @@ celerybeat.pid
 
 # Static files
 staticfiles/
+static/admin/
+static/rest_framework/
+static/drf-yasg/
 
 # SSL
 ssl/

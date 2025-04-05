@@ -3,6 +3,16 @@
 ## System Overview
 The Keryu System is a Django-based application designed to manage subjects (such as children, elders, or persons with disabilities), generate QR codes for tracking, and deliver notifications through WhatsApp using the Meta WhatsApp Business API. The system handles user management with email verification, QR code generation, alarm creation, and asynchronous message delivery with robust race condition prevention and status tracking.
 
+**Recent Fixes and Improvements:**
+- Fixed buffer handling by resetting buffer position before saving images
+- Improved error handling with try/except blocks and proper error responses
+- Enhanced media handling using FileResponse and cache control headers
+- Added frontend resilience with error handlers and placeholder images
+- Implemented automatic retry mechanism with cache-busting
+- Improved logging with additional debug information and size tracking
+- Consolidated QR code generation with consistent parameters
+- Fixed file system permissions for staticfiles directory
+
 ## Architecture Overview
 
 ### Production Stack
