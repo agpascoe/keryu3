@@ -33,7 +33,7 @@ app.conf.task_routes = {
 app.conf.beat_schedule = {
     'process-pending-alarms': {
         'task': 'alarms.tasks.process_pending_alarms',
-        'schedule': 30.0,  # Run every 30 seconds
+        'schedule': 60.0,  # Run every 60 seconds
     },
     'cleanup-old-alarms': {
         'task': 'alarms.tasks.cleanup_old_alarms',
@@ -52,9 +52,9 @@ app.conf.update(
     enable_utc=True,
     
     # Prevent duplicate task execution
-    task_acks_late=False,  # Acknowledge tasks as soon as they're received
+    task_acks_late=True,  # Acknowledge tasks only after completion
     task_track_started=True,  # Track when tasks are started
-    task_default_rate_limit='10/m',  # Limit task execution rate
+    task_default_rate_limit='30/m',  # Limit task execution rate
     worker_prefetch_multiplier=1,  # Process one task at a time
     worker_concurrency=1,  # Run only one worker process
 )
