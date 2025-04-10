@@ -40,6 +40,7 @@ dependencies:
   - pip:
     # Django Extensions
     - django-cors-headers==4.3.1
+    - djangorestframework-simplejwt==5.3.1
     - django-phonenumber-field==7.3.0
     - django-chartjs==2.3.0
     - django-debug-toolbar==4.2.0

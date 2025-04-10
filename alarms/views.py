@@ -18,13 +18,21 @@ import json
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
-from .models import Alarm
+from .models import Alarm, NotificationAttempt
 from django.conf import settings
 from django.contrib import messages
 from django.urls import reverse
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import PermissionDenied
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .serializers import AlarmSerializer, NotificationAttemptSerializer
+import logging
+
+logger = logging.getLogger(__name__)
 
 @login_required
 def alarm_list(request):
@@ -351,3 +359,97 @@ def retry_notification(request, alarm_id):
             'success': False,
             'error': str(e)
         })
+
+class AlarmViewSet(viewsets.ModelViewSet):
+    """ViewSet for viewing and editing alarms."""
+    serializer_class = AlarmSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """Return alarms for the current user."""
+        return Alarm.objects.filter(subject__custodian__user=self.request.user)
+    
+    @action(detail=True, methods=['post'])
+    def resolve(self, request, pk=None):
+        """Resolve an alarm."""
+        alarm = self.get_object()
+        resolution_notes = request.data.get('resolution_notes', '')
+        
+        alarm.resolve(resolution_notes)
+        return Response({'status': 'alarm resolved'})
+
+class NotificationAttemptViewSet(viewsets.ModelViewSet):
+    """ViewSet for viewing and editing notification attempts."""
+    serializer_class = NotificationAttemptSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """Return notification attempts for the current user."""
+        return NotificationAttempt.objects.filter(alarm__subject__custodian__user=self.request.user)
+    
+    @action(detail=True, methods=['post'])
+    def mark_sent(self, request, pk=None):
+        """Mark a notification attempt as sent."""
+        attempt = self.get_object()
+        attempt.mark_sent()
+        return Response({'status': 'notification marked as sent'})
+    
+    @action(detail=True, methods=['post'])
+    def mark_failed(self, request, pk=None):
+        """Mark a notification attempt as failed."""
+        attempt = self.get_object()
+        error_message = request.data.get('error_message', '')
+        attempt.mark_failed(error_message)
+        return Response({'status': 'notification marked as failed'})
+
+@csrf_exempt
+@require_POST
+def notification_webhook(request):
+    """Handle notification status updates from messaging services."""
+    try:
+        data = json.loads(request.body)
+        logger.info(f"Received notification webhook: {data}")
+        
+        # Handle WhatsApp webhook
+        if 'entry' in data and data.get('object') == 'whatsapp_business_account':
+            for entry in data['entry']:
+                for change in entry.get('changes', []):
+                    if change.get('value', {}).get('messages'):
+                        message = change['value']['messages'][0]
+                        message_id = message.get('id')
+                        status = message.get('status', '').upper()
+                        
+                        # Find alarm by message ID
+                        try:
+                            alarm = Alarm.objects.get(whatsapp_message_id=message_id)
+                            
+                            # Update status based on webhook
+                            if status == 'SENT':
+                                alarm.notification_status = NotificationStatus.SENT
+                            elif status == 'DELIVERED':
+                                alarm.notification_status = NotificationStatus.DELIVERED
+                            elif status in ['FAILED', 'ERROR']:
+                                alarm.notification_status = NotificationStatus.FAILED
+                                alarm.notification_error = message.get('error', {}).get('message', 'Unknown error')
+                            
+                            alarm.save(update_fields=['notification_status', 'notification_error'])
+                            logger.info(f"Updated alarm {alarm.id} status to {status}")
+                            
+                        except Alarm.DoesNotExist:
+                            logger.error(f"No alarm found for message ID: {message_id}")
+        
+        # Handle Twilio webhook - This is now handled by twilio_status_callback
+        # We'll keep this as a fallback but log that it's being handled elsewhere
+        elif 'MessageSid' in data:
+            message_sid = data['MessageSid']
+            logger.info(f"Twilio webhook received in notification_webhook, but this is handled by twilio_status_callback. MessageSid: {message_sid}")
+            # No need to process this here as it's handled by twilio_status_callback
+        
+        return JsonResponse({'status': 'success'})
+        
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON in webhook request")
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        logger.error(f"Error processing webhook: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)

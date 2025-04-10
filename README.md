@@ -43,6 +43,29 @@ A Django-based system for managing and tracking subjects (children, elders, or p
 - Staff users excluded from custodian statistics
 - Role-based access control
 
+## Documentation Structure
+
+The system documentation is organized into the following sections:
+
+1. **Core Documentation**
+   - [Technical Specification](docs/technical_spec.md)
+   - [Project Scope](docs/scope.md)
+   - [Deployment Guide](docs/deployment_plan.md)
+
+2. **Feature Documentation**
+   - [Messaging System](docs/messaging.md)
+   - [User Management](docs/users.md)
+   - [Subject Management](docs/subjects.md)
+   - [Alarm System](docs/alarms.md)
+   - [Authentication](docs/auth.md)
+   - [API Documentation](docs/api.md)
+
+3. **System Documentation**
+   - [Database Schema](docs/database.md)
+   - [Task System](docs/tasks.md)
+   - [Security](docs/security.md)
+   - [Monitoring](docs/monitoring.md)
+
 ## Prerequisites
 
 - Python 3.12+
@@ -243,3 +266,57 @@ For support, please:
 1. Check the documentation in the `docs/` directory
 2. Open an issue in the GitHub repository
 3. Contact the development team 
+
+## Custodian Registration
+
+### Registration Process
+1. Visit https://www.keryu.mx/custodians/register/
+2. Fill in the required information:
+   - First and last name
+   - Email address (must be unique)
+   - Password (following security requirements)
+   - Mexican phone number (WhatsApp enabled)
+3. Submit the form
+4. Check WhatsApp for verification code
+5. Enter the 4-digit verification code
+6. Account is activated upon successful verification
+
+### Phone Number Format
+- Mexican numbers only (currently)
+- Accepted formats:
+  * 10 digits (e.g., 1234567890)
+  * With country code (e.g., +521234567890)
+  * Without + symbol (e.g., 521234567890)
+
+### Password Requirements
+- Minimum 8 characters
+- Cannot be similar to personal information
+- Cannot be a commonly used password
+- Cannot be entirely numeric
+- Must include a mix of characters
+
+### Verification Process
+1. Form submission creates inactive account
+2. WhatsApp verification code is sent
+3. Code valid for 15 minutes
+4. Limited verification attempts
+5. Option to resend code if needed
+
+### Troubleshooting Registration
+1. **Email Already Registered**
+   - Use different email or recover existing account
+   
+2. **Phone Number Issues**
+   - Ensure Mexican number format
+   - Verify WhatsApp is active
+   - Check for previous registration
+   
+3. **Verification Code Problems**
+   - Wait for WhatsApp message (can take a few minutes)
+   - Check phone number accuracy
+   - Use resend code option if needed
+   - Contact support if persistent issues
+
+4. **Session Expiration**
+   - Complete verification within 15 minutes
+   - Restart registration if session expires 

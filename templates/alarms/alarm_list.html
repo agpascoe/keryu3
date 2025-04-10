@@ -62,10 +62,34 @@
                                 {% endif %}
                             </td>
                             <td>
-                                {% if alarm.notification_sent %}
-                                    <span class="badge bg-success">Sent</span>
+                                {% if alarm.notification_status == 'SENT' %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check"></i> Sent
+                                    </span>
+                                {% elif alarm.notification_status == 'DELIVERED' %}
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-check-double"></i> Delivered
+                                    </span>
+                                {% elif alarm.notification_status == 'PROCESSING' %}
+                                    <span class="badge bg-primary">
+                                        <i class="fas fa-spinner fa-spin"></i> Processing
+                                    </span>
+                                {% elif alarm.notification_status == 'FAILED' %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-times"></i> Failed
+                                    </span>
+                                {% elif alarm.notification_status == 'ERROR' %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-exclamation-triangle"></i> Error
+                                    </span>
                                 {% else %}
-                                    <span class="badge bg-warning">Pending</span>
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-clock"></i> {{ alarm.notification_status|title }}
+                                    </span>
+                                {% endif %}
+                                {% if alarm.last_attempt %}
+                                    <br>
+                                    <small class="text-muted">Last attempt: {{ alarm.last_attempt|date:"H:i:s" }}</small>
                                 {% endif %}
                             </td>
                             <td>

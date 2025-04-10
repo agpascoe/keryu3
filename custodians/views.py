@@ -24,6 +24,9 @@ from django.core.mail import EmailMultiAlternatives
 from .tokens import email_verification_token
 from django.contrib.auth.models import User
 from core.email_backend import PopupEmailBackend
+from core.messaging import MessageService
+from django.views.decorators.csrf import csrf_protect
+from django.contrib.sessions.backends.db import SessionStore
 import re
 from custodians.models import Custodian
 from alarms.models import Alarm
@@ -36,57 +39,71 @@ def register(request):
         logger.debug(f"Form data: {request.POST}")
         if form.is_valid():
             logger.debug("Form is valid, creating user")
+            user = None
+            
             try:
+                # Ensure we have a valid session
+                if not request.session.session_key:
+                    request.session.create()
+                
+                # Wrap everything in a transaction to ensure atomicity
                 with transaction.atomic():
                     # Create user but don't activate yet
                     user = form.save(commit=False)
                     user.is_active = False
                     user.save()
                     
-                    # Generate verification token
-                    current_site = get_current_site(request)
-                    uid = urlsafe_base64_encode(force_bytes(user.pk))
-                    token = email_verification_token.make_token(user)
-                    verification_url = request.build_absolute_uri(
-                        reverse('custodians:verify_email', kwargs={'uidb64': uid, 'token': token})
-                    )
+                    # Update custodian profile with string representation of phone number
+                    phone_str = form.cleaned_data['phone_number']
+                    user.custodian.phone_number = phone_str
+                    user.custodian.save()
                     
-                    # Context for email templates
-                    context = {
-                        'user': user,
-                        'domain': current_site.domain,
-                        'uid': uid,
-                        'token': token,
+                    # Generate verification code
+                    verification_code = user.custodian.generate_verification_code()
+                    
+                    # Send verification code via configured messaging service
+                    message_service = MessageService()
+                    logger.debug(f"Attempting to send verification code to: {phone_str}")
+                    message = f"Your Keryu verification code is: {verification_code}"
+                    result = message_service.send_message(
+                        to_number=phone_str,
+                        message=message
+                    )
+                    logger.debug(f"Message service result: {result}")
+                    
+                    if result['status'] != 'success':
+                        raise Exception(f"Failed to send verification code: {result.get('error', 'Unknown error')}")
+
+                    # Store registration data in session
+                    registration_data = {
+                        'user_id': user.id,
+                        'email': user.email,
+                        'phone': phone_str,
+                        'timestamp': timezone.now().isoformat(),
                     }
                     
-                    # Render email templates
-                    html_message = render_to_string('custodians/email/verification_email.html', context)
-                    text_message = render_to_string('custodians/email/verification_email.txt', context)
+                    # Save to session and ensure it persists
+                    request.session['pending_registration'] = registration_data
+                    request.session.modified = True
+                    request.session.save()
                     
-                    # Create and send email
-                    email = EmailMultiAlternatives(
-                        subject='Verify your Keryu account',
-                        body=text_message,
-                        from_email=None,  # Use DEFAULT_FROM_EMAIL from settings
-                        to=[user.email]
-                    )
-                    email.attach_alternative(html_message, "text/html")
-                    email.send()
+                    logger.debug(f"Stored registration data in session: {registration_data}")
+                    logger.debug(f"Session key: {request.session.session_key}")
                     
-                    # Get the verification email content for the popup
-                    verification_email = PopupEmailBackend.get_verification_email()
-                    if verification_email:
-                        # Add verification data to the template context
-                        return render(request, 'custodians/register.html', {
-                            'form': form,
-                            'verification_email': verification_email,
-                            'verification_url': verification_url,  # Use the properly constructed URL
-                        })
+                    # Create response with session cookie
+                    response = redirect('custodians:verify_phone')
+                    response.set_cookie('registration_pending', 'true', max_age=900)  # 15 minutes
+                    return response
                     
-                    messages.success(request, 'Registration successful! Please check your email to verify your account.')
-                    return redirect('login')
             except Exception as e:
-                logger.error(f"Error creating user: {str(e)}")
+                logger.error(f"Error during registration: {str(e)}", exc_info=True)
+                # If user was created but process failed, clean up
+                if user and user.id:
+                    try:
+                        user.delete()
+                    except Exception as del_e:
+                        logger.error(f"Error cleaning up user after failed registration: {str(del_e)}")
+                
                 messages.error(request, 'An error occurred during registration. Please try again.')
                 if 'phone_number' in str(e):
                     messages.error(request, 'This phone number is already registered.')
@@ -94,30 +111,118 @@ def register(request):
                     messages.error(request, 'This username is already taken.')
                 if 'email' in str(e):
                     messages.error(request, 'This email is already registered.')
+                if 'verification code' in str(e):
+                    messages.error(request, str(e))
+                if 'session' in str(e):
+                    messages.error(request, 'Session error occurred. Please try again.')
+                return render(request, 'custodians/register.html', {'form': form})
         else:
-            logger.debug(f"Form errors: {form.errors}")
+            logger.debug(f"Form validation errors: {form.errors}")
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f"{field}: {error}")
     else:
         form = CustodianRegistrationForm()
+    
     return render(request, 'custodians/register.html', {'form': form})
 
-def verify_email(request, uidb64, token):
-    try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
+@csrf_protect
+def verify_phone(request):
+    # Try to get registration data from session
+    pending_data = request.session.get('pending_registration')
+    has_pending_cookie = request.COOKIES.get('registration_pending') == 'true'
     
-    if user is not None and email_verification_token.check_token(user, token):
-        user.is_active = True
-        user.save()
-        messages.success(request, 'Thank you for verifying your email. You can now log in to your account.')
-        return redirect('login')
-    else:
-        messages.error(request, 'The verification link is invalid or has expired.')
-        return redirect('login')
+    if not pending_data or not has_pending_cookie:
+        logger.error("No registration data found in session")
+        messages.error(request, 'Registration session expired. Please try registering again.')
+        return redirect('custodians:register')
+    
+    try:
+        # Ensure we have valid registration data
+        if 'user_id' not in pending_data:
+            raise ValueError("Invalid registration data")
+            
+        try:
+            user = User.objects.get(id=pending_data['user_id'])
+            logger.debug(f"Found user for verification: {user.email}")
+        except User.DoesNotExist:
+            logger.error(f"User not found for ID: {pending_data.get('user_id')}")
+            # Clean up session data
+            request.session.pop('pending_registration', None)
+            response = redirect('custodians:register')
+            response.delete_cookie('registration_pending')
+            messages.error(request, 'Invalid registration session. Please try again.')
+            return response
+            
+        if request.method == 'POST':
+            verification_code = request.POST.get('verification_code')
+            logger.debug(f"Received verification code for user {user.email}")
+            
+            try:
+                if user.custodian.verify_phone_code(verification_code):
+                    # Verification successful
+                    user.is_active = True
+                    user.save()
+                    logger.debug(f"Phone verified successfully for user {user.email}")
+                    
+                    # Clean up session and log in user
+                    request.session.pop('pending_registration', None)
+                    login(request, user)
+                    
+                    # Create response and clean up cookie
+                    response = redirect('custodians:custodian_dashboard')
+                    response.delete_cookie('registration_pending')
+                    messages.success(request, 'Phone verified successfully! Welcome to Keryu.')
+                    return response
+                else:
+                    logger.warning(f"Invalid verification code attempt for user {user.email}")
+                    messages.error(request, 'Invalid verification code. Please try again.')
+            except Exception as e:
+                logger.error(f"Error during phone verification: {str(e)}", exc_info=True)
+                messages.error(request, 'An error occurred during verification. Please try again.')
+                
+        return render(request, 'custodians/verify_phone.html')
+        
+    except Exception as e:
+        logger.error(f"Unexpected error in verify_phone: {str(e)}", exc_info=True)
+        messages.error(request, 'An unexpected error occurred. Please try registering again.')
+        # Clean up session data
+        request.session.pop('pending_registration', None)
+        response = redirect('custodians:register')
+        response.delete_cookie('registration_pending')
+        return response
+
+@require_POST
+def resend_verification(request):
+    # Ensure we have a valid session
+    if not request.session.session_key:
+        return JsonResponse({'success': False, 'error': 'Session expired'})
+        
+    pending_data = request.session.get('pending_registration')
+    if not pending_data:
+        return JsonResponse({'success': False, 'error': 'Registration session expired'})
+        
+    try:
+        user = User.objects.get(id=pending_data['user_id'])
+        verification_code = user.custodian.generate_verification_code()
+        
+        # Send new verification code
+        message_service = MessageService()
+        message = f"Your Keryu verification code is: {verification_code}"
+        result = message_service.send_message(
+            to_number=str(user.custodian.phone_number),
+            message=message
+        )
+        
+        if result['status'] == 'success':
+            # Update session
+            request.session.modified = True
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'error': 'Failed to send verification code'})
+            
+    except User.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Invalid registration session'})
 
 @login_required
 def dashboard(request):
@@ -169,12 +274,19 @@ def dashboard(request):
         ).select_related('subject').order_by('-timestamp')[:10]
     
     # Format activities for display
-    formatted_activities = [{
-        'subject': activity.subject,
-        'event': f"Alarm triggered at {activity.location or 'Unknown Location'}",
-        'timestamp': activity.timestamp,
-        'status': 'success' if activity.notification_sent else 'warning'
-    } for activity in recent_activities]
+    formatted_activities = []
+    for activity in recent_activities:
+        location = activity.location if activity.location else 'Unknown Location'
+        # Remove None,None from location string
+        if location == 'None,None':
+            location = 'Unknown Location'
+            
+        formatted_activities.append({
+            'subject': activity.subject,
+            'event': f"Alarm triggered at {location}",
+            'timestamp': activity.timestamp,
+            'status': activity.notification_status or 'PENDING'  # Ensure we always have a valid status
+        })
     
     context = {
         'subjects': subjects,

@@ -1,0 +1,66 @@
+API Test Report - 2025-04-09 06:40:30
+================================================================================
+
+
+Running tests in: tests/auth
+--------------------------------------------------------------------------------
+ERROR: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]
+__main__.py: error: argument -v/--verbose: ignored explicit argument '-v'
+
+
+Exit code: 4
+--------------------------------------------------------------------------------
+
+Running tests in: tests/api/test_subjects_api.py
+--------------------------------------------------------------------------------
+ERROR: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]
+__main__.py: error: argument -v/--verbose: ignored explicit argument '-v'
+
+
+Exit code: 4
+--------------------------------------------------------------------------------
+
+Running tests in: tests/api/test_alarms_api.py
+--------------------------------------------------------------------------------
+ERROR: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]
+__main__.py: error: argument -v/--verbose: ignored explicit argument '-v'
+
+
+Exit code: 4
+--------------------------------------------------------------------------------
+
+Running tests in: tests/api/test_notifications_api.py
+--------------------------------------------------------------------------------
+ERROR: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]
+__main__.py: error: argument -v/--verbose: ignored explicit argument '-v'
+
+
+Exit code: 4
+--------------------------------------------------------------------------------
+
+Running tests in: tests/api/test_statistics_api.py
+--------------------------------------------------------------------------------
+ERROR: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]
+__main__.py: error: argument -v/--verbose: ignored explicit argument '-v'
+
+
+Exit code: 4
+--------------------------------------------------------------------------------
+
+Running tests in: tests/api/test_error_handling.py
+--------------------------------------------------------------------------------
+ERROR: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]
+__main__.py: error: argument -v/--verbose: ignored explicit argument '-v'
+
+
+Exit code: 4
+--------------------------------------------------------------------------------
+
+Running tests in: tests/api/test_performance.py
+--------------------------------------------------------------------------------
+ERROR: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]
+__main__.py: error: argument -v/--verbose: ignored explicit argument '-v'
+
+
+Exit code: 4
+--------------------------------------------------------------------------------

@@ -5,7 +5,8 @@ app_name = 'custodians'
 
 urlpatterns = [
     path('register/', views.register, name='register'),
-    path('verify-email/<str:uidb64>/<str:token>/', views.verify_email, name='verify_email'),
+    path('verify-phone/', views.verify_phone, name='verify_phone'),
+    path('resend-verification/', views.resend_verification, name='resend_verification'),
     path('dashboard/', views.dashboard, name='custodian_dashboard'),
     path('profile/', views.profile, name='custodian_profile'),
     

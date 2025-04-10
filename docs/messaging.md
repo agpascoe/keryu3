@@ -1,213 +1,271 @@
-# Messaging System Documentation
+# Messaging System
 
 ## Overview
+The Messaging System is a core component of Keryu that handles communication across multiple channels (WhatsApp, Email, SMS) for notifications and alerts. It provides a unified interface for sending messages while managing channel-specific requirements and limitations.
 
-The Keryu system supports multiple messaging channels for notifications:
-1. Meta WhatsApp API (Primary)
-2. Twilio WhatsApp (Fallback)
-3. Twilio SMS (Fallback)
+## Models
 
-## System Architecture
-
-### Service Dependencies
-1. **Redis Server**
-   - Message broker for Celery
-   - Result backend for task status
-   - Must be running before Celery services
-
-2. **Celery Worker**
-   - Processes messaging tasks
-   - Handles retries and error cases
-   - Uses solo pool for reliable processing
-   - Listens to multiple queues:
-     * alarms: Alarm and notification processing tasks
-     * default: General tasks
-
-3. **Celery Beat**
-   - Schedules periodic tasks
-   - Monitors message delivery status
-   - Handles cleanup tasks
-
-### Process Management
-- All services managed via `startup.sh`
-- Single instance enforcement
-- Automatic cleanup of stale processes
-- Health checks for all services
-
-## Task Architecture
-
-### Notification Tasks
-The system uses a consolidated notification system with a single task:
+### Message Model
 ```python
-@app.task(bind=True, max_retries=3, name='alarms.tasks.send_whatsapp_notification')
-def send_whatsapp_notification(self, alarm_id, is_test=False):
-    """
-    Send a WhatsApp notification for an alarm.
-    Uses select_for_update to prevent race conditions.
-    """
+class Message(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('sent', 'Sent'),
+        ('failed', 'Failed')
+    ]
+
+    CHANNEL_CHOICES = [
+        ('whatsapp', 'WhatsApp'),
+        ('email', 'Email'),
+        ('sms', 'SMS')
+    ]
+
+    recipient = models.ForeignKey('custodians.Custodian', on_delete=models.CASCADE)
+    channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES)
+    content = models.TextField()
+    template_id = models.CharField(max_length=100, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    sent_at = models.DateTimeField(null=True, blank=True)
+    error_message = models.TextField(blank=True)
+    retry_count = models.IntegerField(default=0)
 ```
 
-Key features:
-- Transaction handling to prevent race conditions
-- Status tracking with states: PENDING, PROCESSING, SENT, DELIVERED, FAILED, ERROR
-- Maximum of 3 retry attempts
-- Test mode support
-- Duplicate notification prevention
-
-### Status Tracking
-The system tracks notification status using the following fields:
-- notification_status: Current status of the notification
-- notification_sent: Boolean indicating successful delivery
-- notification_attempts: Number of delivery attempts
-- last_attempt: Timestamp of the last attempt
-- notification_error: Error message if delivery failed
-- whatsapp_message_id: Message ID from the provider
-
-## Channel Configuration
-
-The system uses a dynamic channel selection mechanism through the `SystemParameter` model:
-- Meta WhatsApp API (value: "1")
-- Twilio WhatsApp (value: "2")
-- Twilio SMS (value: "3")
-
-### Setting the Channel
-
+### MessageTemplate Model
 ```python
-from core.models import SystemParameter
+class MessageTemplate(models.Model):
+    CHANNEL_CHOICES = [
+        ('whatsapp', 'WhatsApp'),
+        ('email', 'Email'),
+        ('sms', 'SMS')
+    ]
 
-# Set channel to Meta WhatsApp API
-SystemParameter.objects.get_or_create(
-    parameter="channel",
-    defaults={"value": "1"}
-)
+    name = models.CharField(max_length=100)
+    channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES)
+    content = models.TextField()
+    variables = models.JSONField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 ```
 
-## Phone Number Formatting
+## Features
 
-Each channel has specific phone number formatting requirements:
+### Message Management
+1. **Creation**
+   - Channel selection
+   - Content formatting
+   - Template support
+   - Variable substitution
 
-1. **Meta WhatsApp API**
-   - Removes '+' prefix
-   - Example: "+5212345678901" → "5212345678901"
+2. **Delivery**
+   - Queue management
+   - Channel routing
+   - Status tracking
+   - Error handling
 
-2. **Twilio WhatsApp**
-   - Adds 'whatsapp:' prefix
-   - Formats Mexican numbers (adds '1' after '+52')
-   - Example: "+5212345678901" → "whatsapp:+5212345678901"
+3. **Templates**
+   - Variable support
+   - Channel-specific formatting
+   - Version control
+   - Active/Inactive status
 
-3. **Twilio SMS**
-   - Formats Mexican numbers (adds '1' after '+52')
-   - Example: "+5212345678901" → "+5212345678901"
+### Channel Support
 
-## Message Formatting
+#### WhatsApp
+1. **Configuration**
+   - API credentials
+   - Template management
+   - Rate limits
+   - Error handling
 
-Messages are consistently formatted across all channels:
-- Extra whitespace is removed
-- Line breaks are converted to spaces
-- Multiple spaces are reduced to single spaces
+2. **Features**
+   - Template messages
+   - Media support
+   - Interactive messages
+   - Delivery receipts
 
-Example:
-```python
-"Hello   World\nTest   Message" → "Hello World Test Message"
-```
+#### Email
+1. **Configuration**
+   - SMTP settings
+   - Template engine
+   - Spam prevention
+   - Bounce handling
+
+2. **Features**
+   - HTML templates
+   - Attachments
+   - Reply-to
+   - Tracking
+
+#### SMS
+1. **Configuration**
+   - Provider settings
+   - Cost optimization
+   - Character limits
+   - Delivery tracking
+
+2. **Features**
+   - Unicode support
+   - Long messages
+   - Delivery reports
+   - Cost tracking
+
+## Tasks and Background Jobs
+
+### Message Processing
+1. **Queue Management**
+   - Priority handling
+   - Rate limiting
+   - Channel balancing
+   - Error recovery
+
+2. **Delivery**
+   - Channel routing
+   - Status updates
+   - Retry logic
+   - Error logging
+
+3. **Cleanup**
+   - Old message cleanup
+   - Failed message handling
+   - Status updates
+   - Database maintenance
+
+### Monitoring
+1. **System Health**
+   - Channel status
+   - Queue length
+   - Error rates
+   - Performance metrics
+
+2. **Usage Statistics**
+   - Message counts
+   - Success rates
+   - Channel usage
+   - Cost tracking
+
+## API Endpoints
+
+### Message Management
+- `GET /api/messages/` - List messages
+- `POST /api/messages/` - Send message
+- `GET /api/messages/{id}/` - Get message details
+- `PUT /api/messages/{id}/` - Update message
+- `DELETE /api/messages/{id}/` - Delete message
+
+### Template Management
+- `GET /api/templates/` - List templates
+- `POST /api/templates/` - Create template
+- `GET /api/templates/{id}/` - Get template details
+- `PUT /api/templates/{id}/` - Update template
+- `DELETE /api/templates/{id}/` - Delete template
+
+## Views and Templates
+
+### Message Views
+1. **List View**
+   - Status filtering
+   - Channel filtering
+   - Date filtering
+   - Pagination
+
+2. **Detail View**
+   - Message content
+   - Delivery status
+   - Error details
+   - Action buttons
+
+3. **Dashboard**
+   - Message statistics
+   - Channel status
+   - Recent messages
+   - Quick actions
+
+### Template Views
+1. **Management**
+   - Template list
+   - Create/Edit form
+   - Variable editor
+   - Preview
+
+2. **Usage**
+   - Usage statistics
+   - Success rates
+   - Error logs
+   - Version history
 
 ## Error Handling
 
-The system includes comprehensive error handling:
-1. Channel-specific error handling
-2. Automatic retries for failed messages (max 3 attempts)
-3. Detailed error logging
-4. Status tracking for message delivery
-5. Race condition prevention using database locks
+### Processing Errors
+1. **Channel Errors**
+   - Connection issues
+   - Rate limits
+   - Invalid recipients
+   - Message formatting
 
-## Configuration
+2. **System Errors**
+   - Queue failures
+   - Database errors
+   - Cache errors
+   - Resource limits
 
-### Environment Variables
+### Recovery Procedures
+1. **Automatic Recovery**
+   - Retry logic
+   - Fallback channels
+   - Error logging
+   - Status updates
 
-```env
-# Meta WhatsApp API Configuration
-WHATSAPP_PHONE_NUMBER_ID=your_phone_number_id
-WHATSAPP_ACCESS_TOKEN=your_access_token
-
-# Twilio Configuration (Optional)
-TWILIO_ACCOUNT_SID=your_account_sid
-TWILIO_AUTH_TOKEN=your_auth_token
-TWILIO_PHONE_NUMBER=your_phone_number
-TWILIO_WHATSAPP_NUMBER=your_whatsapp_number
-
-# Redis Configuration
-REDIS_URL=redis://localhost:6379/0
-
-# Celery Configuration
-CELERY_BROKER_URL=redis://localhost:6379/0
-CELERY_RESULT_BACKEND=redis://localhost:6379/0
-```
-
-### WhatsApp Template
-
-The system uses a template named "qr_template_on_m" with two variables:
-1. Subject name
-2. Timestamp
-
-## Testing
-
-### QR Code Testing
-The system provides direct URL access for QR code testing:
-- Each QR code displays its corresponding scan URL
-- URLs can be clicked directly to simulate QR code scanning
-- Useful for testing the complete notification flow without physical QR codes
-- Browser-native features (copy URL, open in new tab) are supported
-
-### Automated Tests
-Run the messaging tests:
-```bash
-python -m pytest tests/test_messaging.py -vv
-```
-
-The test suite covers:
-1. Message formatting consistency
-2. Phone number formatting
-3. Channel selection
-4. Error handling
-5. Template message structure
-6. QR code URL generation and scanning
-
-## Monitoring
-
-The system includes detailed logging for monitoring:
-1. Message delivery status
-2. API responses
-3. Error tracking
-4. Performance metrics
-5. Celery task status
-6. Worker health
-7. Redis connection status
+2. **Manual Intervention**
+   - Error reporting
+   - Manual retry
+   - Channel switching
+   - Resolution handling
 
 ## Best Practices
 
-1. **Phone Numbers**
-   - Always use E.164 format
-   - Include country code
-   - Test with international numbers
+### Performance
+1. **Optimization**
+   - Queue management
+   - Batch processing
+   - Cache usage
+   - Database indexing
 
-2. **Messages**
-   - Keep messages concise
-   - Test with various character sets
-   - Verify template compliance
+2. **Monitoring**
+   - Response times
+   - Success rates
+   - Error rates
+   - Resource usage
 
-3. **Error Handling**
-   - Monitor error rates
-   - Review failed deliveries
-   - Adjust retry strategies
+### Security
+1. **Access Control**
+   - Permission checks
+   - Rate limiting
+   - Input validation
+   - Audit logging
 
-4. **Testing**
-   - Run tests after configuration changes
-   - Verify all channels
-   - Test fallback scenarios
-   - Use test mode for validation
+2. **Data Protection**
+   - Encryption
+   - Secure storage
+   - Access logs
+   - Compliance
 
-5. **Process Management**
-   - Use startup script for service management
-   - Monitor worker processes
-   - Check service logs regularly
-   - Verify single instance operation 
+## Testing
+
+### Unit Tests
+- Model tests
+- Service tests
+- Template tests
+- Utility tests
+
+### Integration Tests
+- API tests
+- Channel tests
+- Queue tests
+- Database tests
+
+### Manual Testing
+- UI testing
+- Channel testing
+- Template testing
+- Error scenarios 

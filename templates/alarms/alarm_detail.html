@@ -93,12 +93,22 @@
                             </div>
                             <div class="col-md-6">
                                 <p><strong>Notification Status:</strong>
-                                    {% if alarm.notification_sent %}
+                                    {% if alarm.notification_status == 'SENT' %}
                                         <span class="badge bg-success">Sent</span>
+                                    {% elif alarm.notification_status == 'ERROR' %}
+                                        <span class="badge bg-danger">Error</span>
+                                        {% if alarm.notification_error %}
                                         <br>
-                                        <small class="text-muted">at {{ alarm.notification_sent_at|date:"Y-m-d H:i:s" }}</small>
-                                    {% else %}
+                                        <small class="text-muted">{{ alarm.notification_error }}</small>
+                                        {% endif %}
+                                    {% elif alarm.notification_status == 'PENDING' %}
                                         <span class="badge bg-warning">Pending</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ alarm.notification_status|title }}</span>
+                                    {% endif %}
+                                    {% if alarm.last_attempt %}
+                                    <br>
+                                    <small class="text-muted">Last attempt: {{ alarm.last_attempt|date:"Y-m-d H:i:s" }}</small>
                                     {% endif %}
                                 </p>
                                 <p><strong>Scanned from IP:</strong> {{ alarm.scanned_by_ip|default:"Not available" }}</p>

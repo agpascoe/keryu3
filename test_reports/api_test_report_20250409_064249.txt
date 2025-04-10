@@ -1,0 +1,1314 @@
+API Test Report - 2025-04-09 06:42:49
+================================================================================
+
+
+Running tests in: tests/auth
+--------------------------------------------------------------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.12.9, pytest-8.0.2, pluggy-1.5.0 -- /home/ubuntu/miniconda3/envs/keryu/bin/python
+cachedir: .pytest_cache
+django: version: 5.0.2
+rootdir: /home/ubuntu/keryu3
+plugins: django-4.8.0
+collecting ... collected 11 items
+
+tests/auth/test_authentication.py::AuthenticationTests::test_login_failure FAILED [  9%]
+tests/auth/test_authentication.py::AuthenticationTests::test_login_success FAILED [ 18%]
+tests/auth/test_authentication.py::AuthenticationTests::test_logout FAILED [ 27%]
+tests/auth/test_authentication.py::AuthenticationTests::test_password_change FAILED [ 36%]
+tests/auth/test_authentication.py::AuthenticationTests::test_password_reset FAILED [ 45%]
+tests/auth/test_authentication.py::APIAuthenticationTests::test_permission_custodian_access FAILED [ 54%]
+tests/auth/test_authentication.py::APIAuthenticationTests::test_permission_staff_access FAILED [ 63%]
+tests/auth/test_authentication.py::APIAuthenticationTests::test_rate_limiting FAILED [ 72%]
+tests/auth/test_authentication.py::APIAuthenticationTests::test_token_authentication FAILED [ 81%]
+tests/auth/test_authentication.py::APIAuthenticationTests::test_token_expiration FAILED [ 90%]
+tests/auth/test_authentication.py::APIAuthenticationTests::test_unauthorized_access FAILED [100%]
+
+=================================== FAILURES ===================================
+____________________ AuthenticationTests.test_login_failure ____________________
+
+self = <django.db.backends.utils.CursorWrapper object at 0x7eef02c48e60>
+sql = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve... "created_at", "updated_at") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING "custodians_custodian"."id"'
+params = (12, '+1234567890', None, '', True, False, ...)
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='sqlite' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x7eef02c48e60>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        # Raise a warning during app initialization (stored_app_configs is only
+        # ever set during testing).
+        if not apps.ready and not apps.stored_app_configs:
+            warnings.warn(self.APPS_NOT_READY_WARNING_MSG, category=RuntimeWarning)
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+                return self.cursor.execute(sql)
+            else:
+>               return self.cursor.execute(sql, params)
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02f72b10>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (12, '+1234567890', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       sqlite3.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_authentication.AuthenticationTests testMethod=test_login_failure>
+
+    def setUp(self):
+        # Create test users with unique usernames
+        self.staff_user = User.objects.create_user(
+            username='staff_auth',
+            password='staffpass123',
+            email='staff@example.com',
+            is_staff=True
+        )
+    
+        self.custodian_user = User.objects.create_user(
+            username='custodian_auth',
+            password='custodianpass123',
+            email='custodian@example.com'
+        )
+    
+>       self.custodian = Custodian.objects.create(
+            user=self.custodian_user,
+            phone_number='+1234567890',
+            is_verified=True
+        )
+
+tests/auth/test_authentication.py:28: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:679: in create
+    obj.save(force_insert=True, using=self.db)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:822: in save
+    self.save_base(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:909: in save_base
+    updated = self._save_table(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1067: in _save_table
+    results = self._do_insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1108: in _do_insert
+    return manager._insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:1847: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/sql/compiler.py:1823: in execute_sql
+    cursor.execute(sql, params)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02f72b10>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (12, '+1234567890', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       django.db.utils.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+----------------------------- Captured stderr call -----------------------------
+DEBUG 2025-04-09 06:42:51,208 models 5605 139565074118144 Created new custodian for user 11
+DEBUG 2025-04-09 06:42:51,786 models 5605 139565074118144 Created new custodian for user 12
+------------------------------ Captured log call -------------------------------
+DEBUG    custodians.models:models.py:85 Created new custodian for user 11
+DEBUG    custodians.models:models.py:85 Created new custodian for user 12
+____________________ AuthenticationTests.test_login_success ____________________
+
+self = <django.db.backends.utils.CursorWrapper object at 0x7eef02c7b9e0>
+sql = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve... "created_at", "updated_at") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING "custodians_custodian"."id"'
+params = (14, '+1234567890', None, '', True, False, ...)
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='sqlite' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x7eef02c7b9e0>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        # Raise a warning during app initialization (stored_app_configs is only
+        # ever set during testing).
+        if not apps.ready and not apps.stored_app_configs:
+            warnings.warn(self.APPS_NOT_READY_WARNING_MSG, category=RuntimeWarning)
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+                return self.cursor.execute(sql)
+            else:
+>               return self.cursor.execute(sql, params)
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02b8e450>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (14, '+1234567890', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       sqlite3.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_authentication.AuthenticationTests testMethod=test_login_success>
+
+    def setUp(self):
+        # Create test users with unique usernames
+        self.staff_user = User.objects.create_user(
+            username='staff_auth',
+            password='staffpass123',
+            email='staff@example.com',
+            is_staff=True
+        )
+    
+        self.custodian_user = User.objects.create_user(
+            username='custodian_auth',
+            password='custodianpass123',
+            email='custodian@example.com'
+        )
+    
+>       self.custodian = Custodian.objects.create(
+            user=self.custodian_user,
+            phone_number='+1234567890',
+            is_verified=True
+        )
+
+tests/auth/test_authentication.py:28: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:679: in create
+    obj.save(force_insert=True, using=self.db)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:822: in save
+    self.save_base(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:909: in save_base
+    updated = self._save_table(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1067: in _save_table
+    results = self._do_insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1108: in _do_insert
+    return manager._insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:1847: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/sql/compiler.py:1823: in execute_sql
+    cursor.execute(sql, params)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02b8e450>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (14, '+1234567890', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       django.db.utils.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+----------------------------- Captured stderr call -----------------------------
+DEBUG 2025-04-09 06:42:52,844 models 5605 139565074118144 Created new custodian for user 13
+DEBUG 2025-04-09 06:42:53,422 models 5605 139565074118144 Created new custodian for user 14
+------------------------------ Captured log call -------------------------------
+DEBUG    custodians.models:models.py:85 Created new custodian for user 13
+DEBUG    custodians.models:models.py:85 Created new custodian for user 14
+_______________________ AuthenticationTests.test_logout ________________________
+
+self = <django.db.backends.utils.CursorWrapper object at 0x7eef02cc5970>
+sql = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve... "created_at", "updated_at") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING "custodians_custodian"."id"'
+params = (16, '+1234567890', None, '', True, False, ...)
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='sqlite' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x7eef02cc5970>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        # Raise a warning during app initialization (stored_app_configs is only
+        # ever set during testing).
+        if not apps.ready and not apps.stored_app_configs:
+            warnings.warn(self.APPS_NOT_READY_WARNING_MSG, category=RuntimeWarning)
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+                return self.cursor.execute(sql)
+            else:
+>               return self.cursor.execute(sql, params)
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02b8d910>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (16, '+1234567890', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       sqlite3.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_authentication.AuthenticationTests testMethod=test_logout>
+
+    def setUp(self):
+        # Create test users with unique usernames
+        self.staff_user = User.objects.create_user(
+            username='staff_auth',
+            password='staffpass123',
+            email='staff@example.com',
+            is_staff=True
+        )
+    
+        self.custodian_user = User.objects.create_user(
+            username='custodian_auth',
+            password='custodianpass123',
+            email='custodian@example.com'
+        )
+    
+>       self.custodian = Custodian.objects.create(
+            user=self.custodian_user,
+            phone_number='+1234567890',
+            is_verified=True
+        )
+
+tests/auth/test_authentication.py:28: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:679: in create
+    obj.save(force_insert=True, using=self.db)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:822: in save
+    self.save_base(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:909: in save_base
+    updated = self._save_table(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1067: in _save_table
+    results = self._do_insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1108: in _do_insert
+    return manager._insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:1847: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/sql/compiler.py:1823: in execute_sql
+    cursor.execute(sql, params)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02b8d910>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (16, '+1234567890', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       django.db.utils.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+----------------------------- Captured stderr call -----------------------------
+DEBUG 2025-04-09 06:42:54,363 models 5605 139565074118144 Created new custodian for user 15
+DEBUG 2025-04-09 06:42:54,941 models 5605 139565074118144 Created new custodian for user 16
+------------------------------ Captured log call -------------------------------
+DEBUG    custodians.models:models.py:85 Created new custodian for user 15
+DEBUG    custodians.models:models.py:85 Created new custodian for user 16
+___________________ AuthenticationTests.test_password_change ___________________
+
+self = <django.db.backends.utils.CursorWrapper object at 0x7eef02cc6030>
+sql = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve... "created_at", "updated_at") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING "custodians_custodian"."id"'
+params = (18, '+1234567890', None, '', True, False, ...)
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='sqlite' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x7eef02cc6030>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        # Raise a warning during app initialization (stored_app_configs is only
+        # ever set during testing).
+        if not apps.ready and not apps.stored_app_configs:
+            warnings.warn(self.APPS_NOT_READY_WARNING_MSG, category=RuntimeWarning)
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+                return self.cursor.execute(sql)
+            else:
+>               return self.cursor.execute(sql, params)
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02b8e840>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (18, '+1234567890', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       sqlite3.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_authentication.AuthenticationTests testMethod=test_password_change>
+
+    def setUp(self):
+        # Create test users with unique usernames
+        self.staff_user = User.objects.create_user(
+            username='staff_auth',
+            password='staffpass123',
+            email='staff@example.com',
+            is_staff=True
+        )
+    
+        self.custodian_user = User.objects.create_user(
+            username='custodian_auth',
+            password='custodianpass123',
+            email='custodian@example.com'
+        )
+    
+>       self.custodian = Custodian.objects.create(
+            user=self.custodian_user,
+            phone_number='+1234567890',
+            is_verified=True
+        )
+
+tests/auth/test_authentication.py:28: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:679: in create
+    obj.save(force_insert=True, using=self.db)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:822: in save
+    self.save_base(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:909: in save_base
+    updated = self._save_table(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1067: in _save_table
+    results = self._do_insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1108: in _do_insert
+    return manager._insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:1847: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/sql/compiler.py:1823: in execute_sql
+    cursor.execute(sql, params)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02b8e840>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (18, '+1234567890', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       django.db.utils.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+----------------------------- Captured stderr call -----------------------------
+DEBUG 2025-04-09 06:42:55,882 models 5605 139565074118144 Created new custodian for user 17
+DEBUG 2025-04-09 06:42:56,462 models 5605 139565074118144 Created new custodian for user 18
+------------------------------ Captured log call -------------------------------
+DEBUG    custodians.models:models.py:85 Created new custodian for user 17
+DEBUG    custodians.models:models.py:85 Created new custodian for user 18
+___________________ AuthenticationTests.test_password_reset ____________________
+
+self = <django.db.backends.utils.CursorWrapper object at 0x7eef02cc6d50>
+sql = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve... "created_at", "updated_at") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING "custodians_custodian"."id"'
+params = (20, '+1234567890', None, '', True, False, ...)
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='sqlite' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x7eef02cc6d50>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        # Raise a warning during app initialization (stored_app_configs is only
+        # ever set during testing).
+        if not apps.ready and not apps.stored_app_configs:
+            warnings.warn(self.APPS_NOT_READY_WARNING_MSG, category=RuntimeWarning)
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+                return self.cursor.execute(sql)
+            else:
+>               return self.cursor.execute(sql, params)
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02f72f90>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (20, '+1234567890', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       sqlite3.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_authentication.AuthenticationTests testMethod=test_password_reset>
+
+    def setUp(self):
+        # Create test users with unique usernames
+        self.staff_user = User.objects.create_user(
+            username='staff_auth',
+            password='staffpass123',
+            email='staff@example.com',
+            is_staff=True
+        )
+    
+        self.custodian_user = User.objects.create_user(
+            username='custodian_auth',
+            password='custodianpass123',
+            email='custodian@example.com'
+        )
+    
+>       self.custodian = Custodian.objects.create(
+            user=self.custodian_user,
+            phone_number='+1234567890',
+            is_verified=True
+        )
+
+tests/auth/test_authentication.py:28: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:679: in create
+    obj.save(force_insert=True, using=self.db)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:822: in save
+    self.save_base(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:909: in save_base
+    updated = self._save_table(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1067: in _save_table
+    results = self._do_insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1108: in _do_insert
+    return manager._insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:1847: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/sql/compiler.py:1823: in execute_sql
+    cursor.execute(sql, params)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02f72f90>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (20, '+1234567890', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       django.db.utils.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+----------------------------- Captured stderr call -----------------------------
+DEBUG 2025-04-09 06:42:57,472 models 5605 139565074118144 Created new custodian for user 19
+DEBUG 2025-04-09 06:42:58,053 models 5605 139565074118144 Created new custodian for user 20
+------------------------------ Captured log call -------------------------------
+DEBUG    custodians.models:models.py:85 Created new custodian for user 19
+DEBUG    custodians.models:models.py:85 Created new custodian for user 20
+___________ APIAuthenticationTests.test_permission_custodian_access ____________
+
+self = <django.db.backends.utils.CursorWrapper object at 0x7eef031f3aa0>
+sql = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve... "created_at", "updated_at") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING "custodians_custodian"."id"'
+params = (22, '+1234567891', None, '', True, False, ...)
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='sqlite' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x7eef031f3aa0>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        # Raise a warning during app initialization (stored_app_configs is only
+        # ever set during testing).
+        if not apps.ready and not apps.stored_app_configs:
+            warnings.warn(self.APPS_NOT_READY_WARNING_MSG, category=RuntimeWarning)
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+                return self.cursor.execute(sql)
+            else:
+>               return self.cursor.execute(sql, params)
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02b8e450>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (22, '+1234567891', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       sqlite3.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_authentication.APIAuthenticationTests testMethod=test_permission_custodian_access>
+
+    def setUp(self):
+        # Create test users with unique usernames
+        self.staff_user = User.objects.create_user(
+            username='staff_api',
+            password='staffpass123',
+            email='staff_api@example.com',
+            is_staff=True
+        )
+    
+        self.custodian_user = User.objects.create_user(
+            username='custodian_api',
+            password='custodianpass123',
+            email='custodian_api@example.com'
+        )
+    
+>       self.custodian = Custodian.objects.create(
+            user=self.custodian_user,
+            phone_number='+1234567891',
+            is_verified=True
+        )
+
+tests/auth/test_authentication.py:127: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:679: in create
+    obj.save(force_insert=True, using=self.db)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:822: in save
+    self.save_base(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:909: in save_base
+    updated = self._save_table(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1067: in _save_table
+    results = self._do_insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1108: in _do_insert
+    return manager._insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:1847: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/sql/compiler.py:1823: in execute_sql
+    cursor.execute(sql, params)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02b8e450>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (22, '+1234567891', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       django.db.utils.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+----------------------------- Captured stderr call -----------------------------
+DEBUG 2025-04-09 06:42:58,984 models 5605 139565074118144 Created new custodian for user 21
+DEBUG 2025-04-09 06:42:59,563 models 5605 139565074118144 Created new custodian for user 22
+------------------------------ Captured log call -------------------------------
+DEBUG    custodians.models:models.py:85 Created new custodian for user 21
+DEBUG    custodians.models:models.py:85 Created new custodian for user 22
+_____________ APIAuthenticationTests.test_permission_staff_access ______________
+
+self = <django.db.backends.utils.CursorWrapper object at 0x7eef02bb5cd0>
+sql = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve... "created_at", "updated_at") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING "custodians_custodian"."id"'
+params = (24, '+1234567891', None, '', True, False, ...)
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='sqlite' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x7eef02bb5cd0>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        # Raise a warning during app initialization (stored_app_configs is only
+        # ever set during testing).
+        if not apps.ready and not apps.stored_app_configs:
+            warnings.warn(self.APPS_NOT_READY_WARNING_MSG, category=RuntimeWarning)
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+                return self.cursor.execute(sql)
+            else:
+>               return self.cursor.execute(sql, params)
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02b8f890>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (24, '+1234567891', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       sqlite3.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_authentication.APIAuthenticationTests testMethod=test_permission_staff_access>
+
+    def setUp(self):
+        # Create test users with unique usernames
+        self.staff_user = User.objects.create_user(
+            username='staff_api',
+            password='staffpass123',
+            email='staff_api@example.com',
+            is_staff=True
+        )
+    
+        self.custodian_user = User.objects.create_user(
+            username='custodian_api',
+            password='custodianpass123',
+            email='custodian_api@example.com'
+        )
+    
+>       self.custodian = Custodian.objects.create(
+            user=self.custodian_user,
+            phone_number='+1234567891',
+            is_verified=True
+        )
+
+tests/auth/test_authentication.py:127: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:679: in create
+    obj.save(force_insert=True, using=self.db)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:822: in save
+    self.save_base(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:909: in save_base
+    updated = self._save_table(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1067: in _save_table
+    results = self._do_insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1108: in _do_insert
+    return manager._insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:1847: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/sql/compiler.py:1823: in execute_sql
+    cursor.execute(sql, params)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02b8f890>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (24, '+1234567891', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       django.db.utils.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+----------------------------- Captured stderr call -----------------------------
+DEBUG 2025-04-09 06:43:00,516 models 5605 139565074118144 Created new custodian for user 23
+DEBUG 2025-04-09 06:43:01,094 models 5605 139565074118144 Created new custodian for user 24
+------------------------------ Captured log call -------------------------------
+DEBUG    custodians.models:models.py:85 Created new custodian for user 23
+DEBUG    custodians.models:models.py:85 Created new custodian for user 24
+__________________ APIAuthenticationTests.test_rate_limiting ___________________
+
+self = <django.db.backends.utils.CursorWrapper object at 0x7eef02b2a390>
+sql = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve... "created_at", "updated_at") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING "custodians_custodian"."id"'
+params = (26, '+1234567891', None, '', True, False, ...)
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='sqlite' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x7eef02b2a390>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        # Raise a warning during app initialization (stored_app_configs is only
+        # ever set during testing).
+        if not apps.ready and not apps.stored_app_configs:
+            warnings.warn(self.APPS_NOT_READY_WARNING_MSG, category=RuntimeWarning)
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+                return self.cursor.execute(sql)
+            else:
+>               return self.cursor.execute(sql, params)
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02b8f920>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (26, '+1234567891', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       sqlite3.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_authentication.APIAuthenticationTests testMethod=test_rate_limiting>
+
+    def setUp(self):
+        # Create test users with unique usernames
+        self.staff_user = User.objects.create_user(
+            username='staff_api',
+            password='staffpass123',
+            email='staff_api@example.com',
+            is_staff=True
+        )
+    
+        self.custodian_user = User.objects.create_user(
+            username='custodian_api',
+            password='custodianpass123',
+            email='custodian_api@example.com'
+        )
+    
+>       self.custodian = Custodian.objects.create(
+            user=self.custodian_user,
+            phone_number='+1234567891',
+            is_verified=True
+        )
+
+tests/auth/test_authentication.py:127: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:679: in create
+    obj.save(force_insert=True, using=self.db)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:822: in save
+    self.save_base(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:909: in save_base
+    updated = self._save_table(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1067: in _save_table
+    results = self._do_insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1108: in _do_insert
+    return manager._insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:1847: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/sql/compiler.py:1823: in execute_sql
+    cursor.execute(sql, params)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02b8f920>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (26, '+1234567891', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       django.db.utils.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+----------------------------- Captured stderr call -----------------------------
+DEBUG 2025-04-09 06:43:02,033 models 5605 139565074118144 Created new custodian for user 25
+DEBUG 2025-04-09 06:43:02,611 models 5605 139565074118144 Created new custodian for user 26
+------------------------------ Captured log call -------------------------------
+DEBUG    custodians.models:models.py:85 Created new custodian for user 25
+DEBUG    custodians.models:models.py:85 Created new custodian for user 26
+_______________ APIAuthenticationTests.test_token_authentication _______________
+
+self = <django.db.backends.utils.CursorWrapper object at 0x7eef02b2a120>
+sql = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve... "created_at", "updated_at") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING "custodians_custodian"."id"'
+params = (28, '+1234567891', None, '', True, False, ...)
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='sqlite' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x7eef02b2a120>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        # Raise a warning during app initialization (stored_app_configs is only
+        # ever set during testing).
+        if not apps.ready and not apps.stored_app_configs:
+            warnings.warn(self.APPS_NOT_READY_WARNING_MSG, category=RuntimeWarning)
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+                return self.cursor.execute(sql)
+            else:
+>               return self.cursor.execute(sql, params)
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02b8f9b0>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (28, '+1234567891', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       sqlite3.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_authentication.APIAuthenticationTests testMethod=test_token_authentication>
+
+    def setUp(self):
+        # Create test users with unique usernames
+        self.staff_user = User.objects.create_user(
+            username='staff_api',
+            password='staffpass123',
+            email='staff_api@example.com',
+            is_staff=True
+        )
+    
+        self.custodian_user = User.objects.create_user(
+            username='custodian_api',
+            password='custodianpass123',
+            email='custodian_api@example.com'
+        )
+    
+>       self.custodian = Custodian.objects.create(
+            user=self.custodian_user,
+            phone_number='+1234567891',
+            is_verified=True
+        )
+
+tests/auth/test_authentication.py:127: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:679: in create
+    obj.save(force_insert=True, using=self.db)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:822: in save
+    self.save_base(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:909: in save_base
+    updated = self._save_table(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1067: in _save_table
+    results = self._do_insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1108: in _do_insert
+    return manager._insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:1847: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/sql/compiler.py:1823: in execute_sql
+    cursor.execute(sql, params)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02b8f9b0>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (28, '+1234567891', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       django.db.utils.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+----------------------------- Captured stderr call -----------------------------
+DEBUG 2025-04-09 06:43:03,561 models 5605 139565074118144 Created new custodian for user 27
+DEBUG 2025-04-09 06:43:04,140 models 5605 139565074118144 Created new custodian for user 28
+------------------------------ Captured log call -------------------------------
+DEBUG    custodians.models:models.py:85 Created new custodian for user 27
+DEBUG    custodians.models:models.py:85 Created new custodian for user 28
+_________________ APIAuthenticationTests.test_token_expiration _________________
+
+self = <django.db.backends.utils.CursorWrapper object at 0x7eef02b7c110>
+sql = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve... "created_at", "updated_at") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING "custodians_custodian"."id"'
+params = (30, '+1234567891', None, '', True, False, ...)
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='sqlite' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x7eef02b7c110>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        # Raise a warning during app initialization (stored_app_configs is only
+        # ever set during testing).
+        if not apps.ready and not apps.stored_app_configs:
+            warnings.warn(self.APPS_NOT_READY_WARNING_MSG, category=RuntimeWarning)
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+                return self.cursor.execute(sql)
+            else:
+>               return self.cursor.execute(sql, params)
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02bcccb0>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (30, '+1234567891', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       sqlite3.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_authentication.APIAuthenticationTests testMethod=test_token_expiration>
+
+    def setUp(self):
+        # Create test users with unique usernames
+        self.staff_user = User.objects.create_user(
+            username='staff_api',
+            password='staffpass123',
+            email='staff_api@example.com',
+            is_staff=True
+        )
+    
+        self.custodian_user = User.objects.create_user(
+            username='custodian_api',
+            password='custodianpass123',
+            email='custodian_api@example.com'
+        )
+    
+>       self.custodian = Custodian.objects.create(
+            user=self.custodian_user,
+            phone_number='+1234567891',
+            is_verified=True
+        )
+
+tests/auth/test_authentication.py:127: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:679: in create
+    obj.save(force_insert=True, using=self.db)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:822: in save
+    self.save_base(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:909: in save_base
+    updated = self._save_table(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1067: in _save_table
+    results = self._do_insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1108: in _do_insert
+    return manager._insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:1847: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/sql/compiler.py:1823: in execute_sql
+    cursor.execute(sql, params)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02bcccb0>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (30, '+1234567891', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       django.db.utils.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+----------------------------- Captured stderr call -----------------------------
+DEBUG 2025-04-09 06:43:05,078 models 5605 139565074118144 Created new custodian for user 29
+DEBUG 2025-04-09 06:43:05,659 models 5605 139565074118144 Created new custodian for user 30
+------------------------------ Captured log call -------------------------------
+DEBUG    custodians.models:models.py:85 Created new custodian for user 29
+DEBUG    custodians.models:models.py:85 Created new custodian for user 30
+_______________ APIAuthenticationTests.test_unauthorized_access ________________
+
+self = <django.db.backends.utils.CursorWrapper object at 0x7eef02b28620>
+sql = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve... "created_at", "updated_at") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING "custodians_custodian"."id"'
+params = (32, '+1234567891', None, '', True, False, ...)
+ignored_wrapper_args = (False, {'connection': <DatabaseWrapper vendor='sqlite' alias='default'>, 'cursor': <django.db.backends.utils.CursorWrapper object at 0x7eef02b28620>})
+
+    def _execute(self, sql, params, *ignored_wrapper_args):
+        # Raise a warning during app initialization (stored_app_configs is only
+        # ever set during testing).
+        if not apps.ready and not apps.stored_app_configs:
+            warnings.warn(self.APPS_NOT_READY_WARNING_MSG, category=RuntimeWarning)
+        self.db.validate_no_broken_transaction()
+        with self.db.wrap_database_errors:
+            if params is None:
+                # params default might be backend specific.
+                return self.cursor.execute(sql)
+            else:
+>               return self.cursor.execute(sql, params)
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02bcc200>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (32, '+1234567891', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       sqlite3.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+self = <test_authentication.APIAuthenticationTests testMethod=test_unauthorized_access>
+
+    def setUp(self):
+        # Create test users with unique usernames
+        self.staff_user = User.objects.create_user(
+            username='staff_api',
+            password='staffpass123',
+            email='staff_api@example.com',
+            is_staff=True
+        )
+    
+        self.custodian_user = User.objects.create_user(
+            username='custodian_api',
+            password='custodianpass123',
+            email='custodian_api@example.com'
+        )
+    
+>       self.custodian = Custodian.objects.create(
+            user=self.custodian_user,
+            phone_number='+1234567891',
+            is_verified=True
+        )
+
+tests/auth/test_authentication.py:127: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:679: in create
+    obj.save(force_insert=True, using=self.db)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:822: in save
+    self.save_base(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:909: in save_base
+    updated = self._save_table(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1067: in _save_table
+    results = self._do_insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/base.py:1108: in _do_insert
+    return manager._insert(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/manager.py:87: in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/query.py:1847: in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/models/sql/compiler.py:1823: in execute_sql
+    cursor.execute(sql, params)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:79: in execute
+    return self._execute_with_wrappers(
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:92: in _execute_with_wrappers
+    return executor(sql, params, many, context)
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:100: in _execute
+    with self.db.wrap_database_errors:
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/utils.py:91: in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/utils.py:105: in _execute
+    return self.cursor.execute(sql, params)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <django.db.backends.sqlite3.base.SQLiteCursorWrapper object at 0x7eef02bcc200>
+query = 'INSERT INTO "custodians_custodian" ("user_id", "phone_number", "emergency_phone", "address", "is_verified", "phone_ve..._attempts", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING "custodians_custodian"."id"'
+params = (32, '+1234567891', None, '', True, False, ...)
+
+    def execute(self, query, params=None):
+        if params is None:
+            return super().execute(query)
+        # Extract names if params is a mapping, i.e. "pyformat" style is used.
+        param_names = list(params) if isinstance(params, Mapping) else None
+        query = self.convert_query(query, param_names=param_names)
+>       return super().execute(query, params)
+E       django.db.utils.IntegrityError: UNIQUE constraint failed: custodians_custodian.user_id
+
+../miniconda3/envs/keryu/lib/python3.12/site-packages/django/db/backends/sqlite3/base.py:329: IntegrityError
+----------------------------- Captured stderr call -----------------------------
+DEBUG 2025-04-09 06:43:06,612 models 5605 139565074118144 Created new custodian for user 31
+DEBUG 2025-04-09 06:43:07,189 models 5605 139565074118144 Created new custodian for user 32
+------------------------------ Captured log call -------------------------------
+DEBUG    custodians.models:models.py:85 Created new custodian for user 31
+DEBUG    custodians.models:models.py:85 Created new custodian for user 32
+=============================== warnings summary ===============================
+../miniconda3/envs/keryu/lib/python3.12/site-packages/drf_yasg/__init__.py:2
+  /home/ubuntu/miniconda3/envs/keryu/lib/python3.12/site-packages/drf_yasg/__init__.py:2: DeprecationWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html
+    from pkg_resources import DistributionNotFound, get_distribution
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/auth/test_authentication.py::AuthenticationTests::test_login_failure
+FAILED tests/auth/test_authentication.py::AuthenticationTests::test_login_success
+FAILED tests/auth/test_authentication.py::AuthenticationTests::test_logout - ...
+FAILED tests/auth/test_authentication.py::AuthenticationTests::test_password_change
+FAILED tests/auth/test_authentication.py::AuthenticationTests::test_password_reset
+FAILED tests/auth/test_authentication.py::APIAuthenticationTests::test_permission_custodian_access
+FAILED tests/auth/test_authentication.py::APIAuthenticationTests::test_permission_staff_access
+FAILED tests/auth/test_authentication.py::APIAuthenticationTests::test_rate_limiting
+FAILED tests/auth/test_authentication.py::APIAuthenticationTests::test_token_authentication
+FAILED tests/auth/test_authentication.py::APIAuthenticationTests::test_token_expiration
+FAILED tests/auth/test_authentication.py::APIAuthenticationTests::test_unauthorized_access
+======================== 11 failed, 1 warning in 17.02s ========================
+
+Exit code: 1
+--------------------------------------------------------------------------------

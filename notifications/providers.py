@@ -163,5 +163,24 @@ class WhatsAppAPIProvider:
             }
 
 def get_notification_service():
-    """Get the configured notification service."""
-    return WhatsAppAPIProvider() 
+    """Get the configured notification service based on the channel setting."""
+    from core.models import SystemParameter
+    from core.messaging import MessageChannel
+    
+    try:
+        channel_param = SystemParameter.objects.get(parameter='channel')
+        channel = MessageChannel(channel_param.value)
+        
+        if channel == MessageChannel.TWILIO_SMS:
+            from twilio.rest import Client
+            client = Client(
+                username=settings.TWILIO_ACCOUNT_SID,
+                password=settings.TWILIO_AUTH_TOKEN,
+                account_sid=settings.TWILIO_ACCOUNT_SID
+            )
+            return client
+        else:
+            return WhatsAppAPIProvider()
+    except SystemParameter.DoesNotExist:
+        # Default to WhatsApp if no channel is configured
+        return WhatsAppAPIProvider() 

@@ -116,9 +116,35 @@
                                     <td>{{ activity.event }}</td>
                                     <td>{{ activity.timestamp|timesince }} ago</td>
                                     <td>
-                                        <span class="badge {% if activity.status == 'success' %}bg-success{% else %}bg-warning{% endif %}">
-                                            {{ activity.status|title }}
-                                        </span>
+                                        {% if activity.status == 'SENT' %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check"></i> Sent
+                                            </span>
+                                        {% elif activity.status == 'DELIVERED' %}
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-check-double"></i> Delivered
+                                            </span>
+                                        {% elif activity.status == 'PROCESSING' %}
+                                            <span class="badge bg-primary">
+                                                <i class="fas fa-spinner fa-spin"></i> Processing
+                                            </span>
+                                        {% elif activity.status == 'FAILED' %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-times"></i> Failed
+                                            </span>
+                                        {% elif activity.status == 'ERROR' %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-exclamation-triangle"></i> Error
+                                            </span>
+                                        {% elif activity.status == 'PENDING' %}
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-clock"></i> Pending
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-question"></i> {{ activity.status|default:"Unknown"|title }}
+                                            </span>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% empty %}

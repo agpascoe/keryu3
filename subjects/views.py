@@ -451,7 +451,6 @@ def scan_qr(request, uuid):
                 qr_code=qr,
                 location=location,
                 notification_status='PENDING',
-                notification_attempts=0,
                 timestamp=timezone.now(),
                 is_test=False  # Regular scan is not a test
             )
@@ -527,7 +526,6 @@ def trigger_qr(request, uuid):
                     qr_code=qr,
                     is_test=True,
                     notification_status='PENDING',
-                    notification_attempts=0,
                     timestamp=timezone.now()
                 )
                 

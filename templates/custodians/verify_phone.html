@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Verify Phone - Keryu{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Phone Verification</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        A verification code has been sent to your phone number. Please enter it below.
+                    </div>
+
+                    {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <form method="post" action="{% url 'custodians:verify_phone' %}" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="form-label">Enter 4-digit Verification Code</label>
+                            <div class="verification-code-input d-flex justify-content-between">
+                                {% for i in "0123"|make_list %}
+                                <input type="text" 
+                                       name="code_{{ i }}" 
+                                       class="form-control text-center mx-1"
+                                       maxlength="1" 
+                                       pattern="[0-9]"
+                                       style="width: 60px; font-size: 24px;"
+                                       required>
+                                {% endfor %}
+                            </div>
+                            <div class="invalid-feedback">
+                                Please enter all digits of the verification code.
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check-circle me-2"></i>Verify Code
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="resendCode">
+                                <i class="fas fa-redo me-2"></i>Resend Code
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-focus first input
+    document.querySelector('input[name="code_0"]').focus();
+
+    // Handle input navigation
+    const inputs = document.querySelectorAll('.verification-code-input input');
+    inputs.forEach((input, index) => {
+        input.addEventListener('input', function(e) {
+            if (this.value.length === 1) {
+                if (index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            }
+        });
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace' && !this.value && index > 0) {
+                inputs[index - 1].focus();
+            }
+        });
+    });
+
+    // Handle form submission
+    document.querySelector('form').addEventListener('submit', function(e) {
+        let code = '';
+        inputs.forEach(input => {
+            code += input.value;
+        });
+        
+        // Add hidden input with complete code
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'verification_code';
+        hiddenInput.value = code;
+        this.appendChild(hiddenInput);
+    });
+
+    // Handle resend code
+    document.getElementById('resendCode').addEventListener('click', function() {
+        fetch('{% url "custodians:resend_verification" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success mt-3';
+                alert.textContent = 'Verification code has been resent!';
+                document.querySelector('.card-body').insertBefore(alert, document.querySelector('form'));
+                
+                // Remove alert after 5 seconds
+                setTimeout(() => alert.remove(), 5000);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% endblock %} 
