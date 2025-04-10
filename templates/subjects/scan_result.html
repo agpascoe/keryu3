@@ -5,49 +5,112 @@
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            {% if qr.is_active %}
-            <div class="card border-success">
-                <div class="card-header bg-success text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-check-circle"></i> QR Code Scanned Successfully
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <div class="text-center mb-4">
-                        <i class="fas fa-shield-alt fa-4x text-success"></i>
+            {% if error %}
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-exclamation-circle"></i> Error
+                        </h4>
                     </div>
-                    
-                    <div class="alert alert-info">
-                        <p class="mb-0 text-center">
-                            <i class="fas fa-info-circle"></i> The custodian has been notified.
-                        </p>
-                    </div>
-                    
-                    <div class="text-center mt-4">
-                        <p class="text-muted mb-0">
-                            Thank you for helping. The custodian will be in contact shortly.
-                        </p>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-times-circle fa-4x text-danger"></i>
+                        </div>
+                        <div class="alert alert-danger">
+                            <p class="mb-0 text-center">{{ message }}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
+            {% elif not qr.is_active %}
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-exclamation-circle"></i> Invalid QR Code
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-times-circle fa-4x text-danger"></i>
+                        </div>
+                        <div class="alert alert-danger">
+                            <p class="mb-0 text-center">{{ message }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% elif is_duplicate %}
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h4 class="mb-0">
+                            <i class="fas fa-exclamation-triangle"></i> Duplicate Scan Detected
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-clock fa-4x text-warning"></i>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <p class="mb-0 text-center">{{ message }}</p>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <p class="text-muted mb-0">
+                                The previous notification is still being processed.
+                            </p>
+                            <p class="text-muted">
+                                Please wait <span id="countdown">{{ cooldown_remaining }}</span> seconds before trying again.
+                            </p>
+                        </div>
+                    </div>
+                </div>
             {% else %}
-            <div class="card border-danger">
-                <div class="card-header bg-danger text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-exclamation-circle"></i> Invalid QR Code
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <div class="text-center mb-4">
-                        <i class="fas fa-times-circle fa-4x text-danger"></i>
+                <div class="card border-success">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-check-circle"></i> QR Code Scanned Successfully
+                        </h4>
                     </div>
-                    <p class="text-center">
-                        This QR code is no longer active.
-                    </p>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-shield-alt fa-4x text-success"></i>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <p class="mb-0 text-center">
+                                <i class="fas fa-info-circle"></i> The custodian has been notified.
+                            </p>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <p class="text-muted mb-0">
+                                Thank you for helping. The custodian will be in contact shortly.
+                            </p>
+                            <p class="text-muted">
+                                Note: This QR code cannot be scanned again for 5 seconds.
+                            </p>
+                        </div>
+                    </div>
                 </div>
-            </div>
             {% endif %}
         </div>
     </div>
 </div>
+
+{% if is_duplicate %}
+<script>
+    // Countdown timer for duplicate scans
+    let timeLeft = {{ cooldown_remaining }};
+    const countdownElement = document.getElementById('countdown');
+    
+    const countdown = setInterval(() => {
+        timeLeft--;
+        countdownElement.textContent = timeLeft;
+        
+        if (timeLeft <= 0) {
+            clearInterval(countdown);
+            countdownElement.parentElement.textContent = 'You can now scan the QR code again.';
+        }
+    }, 1000);
+</script>
+{% endif %}
 {% endblock %} 

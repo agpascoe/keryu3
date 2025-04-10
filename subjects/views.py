@@ -150,7 +150,9 @@ def qr_codes(request):
     
     # Add scan URLs for each QR code
     for qr in qr_codes:
-        qr.scan_url = request.build_absolute_uri(reverse('subjects:scan_qr', args=[qr.uuid]))
+        base_url = reverse('subjects:scan_qr', args=[qr.uuid])
+        # Add view=html parameter to force HTML response
+        qr.scan_url = request.build_absolute_uri(f"{base_url}?view=html")
     
     context = {
         'qr_codes': qr_codes,
@@ -412,30 +414,71 @@ def generate_qr_image(url):
 @csrf_exempt
 def scan_qr(request, uuid):
     """Handle QR code scanning and create alarm if active"""
+    logger.info(f"Received QR scan request for UUID: {uuid}")
+    logger.info(f"Request method: {request.method}")
+    logger.info(f"Request content type: {request.content_type}")
+    logger.info(f"Request headers: {request.headers}")
+    logger.info(f"Request GET data: {request.GET}")
+    logger.info(f"Request POST data: {request.POST}")
+    
+    # Check if this is an API request
+    is_api_request = (
+        request.content_type == 'application/json' or
+        request.headers.get('X-Requested-With') == 'XMLHttpRequest' or
+        'api' in request.path.lower() or
+        request.GET.get('format') == 'json'
+    )
+    
     try:
         with transaction.atomic():
             # Get QR with lock to prevent race conditions
             qr = get_object_or_404(SubjectQR.objects.select_for_update(nowait=True), uuid=uuid)
             
             if not qr.is_active:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'QR code is not active',
-                    'alarm_id': None
+                message = 'QR code is not active'
+                if is_api_request:
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': message,
+                        'alarm_id': None
+                    })
+                return render(request, 'subjects/scan_result.html', {
+                    'qr': qr,
+                    'is_active': False,
+                    'message': message
                 })
 
-            # Check for recent alarms to prevent duplicates
+            # Check for recent alarms to prevent duplicates (5 seconds)
             recent_alarm = Alarm.objects.filter(
                 qr_code=qr,
-                timestamp__gte=timezone.now() - timezone.timedelta(minutes=1)
+                timestamp__gte=timezone.now() - timezone.timedelta(seconds=5)
             ).first()
 
             if recent_alarm:
+                # Calculate remaining cooldown time
+                elapsed_time = (timezone.now() - recent_alarm.timestamp).total_seconds()
+                remaining_seconds = max(0, 5 - int(elapsed_time))
+                
+                message = (
+                    f"A recent alarm already exists. To prevent duplicate notifications, "
+                    f"please wait {remaining_seconds} seconds before scanning again."
+                )
                 logger.info(f"Recent alarm exists for QR {uuid}, returning existing alarm {recent_alarm.id}")
-                return JsonResponse({
-                    'status': 'success',
-                    'message': 'Recent alarm exists',
-                    'alarm_id': recent_alarm.id
+                
+                if is_api_request:
+                    return JsonResponse({
+                        'status': 'warning',
+                        'message': message,
+                        'alarm_id': recent_alarm.id,
+                        'cooldown_remaining': remaining_seconds
+                    })
+                
+                return render(request, 'subjects/scan_result.html', {
+                    'qr': qr,
+                    'alarm': recent_alarm,
+                    'is_duplicate': True,
+                    'cooldown_remaining': remaining_seconds,
+                    'message': message
                 })
 
             # Get location from request if available
@@ -452,7 +495,7 @@ def scan_qr(request, uuid):
                 location=location,
                 notification_status='PENDING',
                 timestamp=timezone.now(),
-                is_test=False  # Regular scan is not a test
+                is_test=False
             )
             
             # Update QR code last used timestamp
@@ -464,27 +507,35 @@ def scan_qr(request, uuid):
             
             logger.info(f"Created new alarm {alarm.id} for QR {uuid}")
             
-            # Return JSON response for API requests
-            if request.content_type == 'application/json' or request.headers.get('Accept') == 'application/json':
+            success_message = 'Alarm triggered successfully'
+            if is_api_request:
                 return JsonResponse({
                     'status': 'success',
-                    'message': 'Alarm triggered successfully',
+                    'message': success_message,
                     'alarm_id': alarm.id
                 })
             
-            # Return HTML response for browser requests
             return render(request, 'subjects/scan_result.html', {
                 'qr': qr,
-                'alarm': alarm
+                'alarm': alarm,
+                'is_duplicate': False,
+                'message': success_message,
+                'success': True
             })
             
     except DatabaseError as e:
+        error_message = 'System is busy, please try again in a moment'
         logger.error(f"Database error in scan_qr: {str(e)}")
-        return JsonResponse({
-            'status': 'error',
-            'message': 'System is busy, please try again in a moment',
-            'alarm_id': None
-        }, status=503)
+        if is_api_request:
+            return JsonResponse({
+                'status': 'error',
+                'message': error_message,
+                'alarm_id': None
+            }, status=503)
+        return render(request, 'subjects/scan_result.html', {
+            'error': True,
+            'message': error_message
+        })
 
 def prevent_duplicate_submission(timeout=5):
     def decorator(view_func):
