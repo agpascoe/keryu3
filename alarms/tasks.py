@@ -46,11 +46,26 @@ def send_whatsapp_notification(self, alarm_id, is_test=False):
             
             try:
                 # Prepare message with timestamp
-                message = (
-                    f"{'[TEST] ' if is_test else ''}"
-                    f"Alert: {alarm.subject.name} has been located at "
-                    f"{alarm.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
-                )
+                if is_test:
+                    message = (
+                        f"This is a Keryu TEST alarm of {alarm.subject.name}, "
+                        f"triggered on {alarm.timestamp.strftime('%B %d, %Y, %I:%M %p')}, "
+                        f"from {alarm.location}."
+                    )
+                else:
+                    # Convert situation type to a more natural phrase
+                    situation_phrase = {
+                        'INJURED': 'is injured',
+                        'LOST': 'is lost',
+                        'CONTACT': 'needs to be contacted'
+                    }.get(alarm.situation_type, alarm.get_situation_type_display())
+
+                    message = (
+                        f"{alarm.subject.name} {situation_phrase}, "
+                        f"with following details: {alarm.description}. "
+                        f"This alarm was created on {alarm.timestamp.strftime('%B %d, %Y, %I:%M %p')} "
+                        f"from {alarm.location}."
+                    )
                 
                 if alarm.location:
                     message += f"\nLocation: {alarm.location}"

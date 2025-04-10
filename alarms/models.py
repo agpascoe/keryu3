@@ -35,6 +35,12 @@ class NotificationChannel:
 
 class Alarm(models.Model):
     """Model for tracking alarms triggered by QR code scans."""
+    SITUATION_TYPES = [
+        ('INJURED', 'Subject Injured'),
+        ('LOST', 'Subject Lost'),
+        ('CONTACT', 'Subject Requesting Contact')
+    ]
+
     subject = models.ForeignKey('subjects.Subject', on_delete=models.CASCADE, related_name='alarms')
     qr_code = models.ForeignKey('subjects.SubjectQR', on_delete=models.SET_NULL, null=True, related_name='alarms')
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -43,8 +49,16 @@ class Alarm(models.Model):
     scanned_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     
     # Issue details
-    issue_type = models.CharField(max_length=50, null=True, blank=True)
+    situation_type = models.CharField(
+        max_length=20,
+        choices=SITUATION_TYPES,
+        null=True,
+        blank=True
+    )
     description = models.TextField(null=True, blank=True)
+    is_anonymous = models.BooleanField(default=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)  # For tracking device info
     
     # Resolution fields
     resolved_at = models.DateTimeField(null=True, blank=True)
@@ -75,6 +89,7 @@ class Alarm(models.Model):
             models.Index(fields=['notification_status'], name='alarms_status_idx'),
             models.Index(fields=['subject', 'timestamp'], name='alarms_subject_timestamp_idx'),
             models.Index(fields=['resolved_at'], name='alarms_resolved_at_idx'),
+            models.Index(fields=['situation_type'], name='alarms_situation_type_idx'),
         ]
 
     def __str__(self):

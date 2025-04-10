@@ -72,9 +72,10 @@ graph TD
        A --> C[System Administrator]
        A --> D[QR Code Scanner]
        A --> E[Doctor/Medical Professional]
-       B --> F[Parent]
-       B --> G[Guardian]
-       B --> H[Caregiver]
+       A --> F[Phototaker]
+       B --> G[Parent]
+       B --> H[Guardian]
+       B --> I[Caregiver]
    ```
 
 2. **System Actors**
@@ -138,18 +139,49 @@ graph TD
 
 3. **QR Code Scanner Use Cases**
    - Scan Operations
-     * Scan QR codes
-     * Receive scan confirmation
-     * View scan error messages
+     * Scan QR codes via web interface
+     * For TEST scans:
+       - Immediate alarm creation
+       - Automatic notification sending
+       - Success message display
+     * For other situations:
+       - Display situation selection form
+       * Collect situation details
+       * Submit alarm information
    - Location Services
      * Provide location data
      * Confirm scan location
    - Emergency Response
-     * Trigger alarms
+     * Trigger alarms with situation types:
+       - TEST: System testing
+       - INJURED: Subject injury report
+       - LOST: Subject missing report
+       - CONTACT: Contact request
      * Receive emergency instructions
      * View contact information
 
-4. **Doctor/Medical Professional Use Cases**
+4. **Phototaker Use Cases**
+   - Mobile Scan Operations
+     * Scan QR codes via mobile app
+     * View mobile-optimized form
+     * Select situation type from:
+       - TEST: System testing
+       - INJURED: Subject injury
+       - LOST: Subject missing
+       - CONTACT: Contact needed
+     * Provide situation details
+   - Location Services
+     * Share location data
+     * Verify scan location
+   - Emergency Response
+     * Submit emergency reports with:
+       - Situation type selection
+       * Detailed description
+       * Location information
+     * Receive confirmation
+     * View emergency instructions
+
+5. **Doctor/Medical Professional Use Cases**
    - Information Management
      * Provide medical information
      * Update emergency protocols
@@ -159,17 +191,19 @@ graph TD
      * Access patient information
      * Provide medical guidance
 
-5. **WhatsApp Notification System Use Cases**
+6. **WhatsApp Notification System Use Cases**
    - Message Handling
      * Process notification requests
-     * Send messages
+     * Send messages with context-aware formats:
+       - Test alarms: "This is a Keryu TEST alarm of {name}, triggered on {time}, from {location}."
+       - Regular alarms: "{name} {situation}, with following details: {description}. This alarm was created on {time} from {location}."
      * Track delivery status
    - Error Management
      * Handle delivery failures
      * Retry failed messages
      * Report status updates
 
-6. **Celery Worker Use Cases**
+7. **Celery Worker Use Cases**
    - Task Processing
      * Handle async operations
      * Process notification queue
@@ -179,7 +213,7 @@ graph TD
      * Generate reports
      * Process exports
 
-7. **Database System Use Cases**
+8. **Database System Use Cases**
    - Data Operations
      * Store system data
      * Handle transactions
@@ -189,7 +223,7 @@ graph TD
      * Handle concurrent access
      * Manage connections
 
-8. **Subject (Passive Actor) Use Cases**
+9. **Subject (Passive Actor) Use Cases**
    - Profile Management
      * Have profile maintained
      * Have QR codes assigned

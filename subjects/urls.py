@@ -24,6 +24,7 @@ urlpatterns = [
     path('qr/<uuid:uuid>/delete/', views.delete_qr, name='delete_qr'),
     path('qr/print/', views.print_qr, name='print_qr'),  # Default print endpoint
     path('qr/<uuid:uuid>/scan/', views.scan_qr, name='scan_qr'),
+    path('qr/<uuid:uuid>/scan/anonymous/', views.scan_qr_anonymous, name='scan_qr_anonymous'),  # Anonymous scan route
     path('qr/<uuid:uuid>/trigger/', views.trigger_qr, name='trigger_qr'),
     path('qr/<uuid:uuid>/toggle/', views.toggle_qr_status, name='toggle_qr_status'),
     

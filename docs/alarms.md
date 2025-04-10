@@ -40,6 +40,37 @@ class NotificationChannel:
 ```
 
 ### Alarm Model
+
+The Alarm model represents emergency notifications triggered by QR code scans. Each alarm contains:
+
+#### Core Fields
+- `subject`: ForeignKey to Subject model
+- `qr_code`: ForeignKey to QRCode model
+- `timestamp`: DateTime of alarm creation
+- `location`: CharField(255) for scan location
+- `description`: TextField for situation details
+- `is_active`: Boolean indicating if alarm is active
+
+#### Situation Types
+- `situation_type`: CharField with choices:
+  - TEST: System testing alarm
+  - INJURED: Subject injury report
+  - LOST: Missing subject report
+  - CONTACT: Contact request alarm
+- `is_test`: Boolean derived from situation_type
+
+#### Scanner Information
+- `is_phototaker`: Boolean indicating if scan from Phototaker app
+- `scanner_ip`: IPAddressField for scanner's IP
+- `scanner_user_agent`: TextField for scanner's user agent
+- `scanner_location`: Point field for GPS coordinates
+
+#### Notification Tracking
+- `notification_sent`: Boolean for notification status
+- `notification_timestamp`: DateTime of last notification
+- `notification_attempts`: Integer count of send attempts
+- `notification_status`: CharField for current status
+
 ```python
 class Alarm(models.Model):
     """Model for tracking alarms triggered by QR code scans."""
@@ -50,9 +81,20 @@ class Alarm(models.Model):
     is_test = models.BooleanField(default=False)
     scanned_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     
-    # Issue details
-    issue_type = models.CharField(max_length=50, null=True, blank=True)
+    # Situation details
+    SITUATION_TYPES = [
+        ('TEST', 'Test Scan'),
+        ('INJURED', 'Subject Injured'),
+        ('LOST', 'Subject Lost'),
+        ('CONTACT', 'Subject Needs Contact')
+    ]
+    situation_type = models.CharField(max_length=20, choices=SITUATION_TYPES, default='TEST')
     description = models.TextField(null=True, blank=True)
+    
+    # Scanner details
+    is_phototaker = models.BooleanField(default=False)
+    scanner_ip = models.GenericIPAddressField(null=True, blank=True)
+    scanner_user_agent = models.TextField(blank=True)
     
     # Resolution fields
     resolved_at = models.DateTimeField(null=True, blank=True)
@@ -82,6 +124,8 @@ class Alarm(models.Model):
             models.Index(fields=['notification_status'], name='alarms_status_idx'),
             models.Index(fields=['subject', 'timestamp'], name='alarms_subject_timestamp_idx'),
             models.Index(fields=['resolved_at'], name='alarms_resolved_at_idx'),
+            models.Index(fields=['situation_type'], name='alarms_situation_type_idx'),
+            models.Index(fields=['is_phototaker'], name='alarms_is_phototaker_idx'),
         ]
 ```
 
@@ -118,22 +162,35 @@ class NotificationAttempt(models.Model):
    - QR code scan trigger
    - Location tracking
    - Timestamp recording
-   - Scanner identification
+   - Scanner identification (Phototaker or web)
+   - Situation type selection
+   - Description capture
    - Test mode support
 
-2. **Issue Tracking**
+2. **Scanner Types**
+   - Phototaker app users
+     * Mobile-optimized form
+     * Situation selection
+     * Location capture
+     * Description input
+   - Regular web users
+     * Standard form
+     * Test scan support
+     * Anonymous access
+
+3. **Issue Tracking**
    - Issue type categorization
    - Detailed description
    - Location information
    - Timestamp tracking
 
-3. **Resolution Management**
+4. **Resolution Management**
    - Resolution timestamp
    - Resolution notes
    - Resolution status tracking
    - Resolution workflow
 
-4. **Notification System**
+5. **Notification System**
    - Multi-channel support (WhatsApp, Email, SMS)
    - Status tracking
    - Retry mechanism
@@ -209,6 +266,46 @@ class NotificationAttempt(models.Model):
    - Template management
    - Rate limits
    - Cost tracking
+
+## Message Templates
+
+### WhatsApp Notification Templates
+Messages are formatted based on situation type:
+
+#### Test Alarm
+```
+🔔 TEST ALARM
+Subject: {subject_name}
+Location: {location}
+Time: {timestamp}
+```
+
+#### Injury Report
+```
+⚠️ INJURY REPORTED
+Subject: {subject_name}
+Location: {location}
+Details: {description}
+Time: {timestamp}
+```
+
+#### Lost Subject
+```
+🚨 SUBJECT MISSING
+Subject: {subject_name}
+Last Seen: {location}
+Details: {description}
+Time: {timestamp}
+```
+
+#### Contact Request
+```
+📞 CONTACT NEEDED
+Subject: {subject_name}
+Location: {location}
+Message: {description}
+Time: {timestamp}
+```
 
 ## Error Handling
 

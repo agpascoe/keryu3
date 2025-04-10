@@ -31,6 +31,7 @@ from django.core.cache import cache
 from functools import wraps
 from django.db import DatabaseError
 from django.core.files.base import ContentFile
+from .utils import get_location_from_ip
 
 logger = logging.getLogger(__name__)
 
@@ -150,7 +151,7 @@ def qr_codes(request):
     
     # Add scan URLs for each QR code
     for qr in qr_codes:
-        base_url = reverse('subjects:scan_qr', args=[qr.uuid])
+        base_url = reverse('subjects:scan_qr_anonymous', args=[qr.uuid])
         # Add view=html parameter to force HTML response
         qr.scan_url = request.build_absolute_uri(f"{base_url}?view=html")
     
@@ -275,7 +276,7 @@ def qr_image(request, uuid):
             )
             
             # Add the URL data
-            url = request.build_absolute_uri(reverse('subjects:scan_qr', args=[uuid]))
+            url = request.build_absolute_uri(reverse('subjects:scan_qr_anonymous', args=[uuid]))
             qr_code.add_data(url)
             qr_code.make(fit=True)
             
@@ -411,131 +412,89 @@ def generate_qr_image(url):
     # Create and return the image
     return qr.make_image(fill_color="black", back_color="white")
 
+@login_required
 @csrf_exempt
-def scan_qr(request, uuid):
-    """Handle QR code scanning and create alarm if active"""
-    logger.info(f"Received QR scan request for UUID: {uuid}")
-    logger.info(f"Request method: {request.method}")
-    logger.info(f"Request content type: {request.content_type}")
-    logger.info(f"Request headers: {request.headers}")
-    logger.info(f"Request GET data: {request.GET}")
-    logger.info(f"Request POST data: {request.POST}")
-    
-    # Check if this is an API request
-    is_api_request = (
-        request.content_type == 'application/json' or
-        request.headers.get('X-Requested-With') == 'XMLHttpRequest' or
-        'api' in request.path.lower() or
-        request.GET.get('format') == 'json'
-    )
-    
+def scan_qr(request, uuid, view=None):
+    """Handle QR code scanning."""
     try:
-        with transaction.atomic():
-            # Get QR with lock to prevent race conditions
-            qr = get_object_or_404(SubjectQR.objects.select_for_update(nowait=True), uuid=uuid)
+        qr_code = SubjectQR.objects.get(uuid=uuid)
+        if not qr_code.is_active:
+            return JsonResponse({'error': 'QR code is not active'}, status=400)
+
+        # Get client IP for location
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            client_ip = x_forwarded_for.split(',')[0]
+        else:
+            client_ip = request.META.get('REMOTE_ADDR')
+        
+        location = get_location_from_ip(client_ip)
+        
+        # Check if request is from Phototaker app
+        user_agent = request.META.get('HTTP_USER_AGENT', '').lower()
+        is_phototaker = 'phototaker' in user_agent
+
+        if request.method == 'POST':
+            data = request.POST
+            logger.info(f'POST data: {data}')
             
-            if not qr.is_active:
-                message = 'QR code is not active'
-                if is_api_request:
-                    return JsonResponse({
-                        'status': 'error',
-                        'message': message,
-                        'alarm_id': None
-                    })
-                return render(request, 'subjects/scan_result.html', {
-                    'qr': qr,
-                    'is_active': False,
-                    'message': message
-                })
-
-            # Check for recent alarms to prevent duplicates (5 seconds)
-            recent_alarm = Alarm.objects.filter(
-                qr_code=qr,
-                timestamp__gte=timezone.now() - timezone.timedelta(seconds=5)
-            ).first()
-
-            if recent_alarm:
-                # Calculate remaining cooldown time
-                elapsed_time = (timezone.now() - recent_alarm.timestamp).total_seconds()
-                remaining_seconds = max(0, 5 - int(elapsed_time))
-                
-                message = (
-                    f"A recent alarm already exists. To prevent duplicate notifications, "
-                    f"please wait {remaining_seconds} seconds before scanning again."
-                )
-                logger.info(f"Recent alarm exists for QR {uuid}, returning existing alarm {recent_alarm.id}")
-                
-                if is_api_request:
-                    return JsonResponse({
-                        'status': 'warning',
-                        'message': message,
-                        'alarm_id': recent_alarm.id,
-                        'cooldown_remaining': remaining_seconds
-                    })
-                
-                return render(request, 'subjects/scan_result.html', {
-                    'qr': qr,
-                    'alarm': recent_alarm,
-                    'is_duplicate': True,
-                    'cooldown_remaining': remaining_seconds,
-                    'message': message
-                })
-
-            # Get location from request if available
-            location = None
-            if request.method == 'POST':
-                location = f"{request.POST.get('lat')},{request.POST.get('lng')}"
-            elif request.method == 'GET':
-                location = f"{request.GET.get('lat')},{request.GET.get('lng')}"
+            situation = data.get('situation', 'TEST')
+            description = data.get('description', '')
             
-            # Create alarm with proper status
+            # Create alarm
             alarm = Alarm.objects.create(
-                subject=qr.subject,
-                qr_code=qr,
-                location=location,
-                notification_status='PENDING',
-                timestamp=timezone.now(),
-                is_test=False
+                subject=qr_code.subject,
+                qr_code=qr_code,
+                situation=situation,
+                description=description,
+                location=location
             )
             
-            # Update QR code last used timestamp
-            qr.last_used = timezone.now()
-            qr.save(update_fields=['last_used'])
+            # Update QR code last used
+            qr_code.last_used = timezone.now()
+            qr_code.save()
             
-            # Schedule notification after transaction commits
-            transaction.on_commit(lambda: send_whatsapp_notification.delay(alarm.id, is_test=False))
+            # Schedule notification
+            send_whatsapp_notification.delay(alarm.id)
             
-            logger.info(f"Created new alarm {alarm.id} for QR {uuid}")
-            
-            success_message = 'Alarm triggered successfully'
-            if is_api_request:
-                return JsonResponse({
-                    'status': 'success',
-                    'message': success_message,
-                    'alarm_id': alarm.id
+            if is_phototaker:
+                return JsonResponse({'status': 'success', 'message': 'Alarm created successfully'})
+            else:
+                return render(request, 'subjects/scan_success.html', {
+                    'message': 'Alarm created successfully'
                 })
-            
-            return render(request, 'subjects/scan_result.html', {
-                'qr': qr,
-                'alarm': alarm,
-                'is_duplicate': False,
-                'message': success_message,
-                'success': True
-            })
-            
-    except DatabaseError as e:
-        error_message = 'System is busy, please try again in a moment'
-        logger.error(f"Database error in scan_qr: {str(e)}")
-        if is_api_request:
-            return JsonResponse({
-                'status': 'error',
-                'message': error_message,
-                'alarm_id': None
-            }, status=503)
-        return render(request, 'subjects/scan_result.html', {
-            'error': True,
-            'message': error_message
-        })
+                
+        else:  # GET request
+            if is_phototaker:
+                return render(request, 'subjects/mobile_scan_form.html', {
+                    'qr_code': qr_code
+                })
+            else:
+                # For regular scans, create TEST alarm immediately
+                alarm = Alarm.objects.create(
+                    subject=qr_code.subject,
+                    qr_code=qr_code,
+                    situation='TEST',
+                    description='Test scan',
+                    location=location
+                )
+                
+                # Update QR code last used
+                qr_code.last_used = timezone.now()
+                qr_code.save()
+                
+                # Schedule notification
+                send_whatsapp_notification.delay(alarm.id)
+                
+                return render(request, 'subjects/scan_success.html', {
+                    'message': 'Test alarm created successfully'
+                })
+                
+    except SubjectQR.DoesNotExist:
+        return JsonResponse({'error': 'Invalid QR code'}, status=404)
+    except Exception as e:
+        logger.error(f'Error in scan_qr: {str(e)}')
+        return JsonResponse({'error': 'Internal server error'}, status=500)
 
 def prevent_duplicate_submission(timeout=5):
     def decorator(view_func):
@@ -763,7 +722,7 @@ def regenerate_all_qr_images(request):
                     )
                     
                     # Add the URL data
-                    url = request.build_absolute_uri(reverse('subjects:scan_qr', args=[qr.uuid]))
+                    url = request.build_absolute_uri(reverse('subjects:scan_qr_anonymous', args=[qr.uuid]))
                     qr_code.add_data(url)
                     qr_code.make(fit=True)
                     
@@ -794,3 +753,142 @@ def regenerate_all_qr_images(request):
     
     # GET request - show confirmation form
     return render(request, 'subjects/regenerate_qr_images.html')
+
+@csrf_exempt
+def scan_qr_anonymous(request, uuid):
+    """Handle anonymous QR code scanning with situation form"""
+    logger.info(f"Received anonymous QR scan request for UUID: {uuid}")
+    
+    try:
+        with transaction.atomic():
+            # Get QR with lock to prevent race conditions
+            qr = get_object_or_404(SubjectQR.objects.select_for_update(nowait=True), uuid=uuid)
+            
+            if not qr.is_active:
+                return render(request, 'subjects/scan_result.html', {
+                    'qr': qr,
+                    'is_active': False,
+                    'message': 'QR code is not active'
+                })
+
+            # Check for recent alarms to prevent duplicates (5 seconds)
+            recent_alarm = Alarm.objects.filter(
+                qr_code=qr,
+                timestamp__gte=timezone.now() - timezone.timedelta(seconds=5)
+            ).first()
+
+            if recent_alarm:
+                # Calculate remaining cooldown time
+                elapsed_time = (timezone.now() - recent_alarm.timestamp).total_seconds()
+                remaining_seconds = max(0, 5 - int(elapsed_time))
+                
+                message = (
+                    f"A recent alarm already exists. To prevent duplicate notifications, "
+                    f"please wait {remaining_seconds} seconds before scanning again."
+                )
+                
+                return render(request, 'subjects/scan_result.html', {
+                    'qr': qr,
+                    'alarm': recent_alarm,
+                    'is_duplicate': True,
+                    'cooldown_remaining': remaining_seconds,
+                    'message': message
+                })
+
+            if request.method == 'POST':
+                situation_type = request.POST.get('situation')
+                description = request.POST.get('description', '').strip()
+                
+                if situation_type == 'TEST':
+                    # Create test alarm with default location
+                    alarm = Alarm.objects.create(
+                        subject=qr.subject,
+                        qr_code=qr,
+                        notification_status='PENDING',
+                        timestamp=timezone.now(),
+                        is_test=True,
+                        situation_type='TEST',
+                        location='Test Scan',  # Add default location
+                        is_anonymous=True,
+                        ip_address=request.META.get('REMOTE_ADDR'),
+                        user_agent=request.META.get('HTTP_USER_AGENT', '')
+                    )
+                    
+                    # Update QR code last used timestamp
+                    qr.last_used = timezone.now()
+                    qr.save(update_fields=['last_used'])
+                    
+                    # Schedule notification after transaction commits
+                    transaction.on_commit(lambda: send_whatsapp_notification.delay(alarm.id, is_test=True))
+                    
+                    logger.info(f"Created new test alarm {alarm.id} for QR {uuid}")
+                    
+                    return render(request, 'subjects/scan_result.html', {
+                        'qr': qr,
+                        'alarm': alarm,
+                        'is_test': True,
+                        'message': 'Test capture completed successfully.',
+                        'success': True
+                    })
+                
+                if not situation_type or situation_type not in dict(Alarm.SITUATION_TYPES):
+                    return render(request, 'subjects/scan_form.html', {
+                        'qr': qr,
+                        'error': 'Please select a valid situation type'
+                    })
+                
+                if not description:
+                    return render(request, 'subjects/scan_form.html', {
+                        'qr': qr,
+                        'error': 'Please provide a description of the situation'
+                    })
+                
+                # Get location from request if available
+                location = None
+                if request.POST.get('lat') and request.POST.get('lng'):
+                    location = f"{request.POST.get('lat')},{request.POST.get('lng')}"
+                else:
+                    location = 'Unknown Location'  # Add default location
+                
+                # Create alarm with proper status
+                alarm = Alarm.objects.create(
+                    subject=qr.subject,
+                    qr_code=qr,
+                    location=location,
+                    notification_status='PENDING',
+                    timestamp=timezone.now(),
+                    is_test=False,
+                    situation_type=situation_type,
+                    description=description,
+                    is_anonymous=True,
+                    ip_address=request.META.get('REMOTE_ADDR'),
+                    user_agent=request.META.get('HTTP_USER_AGENT', '')
+                )
+                
+                # Update QR code last used timestamp
+                qr.last_used = timezone.now()
+                qr.save(update_fields=['last_used'])
+                
+                # Schedule notification after transaction commits
+                transaction.on_commit(lambda: send_whatsapp_notification.delay(alarm.id, is_test=False))
+                
+                logger.info(f"Created new anonymous alarm {alarm.id} for QR {uuid}")
+                
+                return render(request, 'subjects/scan_result.html', {
+                    'qr': qr,
+                    'alarm': alarm,
+                    'is_duplicate': False,
+                    'message': 'Thank you for your report. The custodian has been notified.',
+                    'success': True
+                })
+            
+            # GET request - show the form
+            return render(request, 'subjects/scan_form.html', {'qr': qr})
+            
+    except DatabaseError as e:
+        error_message = 'System is busy, please try again in a moment'
+        logger.error(f"Database error in scan_qr_anonymous: {str(e)}")
+        return render(request, 'subjects/scan_result.html', {
+            'error': True,
+            'message': error_message
+        })

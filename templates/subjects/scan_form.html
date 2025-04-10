@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-qrcode me-2"></i>QR Code Scanned
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if error %}
+                        <div class="alert alert-danger">
+                            {{ error }}
+                        </div>
+                    {% endif %}
+
+                    <form method="post" id="scanForm">
+                        {% csrf_token %}
+                        <div class="form-group mb-4">
+                            <h5 class="mb-3">Please select the situation:</h5>
+                            
+                            <div class="radio-group">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="radio" name="situation" value="TEST" id="testRadio">
+                                    <label class="form-check-label" for="testRadio">
+                                        This is just a test capture
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="radio" name="situation" value="INJURED" id="injuredRadio">
+                                    <label class="form-check-label" for="injuredRadio">
+                                        The Subject appears to be injured
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="radio" name="situation" value="LOST" id="lostRadio">
+                                    <label class="form-check-label" for="lostRadio">
+                                        The Subject appears to be lost
+                                    </label>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="radio" name="situation" value="CONTACT" id="contactRadio">
+                                    <label class="form-check-label" for="contactRadio">
+                                        The Subject is requesting to be contacted
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div id="descriptionSection" class="mt-4" style="display:none;">
+                                <label for="description" class="form-label">Please describe the situation:</label>
+                                <textarea class="form-control" 
+                                          id="description" 
+                                          name="description" 
+                                          rows="3"
+                                          placeholder="Please provide details about what you observed..."
+                                          maxlength="500"></textarea>
+                                <div class="form-text">
+                                    Maximum 500 characters
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                                <i class="fas fa-paper-plane me-2"></i>Submit Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('scanForm');
+        const descriptionSection = document.getElementById('descriptionSection');
+        const descriptionField = document.getElementById('description');
+        const submitBtn = document.getElementById('submitBtn');
+        const radioButtons = document.querySelectorAll('input[name="situation"]');
+
+        // Show/hide description field based on selection
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', function() {
+                submitBtn.disabled = false;
+                
+                if (this.value === 'TEST') {
+                    // For TEST, submit immediately
+                    descriptionSection.style.display = 'none';
+                    descriptionField.required = false;
+                    form.submit();
+                } else {
+                    // For other situations, show description
+                    descriptionSection.style.display = 'block';
+                    descriptionField.required = true;
+                }
+            });
+        });
+
+        // Form validation
+        form.addEventListener('submit', function(e) {
+            const selected = document.querySelector('input[name="situation"]:checked');
+            if (!selected) {
+                e.preventDefault();
+                alert('Please select a situation type');
+                return;
+            }
+
+            if (selected.value !== 'TEST') {
+                const description = descriptionField.value.trim();
+                if (!description) {
+                    e.preventDefault();
+                    alert('Please provide a description of the situation');
+                    return;
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %} 
