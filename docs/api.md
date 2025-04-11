@@ -142,7 +142,7 @@ class APIRateLimit(models.Model):
 ## API Endpoints
 
 ### Authentication
-- `POST /api/v1/auth/token/` - Get access token
+- `POST /api/v1/token/` - Get access token
   ```json
   Request:
   {
@@ -155,7 +155,7 @@ class APIRateLimit(models.Model):
     "refresh": "string"
   }
   ```
-- `POST /api/v1/auth/refresh/` - Refresh token
+- `POST /api/v1/token/refresh/` - Refresh token
   ```json
   Request:
   {
@@ -164,27 +164,6 @@ class APIRateLimit(models.Model):
   Response:
   {
     "access": "string"
-  }
-  ```
-- `POST /api/v1/auth/revoke/` - Revoke token
-  ```json
-  Request:
-  {
-    "token": "string"
-  }
-  Response:
-  {
-    "status": "success"
-  }
-  ```
-- `GET /api/v1/auth/me/` - Get current user
-  ```json
-  Response:
-  {
-    "id": "integer",
-    "username": "string",
-    "email": "string",
-    "is_staff": "boolean"
   }
   ```
 
@@ -291,6 +270,8 @@ class APIRateLimit(models.Model):
     "updated_at": "datetime"
   }
   ```
+- `PUT /api/v1/alarms/{id}/` - Update alarm
+- `DELETE /api/v1/alarms/{id}/` - Delete alarm
 - `POST /api/v1/alarms/{id}/resolve/` - Resolve alarm
   ```json
   Request:
@@ -302,6 +283,56 @@ class APIRateLimit(models.Model):
     "id": "integer",
     "resolved_at": "datetime",
     "resolution_notes": "string"
+  }
+  ```
+- `GET /api/v1/alarms/statistics/` - Get alarm statistics
+  ```json
+  Response:
+  {
+    "total_alarms": "integer",
+    "recent_alarms": "integer",
+    "subject_stats": [
+      {
+        "subject__name": "string",
+        "subject__id": "integer",
+        "count": "integer",
+        "last_alarm": "datetime",
+        "notification_success_rate": "float"
+      }
+    ],
+    "date_stats": [
+      {
+        "timestamp__date": "date",
+        "count": "integer",
+        "notifications_sent": "integer",
+        "notifications_failed": "integer"
+      }
+    ],
+    "hour_stats": [
+      {
+        "hour": "integer",
+        "count": "integer"
+      }
+    ],
+    "notifications": {
+      "sent": "integer",
+      "delivered": "integer",
+      "failed": "integer",
+      "pending": "integer"
+    },
+    "time_range": {
+      "start_date": "datetime",
+      "end_date": "datetime",
+      "days": "integer"
+    }
+  }
+  ```
+- `POST /api/v1/alarms/{id}/retry-notification/` - Retry a failed notification
+  ```json
+  Response:
+  {
+    "success": "boolean",
+    "message": "string"
   }
   ```
 
@@ -326,6 +357,7 @@ class APIRateLimit(models.Model):
     ]
   }
   ```
+- `POST /api/v1/notification-attempts/` - Create notification attempt
 - `GET /api/v1/notification-attempts/{id}/` - Get notification attempt details
   ```json
   Response:
@@ -382,14 +414,14 @@ class APIRateLimit(models.Model):
     ]
   }
   ```
-- `POST /api/v1/custodians/` - Create custodian
 - `GET /api/v1/custodians/{id}/` - Get custodian
-- `PUT /api/v1/custodians/{id}/` - Update custodian
-- `DELETE /api/v1/custodians/{id}/` - Delete custodian
+- `POST /api/v1/custodians/` - Create custodian (Not implemented yet)
+- `PUT /api/v1/custodians/{id}/` - Update custodian (Not implemented yet)
+- `DELETE /api/v1/custodians/{id}/` - Delete custodian (Not implemented yet)
 
-### Export Endpoints
-- `GET /api/v1/alarms/export/csv/` - Export alarms as CSV
-- `GET /api/v1/alarms/export/excel/` - Export alarms as Excel
+### Export Endpoints (Web UI only, not API)
+- `GET /alarms/export/csv/` - Export alarms as CSV
+- `GET /alarms/export/excel/` - Export alarms as Excel
 
 ### Webhooks
 - `POST /webhooks/twilio/status/` - Twilio status callback
@@ -658,6 +690,8 @@ The Alarms API provides endpoints for managing alarms and their notification att
   }
   ```
 
+- `PUT /api/v1/alarms/{id}/` - Update alarm
+- `DELETE /api/v1/alarms/{id}/` - Delete alarm
 - `POST /api/v1/alarms/{id}/resolve/` - Resolve alarm
   ```json
   Request:
@@ -669,6 +703,56 @@ The Alarms API provides endpoints for managing alarms and their notification att
     "id": "integer",
     "resolved_at": "datetime",
     "resolution_notes": "string"
+  }
+  ```
+- `GET /api/v1/alarms/statistics/` - Get alarm statistics
+  ```json
+  Response:
+  {
+    "total_alarms": "integer",
+    "recent_alarms": "integer",
+    "subject_stats": [
+      {
+        "subject__name": "string",
+        "subject__id": "integer",
+        "count": "integer",
+        "last_alarm": "datetime",
+        "notification_success_rate": "float"
+      }
+    ],
+    "date_stats": [
+      {
+        "timestamp__date": "date",
+        "count": "integer",
+        "notifications_sent": "integer",
+        "notifications_failed": "integer"
+      }
+    ],
+    "hour_stats": [
+      {
+        "hour": "integer",
+        "count": "integer"
+      }
+    ],
+    "notifications": {
+      "sent": "integer",
+      "delivered": "integer",
+      "failed": "integer",
+      "pending": "integer"
+    },
+    "time_range": {
+      "start_date": "datetime",
+      "end_date": "datetime",
+      "days": "integer"
+    }
+  }
+  ```
+- `POST /api/v1/alarms/{id}/retry-notification/` - Retry a failed notification
+  ```json
+  Response:
+  {
+    "success": "boolean",
+    "message": "string"
   }
   ```
 
@@ -694,6 +778,7 @@ The Alarms API provides endpoints for managing alarms and their notification att
   }
   ```
 
+- `POST /api/v1/notification-attempts/` - Create notification attempt
 - `GET /api/v1/notification-attempts/{id}/` - Get notification attempt details
   ```json
   Response:
@@ -742,11 +827,15 @@ All API endpoints have been thoroughly tested with the following test cases:
 - ✅ Creating a new alarm
 - ✅ Listing all alarms
 - ✅ Retrieving a single alarm
+- ✅ Updating an alarm
+- ✅ Deleting an alarm
 - ✅ Resolving an alarm
-- ✅ Viewing notification attempts for an alarm
+- ✅ Viewing alarm statistics
+- ✅ Retrying a failed notification
 
 ##### Notification Attempt API Tests
 - ✅ Listing notification attempts
+- ✅ Creating a notification attempt
 - ✅ Retrieving a single notification attempt
 - ✅ Marking a notification as sent
 - ✅ Marking a notification as failed

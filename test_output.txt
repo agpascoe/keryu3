@@ -1,0 +1,1159 @@
+Creating test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+Found 8 test(s).
+Operations to perform:
+  Synchronize unmigrated apps: chartjs, corsheaders, crispy_bootstrap5, crispy_forms, django_extensions, django_filters, drf_yasg, messages, notifications, phonenumber_field, rest_framework, staticfiles, widget_tweaks
+  Apply all migrations: admin, alarms, auth, contenttypes, core, custodians, sessions, subjects
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying auth.0001_initial... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying custodians.0001_initial... OK
+  Applying custodians.0002_subject... OK
+  Applying custodians.0003_remove_subject_emergency_contact_and_more... OK
+  Applying custodians.0004_delete_subject... OK
+  Applying subjects.0001_initial... OK
+  Applying subjects.0002_alarm_last_attempt_alarm_notification_attempts_and_more... OK
+  Applying subjects.0003_delete_alarm... OK
+  Applying subjects.0004_alarm... OK
+  Applying subjects.0005_delete_alarm... OK
+  Applying subjects.0006_alarm... OK
+  Applying subjects.0007_delete_alarm... OK
+  Applying custodians.0005_custodian_phone_verified_and_more... OK
+  Applying custodians.0006_alter_custodian_verification_code_timestamp... OK
+  Applying alarms.0001_initial... OK
+  Applying alarms.0002_alter_alarm_notification_status... OK
+  Applying alarms.0003_alarm_description_alarm_issue_type... OK
+  Applying alarms.0004_standardize_related_names_and_add_indexes... OK
+  Applying alarms.0005_add_resolution_fields_and_notification_attempt... OK
+  Applying alarms.0006_rename_notification_attempts_alarm_notification_attempt_count_and_more... OK
+  Applying alarms.0007_alter_notificationattempt_options_and_more... OK
+  Applying alarms.0008_alter_alarm_created_at... OK
+  Applying alarms.0009_alarm_message_sid_alter_alarm_location_and_more... OK
+  Applying alarms.0010_remove_alarm_issue_type_alarm_ip_address_and_more... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying core.0001_initial... OK
+  Applying core.0002_add_initial_channel_parameter... OK
+  Applying sessions.0001_initial... OK
+System check identified no issues (0 silenced).
+test_alarms_api (tests.test_all_apis.TestAllAPIs.test_alarms_api)
+Test the alarms API endpoints. ... DEBUG 2025-04-11 02:55:45,953 models 21565 131919377819136 Created new custodian for user 1
+DEBUG 2025-04-11 02:55:46,479 models 21565 131919377819136 Created new custodian for user 2
+INFO 2025-04-11 02:55:46,488 receivers 21565 131919377819136 Signal handler triggered for new alarm 1
+INFO 2025-04-11 02:55:46,488 receivers 21565 131919377819136 Queueing notification for alarm 1
+INFO 2025-04-11 02:55:46,595 receivers 21565 131919377819136 Signal handler triggered for new alarm 2
+INFO 2025-04-11 02:55:46,595 receivers 21565 131919377819136 Queueing notification for alarm 2
+INFO 2025-04-11 02:55:47,186 receivers 21565 131919377819136 Signal handler triggered for new alarm 3
+INFO 2025-04-11 02:55:47,186 receivers 21565 131919377819136 Queueing notification for alarm 3
+WARNING 2025-04-11 02:55:47,204 log 21565 131919377819136 Not Found: /api/v1/alarms/alarms/statistics/
+FAIL
+test_auth_token (tests.test_all_apis.TestAllAPIs.test_auth_token)
+Test authentication token endpoint ... DEBUG 2025-04-11 02:55:47,744 models 21565 131919377819136 Created new custodian for user 1
+DEBUG 2025-04-11 02:55:48,279 models 21565 131919377819136 Created new custodian for user 2
+INFO 2025-04-11 02:55:48,282 receivers 21565 131919377819136 Signal handler triggered for new alarm 1
+INFO 2025-04-11 02:55:48,282 receivers 21565 131919377819136 Queueing notification for alarm 1
+INFO 2025-04-11 02:55:48,285 receivers 21565 131919377819136 Signal handler triggered for new alarm 2
+INFO 2025-04-11 02:55:48,285 receivers 21565 131919377819136 Queueing notification for alarm 2
+ok
+test_custodians_api (tests.test_all_apis.TestAllAPIs.test_custodians_api)
+Test the custodians API endpoints. ... DEBUG 2025-04-11 02:55:49,360 models 21565 131919377819136 Created new custodian for user 1
+DEBUG 2025-04-11 02:55:49,888 models 21565 131919377819136 Created new custodian for user 2
+INFO 2025-04-11 02:55:49,892 receivers 21565 131919377819136 Signal handler triggered for new alarm 1
+INFO 2025-04-11 02:55:49,893 receivers 21565 131919377819136 Queueing notification for alarm 1
+INFO 2025-04-11 02:55:49,894 receivers 21565 131919377819136 Signal handler triggered for new alarm 2
+INFO 2025-04-11 02:55:49,894 receivers 21565 131919377819136 Queueing notification for alarm 2
+ok
+test_error_handling (tests.test_all_apis.TestAllAPIs.test_error_handling)
+Test API error handling ... DEBUG 2025-04-11 02:55:50,965 models 21565 131919377819136 Created new custodian for user 1
+DEBUG 2025-04-11 02:55:51,495 models 21565 131919377819136 Created new custodian for user 2
+INFO 2025-04-11 02:55:51,498 receivers 21565 131919377819136 Signal handler triggered for new alarm 1
+INFO 2025-04-11 02:55:51,498 receivers 21565 131919377819136 Queueing notification for alarm 1
+INFO 2025-04-11 02:55:51,500 receivers 21565 131919377819136 Signal handler triggered for new alarm 2
+INFO 2025-04-11 02:55:51,500 receivers 21565 131919377819136 Queueing notification for alarm 2
+WARNING 2025-04-11 02:55:52,048 log 21565 131919377819136 Not Found: /api/v1/subjects/999/
+WARNING 2025-04-11 02:55:52,049 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+ok
+test_notification_attempts_api (tests.test_all_apis.TestAllAPIs.test_notification_attempts_api)
+Test the notification attempts API endpoints. ... DEBUG 2025-04-11 02:55:52,585 models 21565 131919377819136 Created new custodian for user 1
+DEBUG 2025-04-11 02:55:53,117 models 21565 131919377819136 Created new custodian for user 2
+INFO 2025-04-11 02:55:53,121 receivers 21565 131919377819136 Signal handler triggered for new alarm 1
+INFO 2025-04-11 02:55:53,121 receivers 21565 131919377819136 Queueing notification for alarm 1
+INFO 2025-04-11 02:55:53,122 receivers 21565 131919377819136 Signal handler triggered for new alarm 2
+INFO 2025-04-11 02:55:53,123 receivers 21565 131919377819136 Queueing notification for alarm 2
+FAIL
+test_rate_limiting (tests.test_all_apis.TestAllAPIs.test_rate_limiting)
+Test rate limiting on API endpoints. ... DEBUG 2025-04-11 02:55:54,219 models 21565 131919377819136 Created new custodian for user 1
+DEBUG 2025-04-11 02:55:54,762 models 21565 131919377819136 Created new custodian for user 2
+INFO 2025-04-11 02:55:54,766 receivers 21565 131919377819136 Signal handler triggered for new alarm 1
+INFO 2025-04-11 02:55:54,766 receivers 21565 131919377819136 Queueing notification for alarm 1
+INFO 2025-04-11 02:55:54,768 receivers 21565 131919377819136 Signal handler triggered for new alarm 2
+INFO 2025-04-11 02:55:54,768 receivers 21565 131919377819136 Queueing notification for alarm 2
+WARNING 2025-04-11 02:55:54,773 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,774 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,775 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,776 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,776 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,778 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,779 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,780 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,781 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,781 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,782 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,783 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,784 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,785 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,786 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,786 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,787 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,788 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,789 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,790 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,791 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,792 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,792 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,793 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,794 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,795 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,796 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,797 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,798 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,798 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,799 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,801 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,802 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,803 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,804 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,804 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,805 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,806 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,807 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,807 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,808 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,809 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,811 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,811 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,812 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,813 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,814 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,814 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,815 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,816 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,817 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,818 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,818 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,819 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,820 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,821 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,822 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,824 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,825 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,825 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,826 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,828 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,828 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,829 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,830 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,830 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,831 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,832 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,833 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,834 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,835 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,836 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,836 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,837 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,838 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,839 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,840 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,841 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,841 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,842 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,842 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,844 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,845 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,846 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,847 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,847 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,848 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,848 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,850 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,851 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,852 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,853 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,853 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,854 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,854 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,856 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,857 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,857 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,858 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,859 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,860 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,861 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,862 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,863 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,863 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,864 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,865 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,866 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,867 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,868 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,868 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,869 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,869 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,870 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,871 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,872 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,873 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,874 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,875 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,876 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,876 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,877 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,878 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,879 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,879 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,880 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,881 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,882 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,883 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,884 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,884 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,885 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,886 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,887 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,888 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,889 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,889 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,890 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,891 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,892 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,893 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,894 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,894 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,895 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,896 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,897 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,898 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,899 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,900 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,900 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,901 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,902 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,903 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,904 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,905 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,906 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,907 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,907 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,908 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,909 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,910 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,911 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,911 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,912 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,913 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,914 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,915 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,916 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,917 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,917 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,918 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,919 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,920 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,921 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,921 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,922 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,923 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,924 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,924 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,926 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,927 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,928 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,928 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,929 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,930 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,931 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,932 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,932 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,933 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,934 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,935 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,936 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,936 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,937 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,939 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,939 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,940 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,941 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,942 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,942 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,943 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,945 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,945 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,946 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,947 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,948 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,948 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,949 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,951 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,951 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,952 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,953 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,954 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,954 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,955 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,956 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,957 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,958 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,958 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,959 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,960 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,961 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,962 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,963 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,964 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,964 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,965 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,966 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,967 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,968 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,968 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,969 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,970 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,971 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,971 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,972 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,974 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,974 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,975 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,976 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,977 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,977 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,978 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,979 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,980 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,981 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,982 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,982 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,983 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,984 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,985 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,987 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,987 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,988 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,989 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,990 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,991 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,991 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,992 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,993 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,994 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,994 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,995 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,996 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,997 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,998 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,999 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:54,999 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,000 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,001 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,002 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,003 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,003 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,004 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,005 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,005 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,006 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,008 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,008 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,009 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,010 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,011 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,011 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,012 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,014 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,015 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,015 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,016 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,017 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,017 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,018 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,019 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,020 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,021 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,022 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,022 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,023 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,024 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,025 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,025 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,026 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,027 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,028 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,028 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,030 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,031 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,032 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,032 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,033 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,034 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,034 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,035 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,037 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,037 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,038 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,039 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,040 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,040 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,042 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,042 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,043 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,044 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,045 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,045 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,046 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,048 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,048 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,049 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,050 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,051 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,051 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,052 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,053 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,054 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,055 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,056 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,057 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,057 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,058 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,059 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,060 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,061 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,062 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,062 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,063 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,064 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,065 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,066 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,067 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,067 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,068 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,070 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,071 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,072 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,072 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,073 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,074 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,074 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,076 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,077 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,078 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,079 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,079 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,080 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,080 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,082 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,083 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,083 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,084 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,086 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,087 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,087 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,089 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,089 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,090 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,091 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,092 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,092 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,094 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,095 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,096 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,096 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,097 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,098 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,098 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,100 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,100 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,101 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,102 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,102 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,103 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,105 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,105 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,106 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,107 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,108 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,108 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,109 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,110 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,111 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,112 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,113 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,114 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,114 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,115 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,116 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,117 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,118 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,119 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,120 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,120 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,121 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,122 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,123 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,124 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,125 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,125 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,126 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,127 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,128 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,129 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,130 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,131 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,131 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,132 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,133 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,134 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,135 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,135 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,136 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,137 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,138 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,139 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,140 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,141 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,141 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,142 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,143 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,143 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,145 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,146 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,147 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,147 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,148 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,149 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,150 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,151 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,152 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,153 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,153 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,154 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,154 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,156 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,157 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,158 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,158 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,159 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,160 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,161 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,162 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,163 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,163 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,164 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,165 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,165 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,167 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,168 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,169 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,170 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,170 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,171 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,172 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,172 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,173 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,174 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,175 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,176 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,176 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,177 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,179 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,179 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,180 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,181 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,182 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,182 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,183 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,184 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,185 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,186 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,187 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,188 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,188 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,189 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,190 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,191 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,192 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,193 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,194 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,194 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,195 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,196 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,197 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,198 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,199 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,199 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,200 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,202 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,202 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,203 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,204 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,205 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,205 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,206 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,207 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,208 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,209 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,210 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,210 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,211 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,212 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,212 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,214 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,215 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,216 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,216 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,217 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,218 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,218 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,220 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,221 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,222 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,222 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,223 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,224 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,224 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,226 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,227 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,227 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,228 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,229 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,229 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,231 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,231 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,232 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,234 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,234 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,235 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,236 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,237 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,238 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,239 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,239 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,240 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,241 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,241 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,242 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,244 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,244 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,245 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,245 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,246 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,248 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,249 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,250 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,250 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,251 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,251 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,252 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,253 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,254 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,254 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,255 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,256 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,257 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,258 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,259 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,260 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,260 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,261 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,262 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,263 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,264 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,264 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,265 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,266 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,267 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,268 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,269 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,269 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,270 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,271 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,272 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,272 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,274 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,275 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,276 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,276 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,277 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,278 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,278 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,280 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,281 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,282 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,282 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,283 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,284 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,284 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,285 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,287 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,287 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,288 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,289 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,289 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,290 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,291 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,292 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,293 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,294 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,295 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,295 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,296 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,297 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,298 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,299 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,299 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,301 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,302 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,302 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,303 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,304 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,304 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,305 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,306 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,307 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,307 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,309 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,309 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,310 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,311 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,312 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,313 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,314 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,315 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,315 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,316 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,317 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,318 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,319 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,319 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,320 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,322 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,322 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,323 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,324 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,325 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,325 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,327 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,328 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,328 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,330 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,330 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,331 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,331 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,332 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,334 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,334 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,335 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,336 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,337 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,337 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,338 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,339 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,340 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,341 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,342 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,342 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,343 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,344 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,345 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,346 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,347 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,348 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,348 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,349 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,350 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,351 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,352 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,353 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,353 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,354 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,355 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,356 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,357 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,358 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,359 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,359 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,360 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,361 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,362 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,363 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,363 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,365 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,365 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,366 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,366 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,368 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,368 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,369 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,370 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,371 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,371 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,372 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,374 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,375 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,375 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,376 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,377 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,377 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,378 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,380 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,380 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,381 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,382 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,383 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,383 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,384 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,385 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,386 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,387 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,387 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,388 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,389 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,390 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,391 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,392 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,392 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,393 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,394 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,395 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,397 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,398 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,398 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,399 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,400 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,401 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,402 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,403 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,403 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,404 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,404 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,406 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,406 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,407 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,408 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,409 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,409 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,410 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,411 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,412 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,413 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,414 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,415 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,415 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,416 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,417 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,418 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,419 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,419 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,420 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,421 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,421 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,423 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,424 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,425 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,425 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,426 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,427 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,427 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,429 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,430 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,431 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,431 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,432 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,433 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,433 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,434 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,436 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,436 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,437 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,437 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,438 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,440 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,440 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,441 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,442 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,443 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,443 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,444 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,444 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,446 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,447 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,448 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,448 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,449 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,450 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,450 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,452 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,453 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,454 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,454 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,455 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,455 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,456 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,458 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,459 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,459 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,460 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,460 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,461 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,463 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,463 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,464 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,465 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,466 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,466 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,467 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,469 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,470 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,471 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,471 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,472 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,472 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,473 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,474 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,475 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,476 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,477 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,478 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,480 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,480 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,481 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,482 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,482 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,483 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,484 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,486 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,487 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,487 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,488 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,489 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,489 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,490 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,491 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,491 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,493 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,494 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,495 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,495 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,496 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,497 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,497 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,499 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,500 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,501 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,501 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,502 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,503 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,503 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,504 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,506 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,506 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,507 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,507 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,508 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,510 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,510 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,511 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,512 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,513 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,513 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,514 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,516 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,516 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,517 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,518 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,519 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,519 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,520 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,522 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,522 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,523 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,524 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,525 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,525 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,526 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,527 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,528 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,529 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,529 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,530 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,531 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,531 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,533 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,534 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,535 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,535 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,536 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,537 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,537 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,539 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,540 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,541 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,541 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,542 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,543 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,543 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,545 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,546 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,547 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,547 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,548 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,549 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,549 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,550 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,551 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,553 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,553 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,554 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,554 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,555 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,556 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,557 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,559 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,559 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,560 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,562 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,562 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,563 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,564 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,565 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,565 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,605 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,606 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,608 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,609 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,610 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,610 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,611 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,612 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,612 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,614 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,615 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,616 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,616 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,617 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,618 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,619 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,620 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,621 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,621 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,622 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,623 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,625 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,625 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,626 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,627 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,628 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,628 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,629 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,630 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,631 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,632 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,633 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,634 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,634 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,635 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,637 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,637 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,638 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,639 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,640 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,640 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,641 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,642 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,643 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,644 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,645 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,645 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,646 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,648 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,648 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,649 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,650 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,651 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,652 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,652 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,654 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,654 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,655 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,656 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+WARNING 2025-04-11 02:55:55,657 log 21565 131919377819136 Unauthorized: /api/v1/subjects/
+FAIL
+test_subjects_api (tests.test_all_apis.TestAllAPIs.test_subjects_api)
+Test the subjects API endpoints. ... DEBUG 2025-04-11 02:55:56,195 models 21565 131919377819136 Created new custodian for user 1
+DEBUG 2025-04-11 02:55:56,735 models 21565 131919377819136 Created new custodian for user 2
+INFO 2025-04-11 02:55:56,739 receivers 21565 131919377819136 Signal handler triggered for new alarm 1
+INFO 2025-04-11 02:55:56,739 receivers 21565 131919377819136 Queueing notification for alarm 1
+INFO 2025-04-11 02:55:56,740 receivers 21565 131919377819136 Signal handler triggered for new alarm 2
+INFO 2025-04-11 02:55:56,740 receivers 21565 131919377819136 Queueing notification for alarm 2
+ok
+test_twilio_webhook (tests.test_all_apis.TestAllAPIs.test_twilio_webhook)
+Test Twilio webhook endpoint. ... DEBUG 2025-04-11 02:55:57,834 models 21565 131919377819136 Created new custodian for user 1
+DEBUG 2025-04-11 02:55:58,371 models 21565 131919377819136 Created new custodian for user 2
+INFO 2025-04-11 02:55:58,375 receivers 21565 131919377819136 Signal handler triggered for new alarm 1
+INFO 2025-04-11 02:55:58,375 receivers 21565 131919377819136 Queueing notification for alarm 1
+INFO 2025-04-11 02:55:58,377 receivers 21565 131919377819136 Signal handler triggered for new alarm 2
+INFO 2025-04-11 02:55:58,377 receivers 21565 131919377819136 Queueing notification for alarm 2
+ok
+
+======================================================================
+FAIL: test_alarms_api (tests.test_all_apis.TestAllAPIs.test_alarms_api)
+Test the alarms API endpoints.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/ubuntu/keryu3/tests/test_all_apis.py", line 196, in test_alarms_api
+    self.assertEqual(response.status_code, 200)
+AssertionError: 404 != 200
+
+======================================================================
+FAIL: test_notification_attempts_api (tests.test_all_apis.TestAllAPIs.test_notification_attempts_api)
+Test the notification attempts API endpoints.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/ubuntu/keryu3/tests/test_all_apis.py", line 240, in test_notification_attempts_api
+    self.assertEqual(self.notification1.status, NotificationStatus.SENT)
+AssertionError: 'PENDING' != 'SENT'
+- PENDING
++ SENT
+
+
+======================================================================
+FAIL: test_rate_limiting (tests.test_all_apis.TestAllAPIs.test_rate_limiting)
+Test rate limiting on API endpoints.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/ubuntu/keryu3/tests/test_all_apis.py", line 287, in test_rate_limiting
+    self.assertEqual(response.status_code, 429)
+AssertionError: 401 != 429
+
+----------------------------------------------------------------------
+Ran 8 tests in 12.974s
+
+FAILED (failures=3)
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

@@ -26,11 +26,12 @@ from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.core.exceptions import PermissionDenied
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .serializers import AlarmSerializer, NotificationAttemptSerializer
 import logging
+from django.db import models
 
 logger = logging.getLogger(__name__)
 
@@ -453,3 +454,120 @@ def notification_webhook(request):
     except Exception as e:
         logger.error(f"Error processing webhook: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
+
+@csrf_exempt
+@require_POST
+def twilio_status_callback(request):
+    """Handle Twilio status callbacks for SMS/WhatsApp messages."""
+    try:
+        data = request.POST
+        logger.info(f"Received Twilio status callback: {data}")
+        
+        message_sid = data.get('MessageSid')
+        message_status = data.get('MessageStatus', '').upper()
+        to_number = data.get('To')
+        from_number = data.get('From')
+        error_code = data.get('ErrorCode')
+        error_message = data.get('ErrorMessage')
+        
+        # Find alarm by message SID
+        try:
+            alarm = Alarm.objects.get(message_sid=message_sid)
+            
+            # Update status based on callback
+            if message_status == 'SENT':
+                alarm.notification_status = NotificationStatus.SENT
+            elif message_status == 'DELIVERED':
+                alarm.notification_status = NotificationStatus.DELIVERED
+            elif message_status in ['FAILED', 'ERROR']:
+                alarm.notification_status = NotificationStatus.FAILED
+                alarm.notification_error = f"Error {error_code}: {error_message}"
+            
+            alarm.save(update_fields=['notification_status', 'notification_error'])
+            logger.info(f"Updated alarm {alarm.id} status to {message_status}")
+            
+        except Alarm.DoesNotExist:
+            logger.error(f"No alarm found for message SID: {message_sid}")
+        
+        return JsonResponse({'status': 'success'})
+        
+    except Exception as e:
+        logger.error(f"Error processing Twilio callback: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def alarm_statistics_api(request):
+    """API endpoint for alarm statistics."""
+    # Get time range from query parameters or default to last 30 days
+    days = int(request.query_params.get('days', 30))
+    end_date = timezone.now()
+    start_date = end_date - timedelta(days=days)
+    
+    # Get all alarms for the user
+    alarms = Alarm.objects.filter(
+        subject__custodian__user=request.user,
+        timestamp__gte=start_date,
+        timestamp__lte=end_date
+    )
+    
+    # Calculate statistics
+    total_alarms = alarms.count()
+    recent_alarms = alarms.filter(timestamp__gte=end_date - timedelta(days=7)).count()
+    
+    # Subject statistics
+    subject_stats = alarms.values(
+        'subject__name', 
+        'subject__id'
+    ).annotate(
+        count=Count('id'),
+        last_alarm=models.Max('timestamp'),
+        notification_success_rate=models.Avg(
+            models.Case(
+                models.When(notification_status=NotificationStatus.DELIVERED, then=1),
+                default=0,
+                output_field=models.FloatField(),
+            )
+        )
+    )
+    
+    # Date statistics
+    date_stats = alarms.values(
+        'timestamp__date'
+    ).annotate(
+        count=Count('id'),
+        notifications_sent=Count('id', filter=models.Q(notification_status=NotificationStatus.SENT)),
+        notifications_failed=Count('id', filter=models.Q(notification_status=NotificationStatus.FAILED))
+    ).order_by('timestamp__date')
+    
+    # Hour statistics
+    hour_stats = alarms.values(
+        'timestamp__hour'
+    ).annotate(
+        count=Count('id')
+    ).order_by('timestamp__hour')
+    
+    # Notification statistics
+    notifications = {
+        'sent': alarms.filter(notification_status=NotificationStatus.SENT).count(),
+        'delivered': alarms.filter(notification_status=NotificationStatus.DELIVERED).count(),
+        'failed': alarms.filter(notification_status=NotificationStatus.FAILED).count(),
+        'pending': alarms.filter(notification_status=NotificationStatus.PENDING).count()
+    }
+    
+    # Time range
+    time_range = {
+        'start_date': start_date,
+        'end_date': end_date,
+        'days': days
+    }
+    
+    return Response({
+        'total_alarms': total_alarms,
+        'recent_alarms': recent_alarms,
+        'subject_stats': list(subject_stats),
+        'date_stats': list(date_stats),
+        'hour_stats': list(hour_stats),
+        'notifications': notifications,
+        'time_range': time_range
+    })

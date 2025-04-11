@@ -130,12 +130,12 @@ class NotificationAttempt(models.Model):
         """Mark the notification attempt as sent."""
         self.status = NotificationStatus.SENT
         self.sent_at = timezone.now()
-        self.save()
+        self.save(update_fields=['status', 'sent_at'])
         
         # Update alarm status
         self.alarm.notification_sent = True
         self.alarm.notification_status = NotificationStatus.SENT
-        self.alarm.save()
+        self.alarm.save(update_fields=['notification_sent', 'notification_status'])
     
     def mark_failed(self, error_message):
         """Mark the notification attempt as failed."""
