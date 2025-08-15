@@ -23,6 +23,7 @@ urlpatterns = [
     path('statistics/data/', views.statistics_data, name='statistics_data'),
     path('export/csv/', views.export_csv, name='export_csv'),
     path('export/excel/', views.export_alarms_excel, name='export_excel'),
+    path('export/pdf/', views.export_alarms_pdf, name='export_pdf'),
     path('webhook/notification/', views.notification_webhook, name='notification_webhook'),
     path('webhook/twilio/status/', views.twilio_status_callback, name='twilio_status_callback'),
 ] 

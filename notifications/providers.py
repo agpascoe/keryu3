@@ -164,10 +164,18 @@ class WhatsAppAPIProvider:
 
 def get_notification_service():
     """Get the configured notification service based on the channel setting."""
-    from core.models import SystemParameter
-    from core.messaging import MessageChannel
+    from django.conf import settings
     
+    # Check if we're in development mode
+    if hasattr(settings, 'NOTIFICATION_PROVIDER') and settings.NOTIFICATION_PROVIDER == 'console':
+        from .console_provider import get_console_notification_service
+        return get_console_notification_service()
+    
+    # Production providers
     try:
+        from core.models import SystemParameter
+        from core.messaging import MessageChannel
+        
         channel_param = SystemParameter.objects.get(parameter='channel')
         channel = MessageChannel(channel_param.value)
         
@@ -181,6 +189,6 @@ def get_notification_service():
             return client
         else:
             return WhatsAppAPIProvider()
-    except SystemParameter.DoesNotExist:
+    except (SystemParameter.DoesNotExist, ImportError):
         # Default to WhatsApp if no channel is configured
         return WhatsAppAPIProvider() 

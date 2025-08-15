@@ -148,6 +148,14 @@ start_services() {
     fi
     echo "✓ Redis started"
     
+    # Collect and copy static files
+    echo "Collecting static files..."
+    source /home/ubuntu/miniconda3/etc/profile.d/conda.sh
+    conda activate keryu
+    python manage.py collectstatic --noinput
+    sudo cp -r staticfiles/* static/ 2>/dev/null || true
+    echo "✓ Static files collected and copied"
+    
     # Start Celery worker
     echo "Starting Celery worker..."
     cd /home/ubuntu/keryu3

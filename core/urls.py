@@ -25,6 +25,7 @@ from drf_yasg import openapi
 from django.views.generic import TemplateView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from . import webhooks
+from . import dev_dashboard
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -79,6 +80,15 @@ urlpatterns = [
     
     # Twilio webhook
     path('webhooks/twilio/status/', webhooks.twilio_status_callback, name='twilio_status_callback'),
+    
+    # Development Dashboard (only in DEBUG mode)
+    path('dev/', dev_dashboard.dev_dashboard, name='dev_dashboard'),
+    path('dev/api/status/', dev_dashboard.dev_api_status, name='dev_api_status'),
+    path('dev/api/tests/', dev_dashboard.dev_api_tests, name='dev_api_tests'),
+    path('dev/api/logs/', dev_dashboard.dev_api_logs, name='dev_api_logs'),
+    path('dev/api/logs/<str:log_file>/', dev_dashboard.dev_api_log_content, name='dev_api_log_content'),
+    path('dev/api/qr-test/', dev_dashboard.dev_api_qr_test, name='dev_api_qr_test'),
+    path('dev/api/notification-test/', dev_dashboard.dev_api_notification_test, name='dev_api_notification_test'),
 ]
 
 if settings.DEBUG:
