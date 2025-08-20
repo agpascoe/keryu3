@@ -23,6 +23,7 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from django.views.generic import TemplateView
+from . import views
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from . import webhooks
 from . import dev_dashboard
@@ -45,7 +46,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # Main pages
-    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    path('', views.home, name='home'),
     
     # Authentication
     path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),

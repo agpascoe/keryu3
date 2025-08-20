@@ -396,7 +396,7 @@ h1, h2, h3, h4, h5, h6,
         </div>
         <div class="row g-4">
             <div class="col-md-6 col-lg-3">
-                <a href="{% if not user.is_authenticated %}{% url 'custodians:register' %}{% else %}#{% endif %}" class="text-decoration-none">
+                <a href="{% if not user.is_authenticated %}{% url 'custodians:register' %}{% else %}{% url 'custodians:custodian_dashboard' %}{% endif %}" class="text-decoration-none">
                     <div class="card h-100 border-0 shadow-sm step-card {% if user.is_authenticated %}inactive{% endif %}">
                         {% if user.is_authenticated %}<i class="fas fa-check-circle lock-icon text-success"></i>{% endif %}
                         <div class="card-body text-center">
@@ -404,49 +404,49 @@ h1, h2, h3, h4, h5, h6,
                                 <i class="fas fa-user-plus fa-2x text-primary"></i>
                             </div>
                             <h4 class="feature-title">1. Register</h4>
-                            <p class="text-muted">{% if user.is_authenticated %}You are already registered{% else %}Create your custodian account to get started with protecting your loved ones{% endif %}</p>
+                            <p class="text-muted">{% if user.is_authenticated %}✓ Registration completed{% else %}Create your custodian account to get started with protecting your loved ones{% endif %}</p>
                         </div>
                     </div>
                 </a>
             </div>
             <div class="col-md-6 col-lg-3">
                 <a href="{% if user.is_authenticated %}{% url 'subjects:list' %}{% else %}#{% endif %}" class="text-decoration-none">
-                    <div class="card h-100 border-0 shadow-sm step-card {% if not user.is_authenticated %}inactive{% endif %}">
-                        {% if not user.is_authenticated %}<i class="fas fa-lock lock-icon"></i>{% endif %}
+                    <div class="card h-100 border-0 shadow-sm step-card {% if not user.is_authenticated %}inactive{% elif has_subjects %}inactive{% endif %}">
+                        {% if not user.is_authenticated %}<i class="fas fa-lock lock-icon"></i>{% elif has_subjects %}<i class="fas fa-check-circle lock-icon text-success"></i>{% endif %}
                         <div class="card-body text-center">
                             <div class="feature-icon mb-4">
                                 <i class="fas fa-users fa-2x text-primary"></i>
                             </div>
                             <h4 class="feature-title">2. Add Yus</h4>
-                            <p class="text-muted">Add and manage information about the people you want to protect</p>
+                            <p class="text-muted">{% if not user.is_authenticated %}Add and manage information about the people you want to protect{% elif has_subjects %}✓ {{ subjects_count }} yu{{ subjects_count|pluralize }} added{% else %}Add and manage information about the people you want to protect{% endif %}</p>
                         </div>
                     </div>
                 </a>
             </div>
             <div class="col-md-6 col-lg-3">
                 <a href="{% if user.is_authenticated %}{% url 'subjects:qr_codes' %}{% else %}#{% endif %}" class="text-decoration-none">
-                    <div class="card h-100 border-0 shadow-sm step-card {% if not user.is_authenticated %}inactive{% endif %}">
-                        {% if not user.is_authenticated %}<i class="fas fa-lock lock-icon"></i>{% endif %}
+                    <div class="card h-100 border-0 shadow-sm step-card {% if not user.is_authenticated %}inactive{% elif has_qr_codes %}inactive{% endif %}">
+                        {% if not user.is_authenticated %}<i class="fas fa-lock lock-icon"></i>{% elif has_qr_codes %}<i class="fas fa-check-circle lock-icon text-success"></i>{% endif %}
                         <div class="card-body text-center">
                             <div class="feature-icon mb-4">
                                 <i class="fas fa-qrcode fa-2x text-primary"></i>
                             </div>
                             <h4 class="feature-title">3. Create/Manage Ker</h4>
-                            <p class="text-muted">Generate and manage Kers for your yus, easily update or reassign them as needed</p>
+                            <p class="text-muted">{% if not user.is_authenticated %}Generate and manage Kers for your yus, easily update or reassign them as needed{% elif has_qr_codes %}✓ {{ qr_codes_count }} ker{{ qr_codes_count|pluralize }} created{% else %}Generate and manage Kers for your yus, easily update or reassign them as needed{% endif %}</p>
                         </div>
                     </div>
                 </a>
             </div>
             <div class="col-md-6 col-lg-3">
                 <a href="{% if user.is_authenticated %}{% url 'alarms:alarm_statistics' %}{% else %}#{% endif %}" class="text-decoration-none">
-                    <div class="card h-100 border-0 shadow-sm step-card {% if not user.is_authenticated %}inactive{% endif %}">
-                        {% if not user.is_authenticated %}<i class="fas fa-lock lock-icon"></i>{% endif %}
+                    <div class="card h-100 border-0 shadow-sm step-card {% if not user.is_authenticated %}inactive{% elif has_alarms %}inactive{% endif %}">
+                        {% if not user.is_authenticated %}<i class="fas fa-lock lock-icon"></i>{% elif has_alarms %}<i class="fas fa-check-circle lock-icon text-success"></i>{% endif %}
                         <div class="card-body text-center">
                             <div class="feature-icon mb-4">
                                 <i class="fas fa-chart-line fa-2x text-primary"></i>
                             </div>
                             <h4 class="feature-title">4. Statistics</h4>
-                            <p class="text-muted">Track and analyze alarm patterns over time to better understand and respond to needs</p>
+                            <p class="text-muted">{% if not user.is_authenticated %}Track and analyze alarm patterns over time to better understand and respond to needs{% elif has_alarms %}✓ {{ alarms_count }} alarm{{ alarms_count|pluralize }} recorded{% else %}Track and analyze alarm patterns over time to better understand and respond to needs{% endif %}</p>
                         </div>
                     </div>
                 </a>
