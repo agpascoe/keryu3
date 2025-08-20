@@ -36,9 +36,9 @@ class NotificationChannel:
 class Alarm(models.Model):
     """Model for tracking alarms triggered by QR code scans."""
     SITUATION_TYPES = [
-        ('INJURED', 'Subject Injured'),
-        ('LOST', 'Subject Lost'),
-        ('CONTACT', 'Subject Requesting Contact')
+        ('INJURED', 'Yu Injured'),
+        ('LOST', 'Yu Lost'),
+        ('CONTACT', 'Yu Requesting Contact')
     ]
 
     subject = models.ForeignKey('subjects.Subject', on_delete=models.CASCADE, related_name='alarms')
