@@ -1,18 +1,18 @@
-# Keryu - Subject Management System
+# Keryu - Yu Management System
 
 ## Project Overview
-Keryu is a comprehensive subject management system designed to help track and manage subjects with their associated QR codes and alarms. The system provides features for both administrators and custodians to manage subjects, generate QR codes, and monitor alarms, with secure email verification for new accounts.
+Keryu is a comprehensive Yu management system designed to help track and manage Yus with their associated Kers and alarms. The system provides features for both administrators and custodians to manage Yus, generate Kers, and monitor alarms, with secure email verification for new accounts.
 
 Example of one case (among others) where Keryu is helpful:
-A parent of a child is letting them go to the zoo with their school mates (and teachers). If the child gets lost and someone finds them, that person can scan the QR code on the child's badge. The parent (custodian) immediately receives a WhatsApp message with the alarm details. From there, the parent can contact the teacher to check the situation.
+A parent of a child is letting them go to the zoo with their school mates (and teachers). If the child gets lost and someone finds them, that person can scan the Ker on the child's badge. The parent (custodian) immediately receives a WhatsApp message with the alarm details. From there, the parent can contact the teacher to check the situation.
 
 To use the system, the parent needs to:
 1. Sign up in Keryu
-2. Create a subject record with their child's data
-3. Generate and print the QR code
-4. Attach the QR code to the child's badge or belongings
+2. Create a Yu record with their child's data
+3. Generate and print the Ker
+4. Attach the Ker to the child's badge or belongings
 
-Examples of Subjects that can be tracked:
+Examples of Yus that can be tracked:
 - Children
 - Elderly people
 - Persons with disabilities
@@ -29,30 +29,30 @@ Examples of Subjects that can be tracked:
 ### Dashboard System
 - Admin dashboard with real-time statistics
   - Total non-staff custodians count
-  - Subject statistics
-  - QR code tracking
+  - Yu statistics
+  - Ker tracking
   - Alarm monitoring
 - Custodian dashboard with personalized views
-  - Personal subject management
-  - Individual QR code tracking
+  - Personal Yu management
+  - Individual Ker tracking
   - Personal alarm history
 
-### Subject Management
-- Create, read, update, and delete subjects
-- Track subject details including:
+### Yu Management
+- Create, read, update, and delete Yus
+- Track Yu details including:
   - Personal information (name, date of birth, gender)
   - Medical information (conditions, allergies, medications)
   - Doctor information (name, phone, specialty, address)
   - Photo upload capability
   - Active/Inactive status
 
-### QR Code System
-- Generate unique QR codes for each subject
-- One active QR code per subject at a time
-- QR code activation/deactivation functionality
-- QR code download and printing
+### Ker System
+- Generate unique Kers for each Yu
+- One active Ker per Yu at a time
+- Ker activation/deactivation functionality
+- Ker download and printing
 - Last used timestamp tracking
-- UUID-based QR code identification
+- UUID-based Ker identification
 - Bulk printing capability
 - **Recent Fixes and Improvements:**
   - Fixed buffer handling by resetting buffer position before saving images
@@ -65,7 +65,7 @@ Examples of Subjects that can be tracked:
   - Fixed file system permissions for staticfiles directory
 
 ### Alarm System
-- Automatic alarm creation on QR code scanning
+- Automatic alarm creation on Ker scanning
 - Location tracking support (latitude/longitude)
 - WhatsApp notification integration
 - Alarm history tracking
@@ -74,7 +74,7 @@ Examples of Subjects that can be tracked:
 
 ### User Roles and Permissions
 - Admin users with full system access
-- Custodian users with limited access to their subjects
+- Custodian users with limited access to their Yus
 - Staff-only access to certain features
 - Role-based view filtering
 
@@ -157,40 +157,40 @@ Examples of Subjects that can be tracked:
 ### User Roles and Access Levels
 
 1. **Public Users**
-   - Can scan QR codes
-   - Can view emergency information when scanning valid QR codes
+   - Can scan Kers
+   - Can view emergency information when scanning valid Kers
    - No login required
 
 2. **Custodians**
-   - Full management of their subjects
-   - Generate and manage QR codes for their subjects
-   - View alarm history for their subjects
-   - Receive WhatsApp notifications when their subjects' QR codes are scanned
-   - Access to statistics and reports for their subjects
+   - Full management of their Yus
+   - Generate and manage Kers for their Yus
+   - View alarm history for their Yus
+   - Receive WhatsApp notifications when their Yus' Kers are scanned
+   - Access to statistics and reports for their Yus
 
 3. **Admin Users**
    - Full system access
-   - Manage all custodians and subjects
+   - Manage all custodians and Yus
    - View system-wide statistics
-   - Access to all QR codes and alarm history
+   - Access to all Kers and alarm history
 
 ### Core Features
 
-1. **Subject Management**
-   - Create, update, and delete subject profiles
+1. **Yu Management**
+   - Create, update, and delete Yu profiles
    - Store medical information and emergency contacts
-   - Upload and manage subject photos
-   - Track subject status and history
+   - Upload and manage Yu photos
+   - Track Yu status and history
 
-2. **QR Code System**
-   - Generate unique QR codes for subjects
-   - One active QR code per subject at a time
-   - QR code activation/deactivation
-   - Download and print QR codes
-   - QR codes contain only UUID (no personal data)
+2. **Ker System**
+   - Generate unique Kers for Yus
+   - One active Ker per Yu at a time
+   - Ker activation/deactivation
+   - Download and print Kers
+   - Kers contain only UUID (no personal data)
 
 3. **Alarm System**
-   - Record all QR code scans as alarms
+   - Record all Ker scans as alarms
    - Track scan location and timestamp
    - Automatic WhatsApp notifications to custodians
    - Alarm history and reporting
@@ -238,19 +238,19 @@ Examples of Subjects that can be tracked:
 
 5. **External Services**
    - WhatsApp Business API
-   - QR code generation library
+   - Ker generation library
    - Geolocation services (optional)
 
 ### Out of Scope
 - Mobile app development
-- Custom QR scanner implementation
+- Custom Ker scanner implementation
 - Real-time video monitoring
 - Payment processing
 - Multi-language support (future enhancement)
 
 ### Success Criteria
-1. Custodians can successfully manage QR codes
-2. QR codes can be scanned with standard mobile phones
+1. Custodians can successfully manage Kers
+2. Kers can be scanned with standard mobile phones
 3. WhatsApp notifications are delivered within 1 minute of scanning
 4. System maintains accurate alarm history
 5. Statistics and reports are accurate and up-to-date

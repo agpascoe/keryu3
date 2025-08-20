@@ -1,7 +1,7 @@
 # Alarm System
 
 ## Overview
-The Alarm System is a critical component of Keryu that handles emergency notifications and tracking of subjects through QR code scans. It provides real-time alerts to custodians and emergency contacts when a subject's QR code is scanned.
+The Alarm System is a critical component of Keryu that handles emergency notifications and tracking of Yus through Ker scans. It provides real-time alerts to custodians and emergency contacts when a Yu's Ker is scanned.
 
 ## Models
 
@@ -41,7 +41,7 @@ class NotificationChannel:
 
 ### Alarm Model
 
-The Alarm model represents emergency notifications triggered by QR code scans. Each alarm contains:
+The Alarm model represents emergency notifications triggered by Ker scans. Each alarm contains:
 
 #### Core Fields
 - `subject`: ForeignKey to Subject model
@@ -159,7 +159,7 @@ class NotificationAttempt(models.Model):
 
 ### Alarm Management
 1. **Creation**
-   - QR code scan trigger
+   - Ker scan trigger
    - Location tracking
    - Timestamp recording
    - Scanner identification (Phototaker or web)
@@ -275,7 +275,7 @@ Messages are formatted based on situation type:
 #### Test Alarm
 ```
 🔔 TEST ALARM
-Subject: {subject_name}
+Yu: {subject_name}
 Location: {location}
 Time: {timestamp}
 ```
@@ -283,7 +283,7 @@ Time: {timestamp}
 #### Injury Report
 ```
 ⚠️ INJURY REPORTED
-Subject: {subject_name}
+Yu: {subject_name}
 Location: {location}
 Details: {description}
 Time: {timestamp}
@@ -291,8 +291,8 @@ Time: {timestamp}
 
 #### Lost Subject
 ```
-🚨 SUBJECT MISSING
-Subject: {subject_name}
+🚨 YU MISSING
+Yu: {subject_name}
 Last Seen: {location}
 Details: {description}
 Time: {timestamp}
@@ -301,7 +301,7 @@ Time: {timestamp}
 #### Contact Request
 ```
 📞 CONTACT NEEDED
-Subject: {subject_name}
+Yu: {subject_name}
 Location: {location}
 Message: {description}
 Time: {timestamp}
