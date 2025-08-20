@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}{% if subject %}Edit {{ subject.name }}{% else %}Add New Subject{% endif %} - Keryu{% endblock %}
+{% block title %}{% if subject %}Edit {{ subject.name }}{% else %}Add New Yu{% endif %} - Keryu{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -11,9 +11,9 @@
                 <div class="card-header bg-accent text-white">
                     <h4 class="card-title mb-0">
                         {% if subject %}
-                            <i class="fas fa-edit me-2"></i>Edit Subject
+                            <i class="fas fa-edit me-2"></i>Edit Yu
                         {% else %}
-                            <i class="fas fa-plus me-2"></i>Add New Subject
+                            <i class="fas fa-plus me-2"></i>Add New Yu
                         {% endif %}
                     </h4>
                 </div>
@@ -174,7 +174,7 @@
 
                         <div class="text-center">
                             <button type="submit" class="btn btn-accent">
-                                <i class="fas fa-save me-2"></i>{% if subject %}Update{% else %}Add{% endif %} Subject
+                                <i class="fas fa-save me-2"></i>{% if subject %}Update{% else %}Add{% endif %} Yu
                             </button>
                             <a href="{% url 'subjects:list' %}" class="btn btn-secondary">
                                 <i class="fas fa-times me-2"></i>Cancel

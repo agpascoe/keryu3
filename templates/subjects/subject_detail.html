@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{{ subject.name }} - Subject Details - {{ block.super }}{% endblock %}
+{% block title %}{{ subject.name }} - Yu Details - {{ block.super }}{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -11,7 +11,7 @@
                 <div class="card-header bg-accent text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <h4 class="card-title mb-0">
-                            <i class="fas fa-user me-2"></i>Subject Details
+                            <i class="fas fa-user me-2"></i>Yu Details
                         </h4>
                         <div>
                             <a href="{% url 'subjects:edit' subject.pk %}" class="btn btn-light btn-sm me-2">

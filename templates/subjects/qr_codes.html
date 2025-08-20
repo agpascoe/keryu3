@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}QR Code Management - {{ block.super }}{% endblock %}
+{% block title %}Ker Management - {{ block.super }}{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -17,10 +17,10 @@
                 <div class="col-md-6">
                     <div class="card shadow-sm h-100">
                         <div class="card-body">
-                            <h5 class="card-title">QR Code Maintenance</h5>
-                            <p class="card-text">Use these tools to fix QR code image issues across the system.</p>
+                            <h5 class="card-title">Ker Maintenance</h5>
+                            <p class="card-text">Use these tools to fix Ker image issues across the system.</p>
                             <a href="{% url 'subjects:regenerate_all_qr_images' %}" class="btn btn-warning">
-                                <i class="fas fa-sync-alt me-2"></i>Regenerate All QR Images
+                                <i class="fas fa-sync-alt me-2"></i>Regenerate All Ker Images
                             </a>
                         </div>
                     </div>
@@ -34,10 +34,10 @@
         <div class="card-header bg-accent text-white">
             <div class="d-flex justify-content-between align-items-center">
                 <h4 class="card-title mb-0">
-                    <i class="fas fa-qrcode me-2"></i>QR Code Management
+                    <i class="fas fa-qrcode me-2"></i>Ker Management
                 </h4>
                 <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#generateQRModal">
-                    <i class="fas fa-plus me-2"></i>Generate New QR
+                    <i class="fas fa-plus me-2"></i>Generate New Ker
                 </button>
             </div>
         </div>
@@ -54,7 +54,7 @@
             </div>
             {% endif %}
 
-            <!-- QR Codes Grid -->
+            <!-- Kers Grid -->
             <div class="row g-4">
                 {% for qr in qr_codes %}
                 <div class="col-md-6 col-lg-4">
@@ -65,7 +65,7 @@
                                     {% if qr.subject %}
                                         {{ qr.subject.name }}
                                     {% else %}
-                                        Unassigned QR
+                                        Unassigned Ker
                                     {% endif %}
                                 </h5>
                                 <div class="dropdown">
@@ -86,7 +86,7 @@
                                         {% if not qr.subject %}
                                         <li>
                                             <button class="dropdown-item" data-bs-toggle="modal" data-bs-target="#assignModal" data-qr-id="{{ qr.id }}">
-                                                <i class="fas fa-user me-2"></i>Assign Subject
+                                                <i class="fas fa-user me-2"></i>Assign Yu
                                             </button>
                                         </li>
                                         {% endif %}
@@ -111,7 +111,7 @@
                         </div>
                         <div class="card-body text-center">
                             <div class="qr-container mb-3">
-                                <img src="{% url 'subjects:qr_image' qr.uuid %}" alt="QR Code" 
+                                <img src="{% url 'subjects:qr_image' qr.uuid %}" alt="Ker" 
                                      class="img-fluid {% if not qr.is_active %}opacity-50{% endif %}" 
                                      onerror="handleImageError(this, '{{ qr.uuid }}')"
                                      data-qr-uuid="{{ qr.uuid }}"
@@ -137,13 +137,13 @@
                                 </span>
                             </div>
                             <div class="mt-3 mb-3">
-                                <small class="text-muted">QR URL:</small><br>
+                                <small class="text-muted">Ker URL:</small><br>
                                 <a href="{{ qr.scan_url }}" class="text-break">{{ qr.scan_url }}</a>
                             </div>
                             <div class="mb-3">
                                 <span class="badge {% if qr.subject %}bg-success{% else %}bg-warning{% endif %}">
                                     {% if qr.subject %}
-                                        <i class="fas fa-check me-1"></i>Assigned to Subject
+                                        <i class="fas fa-check me-1"></i>Assigned to Yu
                                     {% else %}
                                         <i class="fas fa-exclamation-triangle me-1"></i>Unassigned
                                     {% endif %}
@@ -156,7 +156,7 @@
                 {% empty %}
                 <div class="col-12">
                     <div class="alert alert-info text-center">
-                        <i class="fas fa-info-circle me-2"></i>No QR codes generated yet. Click the button above to create your first QR code.
+                        <i class="fas fa-info-circle me-2"></i>No Kers generated yet. Click the button above to create your first Ker.
                     </div>
                 </div>
                 {% endfor %}
@@ -171,7 +171,7 @@
         <div class="modal-content">
             <div class="modal-header bg-accent text-white">
                 <h5 class="modal-title">
-                    <i class="fas fa-qrcode me-2"></i>Generate New QR Code
+                    <i class="fas fa-qrcode me-2"></i>Generate New Ker
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -179,9 +179,9 @@
                 <form id="generateQRForm">
                     {% csrf_token %}
                     <div class="mb-3">
-                        <label class="form-label">Assign to Subject</label>
+                        <label class="form-label">Assign to Yu</label>
                         <select class="form-select" name="subject_id" required>
-                            <option value="">Choose a subject...</option>
+                            <option value="">Choose a yu...</option>
                             {% for subject in subjects %}
                             <option value="{{ subject.id }}" {% if selected_subject == subject.id %}selected{% endif %}>
                                 {{ subject.name }}
@@ -193,7 +193,7 @@
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="activate" id="activateQR" checked>
                             <label class="form-check-label" for="activateQR">
-                                Activate this QR code (deactivates other QR codes for the subject)
+                                Activate this Ker (deactivates other Kers for the yu)
                             </label>
                         </div>
                     </div>
@@ -202,7 +202,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-accent" onclick="generateQR()">
-                    <i class="fas fa-qrcode me-2"></i>Generate QR
+                    <i class="fas fa-qrcode me-2"></i>Generate Ker
                 </button>
             </div>
         </div>
@@ -215,7 +215,7 @@
         <div class="modal-content">
             <div class="modal-header bg-accent text-white">
                 <h5 class="modal-title">
-                    <i class="fas fa-user me-2"></i>Assign QR to Subject
+                    <i class="fas fa-user me-2"></i>Assign Ker to Yu
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -224,9 +224,9 @@
                     {% csrf_token %}
                     <input type="hidden" name="qr_id" id="assignQRId">
                     <div class="mb-3">
-                        <label class="form-label">Select Subject</label>
+                        <label class="form-label">Select Yu</label>
                         <select class="form-select" name="subject_id" required>
-                            <option value="">Choose a subject...</option>
+                            <option value="">Choose a yu...</option>
                             {% for subject in subjects %}
                             <option value="{{ subject.id }}">{{ subject.name }}</option>
                             {% endfor %}
@@ -255,7 +255,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                Are you sure you want to delete this QR code? This action cannot be undone.
+                Are you sure you want to delete this Ker? This action cannot be undone.
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>

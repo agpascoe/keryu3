@@ -31,7 +31,7 @@ schema_view = get_schema_view(
     openapi.Info(
         title="Keryu3 API",
         default_version='v1',
-        description="API for managing vulnerable people care system",
+        description="API for managing vulnerable yu care system",
         terms_of_service="https://www.google.com/policies/terms/",
         contact=openapi.Contact(email="contact@keryu3.local"),
         license=openapi.License(name="BSD License"),

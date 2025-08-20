@@ -5,10 +5,10 @@
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-12">
-            <h2>QR Codes for {{ subject.name }}</h2>
+            <h2>Kers for {{ subject.name }}</h2>
             <div class="card mb-4">
                 <div class="card-body">
-                    <h5 class="card-title">Subject Information</h5>
+                    <h5 class="card-title">Yu Information</h5>
                     <p class="card-text">
                         <strong>Name:</strong> {{ subject.name }}<br>
                         <strong>Custodian:</strong> {{ subject.custodian.user.get_full_name }}<br>
@@ -21,7 +21,7 @@
                 <form method="post" class="d-inline">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-qrcode"></i> Generate New QR Code
+                        <i class="fas fa-qrcode"></i> Generate New Ker
                     </button>
                 </form>
             </div>
@@ -31,12 +31,12 @@
                 <div class="col-md-4 mb-4">
                     <div class="card">
                         <div class="card-header {% if qr.is_active %}bg-success text-white{% endif %}">
-                            QR Code #{{ forloop.counter }}
+                            Ker #{{ forloop.counter }}
                             {% if qr.is_active %}(Active){% endif %}
                         </div>
                         <div class="card-body text-center">
                             {% if qr.qr_image %}
-                            <img src="{{ qr.qr_image.url }}" alt="QR Code" class="img-fluid mb-3" style="max-width: 200px;">
+                            <img src="{{ qr.qr_image.url }}" alt="Ker" class="img-fluid mb-3" style="max-width: 200px;">
                             {% endif %}
                             <p class="card-text">
                                 <small class="text-muted">Created: {{ qr.created_at|date:"M d, Y H:i" }}</small><br>

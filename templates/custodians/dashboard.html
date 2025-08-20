@@ -7,7 +7,7 @@
     <div class="row mb-4">
         <div class="col">
             <h1 class="mb-0">{% if is_admin %}Admin Dashboard{% else %}Welcome, {{ user.get_full_name|default:user.username }}{% endif %}</h1>
-            <p class="text-muted">{% if is_admin %}System-wide overview and statistics{% else %}Here's an overview of your subjects and recent activity{% endif %}</p>
+            <p class="text-muted">{% if is_admin %}System-wide overview and statistics{% else %}Here's an overview of your yus and recent activity{% endif %}</p>
         </div>
     </div>
 
@@ -32,10 +32,10 @@
                 <div class="dashboard-widget">
                     <div class="widget-title">
                         <i class="fas fa-users fa-fw text-primary"></i>
-                        <span>Total Subjects</span>
+                        <span>Total Yus</span>
                     </div>
                     <h2 class="mb-0">{{ total_subjects }}</h2>
-                    <p class="text-muted mb-0">{% if is_admin %}Total subjects in system{% else %}Active subjects under your care{% endif %}</p>
+                    <p class="text-muted mb-0">{% if is_admin %}Total yus in system{% else %}Active yus under your care{% endif %}</p>
                 </div>
             </a>
         </div>
@@ -44,10 +44,10 @@
                 <div class="dashboard-widget">
                     <div class="widget-title">
                         <i class="fas fa-qrcode fa-fw text-info"></i>
-                        <span>QR Codes</span>
+                        <span>Kers</span>
                     </div>
                     <h2 class="mb-0">{{ total_qrs }}</h2>
-                    <p class="text-muted mb-0">{{ active_qrs }} active QR codes</p>
+                    <p class="text-muted mb-0">{{ active_qrs }} active Kers</p>
                 </div>
             </a>
         </div>

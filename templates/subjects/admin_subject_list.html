@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Subject List - Admin{% endblock %}
+{% block title %}Yu List - Admin{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Subject Management</h1>
+        <h1>Yu Management</h1>
         <div>
             <a href="{% url 'subjects:create' %}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Add Subject
+                <i class="fas fa-plus"></i> Add Yu
             </a>
             <a href="{% url 'subjects:subject_stats' %}" class="btn btn-info">
                 <i class="fas fa-chart-bar"></i> Statistics
@@ -21,7 +21,7 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Total Subjects</h5>
+                    <h5 class="card-title">Total Yus</h5>
                     <p class="card-text display-6">{{ stats.total_subjects }}</p>
                 </div>
             </div>
@@ -37,7 +37,7 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Active Subjects</h5>
+                    <h5 class="card-title">Active Yus</h5>
                     <p class="card-text display-6">{{ stats.active_subjects }}</p>
                 </div>
             </div>

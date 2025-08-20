@@ -20,9 +20,9 @@
                             <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
                         </div>
                         <div class="col-md-4">
-                            <label for="subject" class="form-label">Subject</label>
+                            <label for="subject" class="form-label">Yu</label>
                             <select class="form-select" id="subject" name="subject">
-                                <option value="">All Subjects</option>
+                                <option value="">All Yus</option>
                                 {% for subject in subjects %}
                                 <option value="{{ subject.id }}" {% if selected_subject == subject.id|stringformat:"s" %}selected{% endif %}>
                                     {{ subject.name }}
@@ -43,7 +43,7 @@
                     <thead>
                         <tr>
                             <th>Date/Time</th>
-                            <th>Subject</th>
+                            <th>Yu</th>
                             <th>Location</th>
                             <th>Notification</th>
                             <th>Actions</th>

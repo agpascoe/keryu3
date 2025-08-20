@@ -33,9 +33,11 @@ class Subject(models.Model):
 
     class Meta:
         ordering = ['name']
+        verbose_name = 'Yu'
+        verbose_name_plural = 'Yus'
 
 class SubjectQR(models.Model):
-    """Model for managing QR codes associated with subjects."""
+    """Model for managing Kers associated with yus."""
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='qr_codes')
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -46,11 +48,11 @@ class SubjectQR(models.Model):
 
     class Meta:
         ordering = ['-created_at']
-        verbose_name = 'QR Code'
-        verbose_name_plural = 'QR Codes'
+        verbose_name = 'Yu Ker'
+        verbose_name_plural = 'Yu Kers'
 
     def __str__(self):
-        return f"QR Code for {self.subject.name} ({self.uuid})"
+        return f"Ker for {self.subject.name} ({self.uuid})"
 
     def save(self, *args, **kwargs):
         if self.is_active:
