@@ -1,10 +1,10 @@
 # Keryu - Yu Management System
 
 ## Project Overview
-Keryu is a comprehensive Yu management system designed to help track and manage Yus with their associated Kers and alarms. The system provides features for both administrators and custodians to manage Yus, generate Kers, and monitor alarms, with secure email verification for new accounts.
+Keryu is a comprehensive Yu (Subjects with vulnerabilities) management system designed to help track and manage Yus with their associated Kers (QRs) and alarms. The system provides features for both administrators and custodians to manage Yus, generate Kers, and monitor alarms, with secure email verification for new accounts.
 
 Example of one case (among others) where Keryu is helpful:
-A parent of a child is letting them go to the zoo with their school mates (and teachers). If the child gets lost and someone finds them, that person can scan the Ker on the child's badge. The parent (custodian) immediately receives a WhatsApp message with the alarm details. From there, the parent can contact the teacher to check the situation.
+A parent of a child (Yu) is letting them go to the zoo with their school mates (and teachers). If the child gets lost and someone finds them, that person can scan the Ker (QR) on the child's badge. The parent (custodian) immediately receives a Mobile message with the alarm details. From there, the parent can contact the teacher to check the situation.
 
 To use the system, the parent needs to:
 1. Sign up in Keryu
