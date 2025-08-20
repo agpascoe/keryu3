@@ -30,11 +30,11 @@ def create_test_alarm(qr_uuid, location=None):
             timestamp=timezone.now()
         )
         
-        logger.info(f"Created test alarm {alarm.id} for subject {qr.subject.name} with PENDING status")
+        logger.info(f"Created test alarm {alarm.id} for yu {qr.subject.name} with PENDING status")
         return alarm.id
         
     except SubjectQR.DoesNotExist:
-        logger.error(f"QR code with UUID {qr_uuid} not found")
+        logger.error(f"Ker with UUID {qr_uuid} not found")
         raise
     except Exception as e:
         logger.error(f"Error creating test alarm: {str(e)}")

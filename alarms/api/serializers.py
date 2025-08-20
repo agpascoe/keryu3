@@ -3,14 +3,14 @@ from ..models import Alarm, NotificationAttempt
 from subjects.models import Subject, SubjectQR
 
 class AlarmSerializer(serializers.ModelSerializer):
-    subject_name = serializers.CharField(source='subject.name', read_only=True)
+    yu_name = serializers.CharField(source='subject.name', read_only=True)
     custodian_name = serializers.CharField(source='subject.custodian.user.get_full_name', read_only=True)
-    qr_code_uuid = serializers.UUIDField(source='qr_code.uuid', read_only=True)
+    ker_uuid = serializers.UUIDField(source='qr_code.uuid', read_only=True)
     
     class Meta:
         model = Alarm
         fields = [
-            'id', 'subject', 'subject_name', 'custodian_name', 'qr_code', 'qr_code_uuid',
+            'id', 'subject', 'yu_name', 'custodian_name', 'qr_code', 'ker_uuid',
             'timestamp', 'location', 'notification_sent', 'notification_status', 'last_attempt',
             'notification_error', 'notification_attempts', 'whatsapp_message_id', 'is_test'
         ]

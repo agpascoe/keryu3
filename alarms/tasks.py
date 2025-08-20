@@ -191,7 +191,7 @@ def process_pending_alarms(self):
                 # Get alarm with lock to prevent race conditions
                 alarm = Alarm.objects.select_for_update(nowait=True).get(id=alarm.id)
                 
-                logger.info(f"Processing alarm {alarm.id} for subject {alarm.subject.name}")
+                logger.info(f"Processing alarm {alarm.id} for yu {alarm.subject.name}")
                 
                 # Skip if already sent or in progress
                 if alarm.notification_status == NotificationStatus.SENT:

@@ -13,28 +13,28 @@ def home(request):
             custodian = request.user.custodian
             
             # Get user's progress data
-            user_subjects = Subject.objects.filter(custodian=custodian)
-            user_qr_codes = SubjectQR.objects.filter(subject__custodian=custodian)
+            user_yus = Subject.objects.filter(custodian=custodian)
+            user_kers = SubjectQR.objects.filter(subject__custodian=custodian)
             user_alarms = Alarm.objects.filter(subject__custodian=custodian)
             
             # Progress tracking
             context.update({
-                'has_subjects': user_subjects.exists(),
-                'has_qr_codes': user_qr_codes.exists(),
+                'has_yus': user_yus.exists(),
+                'has_kers': user_kers.exists(),
                 'has_alarms': user_alarms.exists(),
-                'subjects_count': user_subjects.count(),
-                'qr_codes_count': user_qr_codes.count(),
+                'yus_count': user_yus.count(),
+                'kers_count': user_kers.count(),
                 'alarms_count': user_alarms.count(),
             })
             
         except AttributeError:
             # User doesn't have a custodian profile yet
             context.update({
-                'has_subjects': False,
-                'has_qr_codes': False,
+                'has_yus': False,
+                'has_kers': False,
                 'has_alarms': False,
-                'subjects_count': 0,
-                'qr_codes_count': 0,
+                'yus_count': 0,
+                'kers_count': 0,
                 'alarms_count': 0,
             })
     

@@ -181,7 +181,7 @@ def generate_qr(request):
 
             subject = get_object_or_404(Subject, id=subject_id, custodian=request.user.custodian)
             
-            logger.debug(f"Generating new QR code for subject: {subject.name} (ID: {subject.id})")
+            logger.debug(f"Generating new Ker for yu: {subject.name} (ID: {subject.id})")
             
             # Generate QR code
             qr = SubjectQR.objects.create(
@@ -190,7 +190,7 @@ def generate_qr(request):
                 is_active=True  # This will deactivate other QR codes
             )
             
-            logger.debug(f"QR code created with UUID: {qr.uuid}")
+            logger.debug(f"Ker created with UUID: {qr.uuid}")
             
             success_msg = 'Ker generated successfully'
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -206,7 +206,7 @@ def generate_qr(request):
             
         except Subject.DoesNotExist:
             error_msg = 'Subject not found'
-            logger.error(f"QR generation error: {error_msg}")
+            logger.error(f"Ker generation error: {error_msg}")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 messages.error(request, error_msg)  # Add message even for AJAX
                 return JsonResponse({
@@ -217,7 +217,7 @@ def generate_qr(request):
             return redirect('subjects:qr_codes')
         except Exception as e:
             error_msg = f"Failed to generate Ker: {str(e)}"
-            logger.error(f"QR generation error: {error_msg}")
+            logger.error(f"Ker generation error: {error_msg}")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': False,
@@ -258,7 +258,7 @@ def qr_image(request, uuid):
         
         # Generate QR code if it doesn't exist, is invalid, or regeneration is forced
         if force_regenerate or not image_exists:
-            logger.debug(f"Generating new QR code image for {uuid} (forced: {force_regenerate}, exists: {image_exists})")
+            logger.debug(f"Generating new Ker image for {uuid} (forced: {force_regenerate}, exists: {image_exists})")
             
             # Clear existing image if there is one
             if qr.image:
@@ -290,10 +290,10 @@ def qr_image(request, uuid):
             
             # Calculate file size for logging
             file_size = buffer.getbuffer().nbytes
-            logger.debug(f"Generated QR image with size: {file_size} bytes")
+            logger.debug(f"Generated Ker image with size: {file_size} bytes")
             
             if file_size < 100:
-                logger.error(f"Generated QR image is suspiciously small: {file_size} bytes")
+                logger.error(f"Generated Ker image is suspiciously small: {file_size} bytes")
                 return HttpResponse("Invalid QR image generated", status=500)
             
             # Save to model
