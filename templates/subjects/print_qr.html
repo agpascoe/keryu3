@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Print QR Code - {{ qr.subject.name }}</title>
+    <title>Print Ker - {{ qr.subject.name }}</title>
     <style>
         @media print {
             body {
@@ -67,7 +67,7 @@
     <div class="container">
         <div class="qr-card">
             <div class="qr-image">
-                <img src="{% url 'subjects:qr_image' qr.uuid %}" alt="QR Code">
+                <img src="{% url 'subjects:qr_image' qr.uuid %}" alt="Ker">
             </div>
             <div class="subject-info">
                 <strong>{{ qr.subject.name }}</strong>
