@@ -59,7 +59,7 @@ def subject_create(request):
             subject = form.save(commit=False)
             subject.custodian = request.user.custodian  # Set the current user as custodian
             subject.save()
-            messages.success(request, f'Subject "{subject.name}" was created successfully.')
+            messages.success(request, f'Yu "{subject.name}" was created successfully.')
             return redirect('subjects:detail', pk=subject.pk)
         else:
             logger.debug(f"Form errors: {form.errors}")
@@ -94,7 +94,7 @@ def subject_edit(request, pk):
         form = SubjectForm(request.POST, request.FILES, instance=subject)
         if form.is_valid():
             subject = form.save()
-            messages.success(request, f'Subject "{subject.name}" was updated successfully.')
+            messages.success(request, f'Yu "{subject.name}" was updated successfully.')
             return redirect('subjects:detail', pk=subject.pk)
     else:
         form = SubjectForm(instance=subject)
@@ -115,7 +115,7 @@ def subject_delete(request, pk):
     
     if request.method == 'POST':
         subject.delete()
-        messages.success(request, f'Subject "{subject.name}" was deleted successfully.')
+        messages.success(request, f'Yu "{subject.name}" was deleted successfully.')
         return redirect('subjects:list')
     
     return render(request, 'subjects/subject_confirm_delete.html', {'subject': subject})
@@ -192,7 +192,7 @@ def generate_qr(request):
             
             logger.debug(f"QR code created with UUID: {qr.uuid}")
             
-            success_msg = 'QR code generated successfully'
+            success_msg = 'Ker generated successfully'
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 messages.success(request, success_msg)  # Add message even for AJAX
                 return JsonResponse({
@@ -216,7 +216,7 @@ def generate_qr(request):
             messages.error(request, error_msg)
             return redirect('subjects:qr_codes')
         except Exception as e:
-            error_msg = f"Failed to generate QR code: {str(e)}"
+            error_msg = f"Failed to generate Ker: {str(e)}"
             logger.error(f"QR generation error: {error_msg}")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
@@ -253,7 +253,7 @@ def qr_image(request, uuid):
                             image_exists = True
                             f.seek(0)  # Reset file pointer for future reads
             except (ValueError, FileNotFoundError, OSError) as e:
-                logger.warning(f"Image file validation failed for QR {uuid}: {str(e)}")
+                logger.warning(f"Image file validation failed for Ker {uuid}: {str(e)}")
                 image_exists = False
         
         # Generate QR code if it doesn't exist, is invalid, or regeneration is forced
@@ -365,7 +365,7 @@ def activate_qr(request, uuid):
     qr.is_active = True
     qr.save()  # This will deactivate other QR codes
     
-    messages.success(request, 'QR code activated successfully.')
+    messages.success(request, 'Ker activated successfully.')
     return redirect('qr_codes')
 
 @login_required
@@ -381,7 +381,7 @@ def deactivate_qr(request, uuid):
     qr.is_active = False
     qr.save()
     
-    messages.success(request, 'QR code deactivated successfully.')
+    messages.success(request, 'Ker deactivated successfully.')
     return redirect('qr_codes')
 
 @login_required
@@ -395,7 +395,7 @@ def delete_qr(request, uuid):
         return HttpResponse(status=403)
     
     qr.delete()
-    messages.success(request, 'QR code deleted successfully.')
+    messages.success(request, 'Ker deleted successfully.')
     return redirect('qr_codes')
 
 def generate_qr_image(url):
@@ -590,7 +590,7 @@ def print_qr(request, uuid=None):
         logger.error(f"Error printing QR code: {str(e)}")
         return JsonResponse({
             'success': False,
-            'error': 'Failed to print QR code'
+            'error': 'Failed to print Ker'
         }, status=500)
 
 @login_required
@@ -638,7 +638,7 @@ def assign_qr(request, uuid=None):
                 # Return success response
                 return JsonResponse({
                     'success': True,
-                    'message': 'QR code assigned successfully',
+                    'message': 'Ker assigned successfully',
                     'qr_uuid': str(qr.uuid)
                 })
                 
@@ -646,7 +646,7 @@ def assign_qr(request, uuid=None):
             logger.error(f"Error assigning QR code: {str(e)}")
             return JsonResponse({
                 'success': False,
-                'error': 'Failed to assign QR code'
+                'error': 'Failed to assign Ker'
             }, status=500)
     
     # GET request - return the form
@@ -741,7 +741,7 @@ def regenerate_all_qr_images(request):
                     count += 1
                     
                 except Exception as e:
-                    logger.error(f"Failed to regenerate QR image for {qr.uuid}: {str(e)}")
+                    logger.error(f"Failed to regenerate Ker image for {qr.uuid}: {str(e)}")
                     failed += 1
             
             messages.success(request, f"Successfully regenerated {count} QR code images. Failed: {failed}")

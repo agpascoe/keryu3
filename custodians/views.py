@@ -317,7 +317,7 @@ def subject_create(request):
             subject = form.save(commit=False)
             subject.custodian = request.user.custodian
             subject.save()
-            messages.success(request, 'Subject added successfully!')
+            messages.success(request, 'Yu added successfully!')
             return redirect('custodians:subject_list')
     else:
         form = SubjectForm()
@@ -333,7 +333,7 @@ def subject_update(request, pk):
         form = SubjectForm(request.POST, request.FILES, instance=subject)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Subject updated successfully!')
+            messages.success(request, 'Yu updated successfully!')
             return redirect('custodians:subject_list')
     else:
         form = SubjectForm(instance=subject)
@@ -348,7 +348,7 @@ def subject_delete(request, pk):
     subject = get_object_or_404(Subject, pk=pk, custodian=request.user.custodian)
     if request.method == 'POST':
         subject.delete()
-        messages.success(request, 'Subject deleted successfully!')
+        messages.success(request, 'Yu deleted successfully!')
         return redirect('custodians:subject_list')
     return render(request, 'custodians/subject_confirm_delete.html', {'subject': subject})
 
