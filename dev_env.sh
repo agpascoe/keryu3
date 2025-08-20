@@ -1,9 +1,11 @@
 #!/bin/bash
 
-# Keryu Development Environment Script
-# Run this in Cursor to manage your development environment
-
-set -e
+echo "⚠️  DEPRECATED: dev_env.sh is deprecated!"
+echo "📌 Use: ./startup.sh [command]"
+echo "💡 Available commands: start, stop, restart, dev, status"
+echo "🔄 Redirecting to startup.sh $1 in 3 seconds..."
+sleep 3
+exec ./startup.sh "${1:-status}"
 
 # Colors for output
 RED='\033[0;31m'

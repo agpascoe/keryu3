@@ -330,6 +330,78 @@ verify_services() {
     fi
 }
 
+# Function to start development server
+start_dev_server() {
+    echo "Starting development server..."
+    
+    # Check if port 8000 is available
+    if lsof -Pi :8000 -sTCP:LISTEN -t >/dev/null 2>&1; then
+        echo "Port 8000 is already in use. Stopping existing process..."
+        lsof -ti:8000 | xargs kill -9 2>/dev/null || true
+        sleep 2
+    fi
+    
+    # Run migrations
+    python manage.py migrate
+    
+    # Collect static files
+    python manage.py collectstatic --noinput
+    
+    # Start development server
+    echo "✓ Starting Django development server on port 8000..."
+    DJANGO_SETTINGS_MODULE=core.settings_dev python manage.py runserver 0.0.0.0:8000 &
+    
+    sleep 3
+    if curl -s http://localhost:8000/ > /dev/null; then
+        echo "✓ Development server started successfully"
+        echo "  Main app: http://localhost:8000/"
+        echo "  Admin: http://localhost:8000/admin/"
+    else
+        echo "✗ Failed to start development server"
+        exit 1
+    fi
+}
+
+# Function to show service status
+show_status() {
+    echo "Keryu Service Status:"
+    echo "===================="
+    
+    # Check system services
+    for service in nginx redis; do
+        if systemctl is-active --quiet $service; then
+            echo "✓ $service: Running"
+        else
+            echo "✗ $service: Stopped"
+        fi
+    done
+    
+    # Check application processes
+    if pgrep -f "gunicorn" > /dev/null; then
+        echo "✓ Gunicorn: Running"
+    else
+        echo "✗ Gunicorn: Stopped"
+    fi
+    
+    if pgrep -f "celery worker" > /dev/null; then
+        echo "✓ Celery Worker: Running"
+    else
+        echo "✗ Celery Worker: Stopped"
+    fi
+    
+    if pgrep -f "celery beat" > /dev/null; then
+        echo "✓ Celery Beat: Running"
+    else
+        echo "✗ Celery Beat: Stopped"
+    fi
+    
+    if pgrep -f "runserver" > /dev/null; then
+        echo "✓ Dev Server: Running"
+    else
+        echo "✗ Dev Server: Stopped"
+    fi
+}
+
 # Main script
 case "$1" in
     "stop")
@@ -349,8 +421,20 @@ case "$1" in
         start_services
         verify_services
         ;;
+    "dev")
+        echo "Starting development environment..."
+        start_dev_server
+        ;;
+    "status")
+        show_status
+        ;;
     *)
-        echo "Usage: $0 {start|stop|restart}"
+        echo "Usage: $0 {start|stop|restart|dev|status}"
+        echo "  start   - Start production services (Gunicorn, Nginx, Redis, Celery)"
+        echo "  stop    - Stop all services"
+        echo "  restart - Restart all services"
+        echo "  dev     - Start development server"
+        echo "  status  - Show service status"
         exit 1
         ;;
 esac 

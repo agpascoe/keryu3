@@ -1,12 +1,10 @@
 #!/bin/bash
 
-# Enable color output
-tput init
-
-# Colors
-GREEN=$(tput setaf 2)
-YELLOW=$(tput setaf 3)
-NC=$(tput sgr0)
+echo "⚠️  DEPRECATED: shutdown.sh is deprecated!"
+echo "📌 Use: ./startup.sh stop"
+echo "🔄 Redirecting to startup.sh stop in 3 seconds..."
+sleep 3
+exec ./startup.sh stop
 
 # Function for consistent status messages
 print_message() {

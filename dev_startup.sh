@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Development startup script for Keryu
-# This script starts the Django development server with development settings
-
-set -e
-
-echo "Starting Keryu Development Environment..."
+echo "⚠️  DEPRECATED: dev_startup.sh is deprecated!"
+echo "📌 Use: ./startup.sh dev"
+echo "💡 Or use enhanced: ./dev_env.sh start"
+echo "🔄 Redirecting to startup.sh dev in 3 seconds..."
+sleep 3
+exec ./startup.sh dev
 
 # Activate conda environment
 source /home/ubuntu/miniconda3/etc/profile.d/conda.sh
