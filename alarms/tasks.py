@@ -4,6 +4,8 @@ from django.utils import timezone
 from datetime import timedelta
 import logging
 from django.db.models import Q
+import urllib.parse
+import re
 from core.messaging import MessageService
 import requests
 from notifications.providers import get_notification_service
@@ -12,6 +14,24 @@ from django.db import transaction
 from .models import Alarm, NotificationStatus
 
 logger = logging.getLogger(__name__)
+
+def location_to_maps_link(location_text):
+    """Convert location string to a clickable Google Maps link."""
+    if not location_text or location_text.strip() == '':
+        return None
+    
+    # Check if location is GPS coordinates (lat,lng format)
+    coord_pattern = r'^-?\d+\.\d+,-?\d+\.\d+$'
+    if re.match(coord_pattern, location_text.strip()):
+        # GPS coordinates - direct Google Maps link
+        coords = location_text.strip()
+        maps_url = f"https://maps.google.com/?q={coords}"
+        return f"📍 {maps_url}"
+    else:
+        # Manual location text - search link
+        encoded_location = urllib.parse.quote_plus(location_text.strip())
+        search_url = f"https://maps.google.com/maps/search/{encoded_location}"
+        return f"📍 {location_text} - {search_url}"
 
 @app.task(bind=True, max_retries=3, name='alarms.tasks.send_whatsapp_notification')
 def send_whatsapp_notification(self, alarm_id, is_test=False):
@@ -45,12 +65,16 @@ def send_whatsapp_notification(self, alarm_id, is_test=False):
             service = MessageService()
             
             try:
-                # Prepare message with timestamp
+                # Prepare message with timestamp and clickable location
+                location_link = location_to_maps_link(alarm.location)
+                
+                # Convert timestamp to local timezone for display
+                local_timestamp = timezone.localtime(alarm.timestamp)
+                
                 if is_test:
                     message = (
                         f"This is a Keryu TEST alarm of {alarm.subject.name}, "
-                        f"triggered on {alarm.timestamp.strftime('%B %d, %Y, %I:%M %p')}, "
-                        f"from {alarm.location}."
+                        f"triggered on {local_timestamp.strftime('%B %d, %Y, %I:%M %p')}."
                     )
                 else:
                     # Convert situation type to a more natural phrase
@@ -63,12 +87,14 @@ def send_whatsapp_notification(self, alarm_id, is_test=False):
                     message = (
                         f"{alarm.subject.name} {situation_phrase}, "
                         f"with following details: {alarm.description}. "
-                        f"This alarm was created on {alarm.timestamp.strftime('%B %d, %Y, %I:%M %p')} "
-                        f"from {alarm.location}."
+                        f"This alarm was created on {local_timestamp.strftime('%B %d, %Y, %I:%M %p')}."
                     )
                 
-                if alarm.location:
-                    message += f"\nLocation: {alarm.location}"
+                # Add clickable location link
+                if location_link:
+                    message += f"\n\nLocation: {location_link}"
+                elif alarm.location:
+                    message += f"\n\nLocation: {alarm.location}"
                 
                 # Convert phone number to string format
                 phone_str = str(alarm.subject.custodian.phone_number)
@@ -220,8 +246,9 @@ def process_pending_alarms(self):
                 if not phone_str.startswith('+'):
                     phone_str = f"+{phone_str}"
                 
-                # Prepare the message
-                message = f"Alert: {alarm.subject.name} has been located at {alarm.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
+                # Prepare the message with local timezone
+                local_timestamp = timezone.localtime(alarm.timestamp)
+                message = f"Alert: {alarm.subject.name} has been located at {local_timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
                 
                 logger.info(f"Sending notification to {phone_str} for alarm {alarm.id}")
                 

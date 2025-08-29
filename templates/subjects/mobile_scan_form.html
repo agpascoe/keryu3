@@ -46,6 +46,11 @@
                             </div>
 
                             <input type="hidden" name="situation" id="selectedSituation">
+                            
+                            <!-- Hidden location fields -->
+                            <input type="hidden" name="lat" id="latField">
+                            <input type="hidden" name="lng" id="lngField">
+                            <input type="hidden" name="location_error" id="locationErrorField">
 
                             <div id="descriptionSection" class="mt-3" style="display:none;">
                                 <label for="description" class="form-label">Describe the situation:</label>
@@ -67,6 +72,51 @@
                             </button>
                         </div>
                     </form>
+
+                    <!-- Location section -->
+                    <div id="locationSection" class="mt-3">
+                        <!-- Location choice buttons -->
+                        <div id="locationChoiceSection" class="alert alert-info py-2">
+                            <small class="d-block mb-2 text-center">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                Help locate the incident
+                            </small>
+                            <div class="d-grid gap-2">
+                                <button type="button" id="enableLocationBtn" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-location-dot me-1"></i>Use My Location
+                                </button>
+                                <button type="button" id="enterManuallyBtn" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-edit me-1"></i>Enter Location
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Location status indicator -->
+                        <div id="locationStatus" class="mt-2 text-center" style="display: none;">
+                            <small class="text-muted">
+                                <i id="locationIcon" class="fas fa-location-dot me-1"></i>
+                                <span id="locationText">Getting location...</span>
+                            </small>
+                        </div>
+
+                        <!-- Manual location input -->
+                        <div id="manualLocationSection" class="mt-2" style="display: none;">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </span>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="manualLocation" 
+                                       name="manual_location"
+                                       placeholder="Current location"
+                                       maxlength="200">
+                            </div>
+                            <small class="form-text text-muted">
+                                Helps responders find the location
+                            </small>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -96,6 +146,162 @@
         const situationInput = document.getElementById('selectedSituation');
         const charCount = document.getElementById('charCount');
         const situationBtns = document.querySelectorAll('.situation-btn');
+        
+        // Location elements
+        const latField = document.getElementById('latField');
+        const lngField = document.getElementById('lngField');
+        const locationErrorField = document.getElementById('locationErrorField');
+        const locationStatus = document.getElementById('locationStatus');
+        const locationIcon = document.getElementById('locationIcon');
+        const locationText = document.getElementById('locationText');
+        const locationChoiceSection = document.getElementById('locationChoiceSection');
+        const manualLocationSection = document.getElementById('manualLocationSection');
+        const manualLocationInput = document.getElementById('manualLocation');
+        const enableLocationBtn = document.getElementById('enableLocationBtn');
+        const enterManuallyBtn = document.getElementById('enterManuallyBtn');
+        
+        let locationCaptured = false;
+
+        // Auto-attempt location detection on page load
+        setTimeout(function() {
+            requestUserLocation();
+        }, 1000); // Small delay to let page fully load
+
+        // Location button event listeners
+        enableLocationBtn.addEventListener('click', function() {
+            requestUserLocation();
+        });
+
+        enterManuallyBtn.addEventListener('click', function() {
+            showManualLocationInput();
+        });
+
+        // User-initiated location request for mobile with IP fallback
+        function requestUserLocation() {
+            // Hide choice buttons and show loading
+            locationChoiceSection.style.display = 'none';
+            locationStatus.style.display = 'block';
+            updateLocationStatus('loading', 'Getting location...');
+            
+            // Try browser GPS first
+            if (navigator.geolocation) {
+                const options = {
+                    enableHighAccuracy: true,
+                    timeout: 8000, // Shorter for mobile
+                    maximumAge: 60000
+                };
+                
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        latField.value = position.coords.latitude.toFixed(6);
+                        lngField.value = position.coords.longitude.toFixed(6);
+                        locationCaptured = true;
+                        updateLocationStatus('success', 'GPS location captured');
+                        console.log('Mobile GPS location:', latField.value, lngField.value);
+                    },
+                    function(error) {
+                        console.log('Mobile GPS failed:', error.message);
+                        // Fallback to IP-based location
+                        tryIPGeolocation();
+                    },
+                    options
+                );
+            } else {
+                // No GPS, try IP location directly
+                tryIPGeolocation();
+            }
+        }
+        
+        // IP-based geolocation fallback for mobile
+        async function tryIPGeolocation() {
+            updateLocationStatus('loading', 'Trying network location...');
+            
+            try {
+                // Mobile-friendly IP geolocation services
+                const services = [
+                    'https://ipapi.co/json/',
+                    'https://ip-api.com/json/'
+                ];
+                
+                for (const service of services) {
+                    try {
+                        const response = await fetch(service);
+                        if (response.ok) {
+                            const data = await response.json();
+                            
+                            // Handle different response formats
+                            let lat, lng;
+                            if (data.latitude && data.longitude) {
+                                lat = data.latitude;
+                                lng = data.longitude;
+                            } else if (data.lat && data.lon) {
+                                lat = data.lat;
+                                lng = data.lon;
+                            }
+                            
+                            if (lat && lng) {
+                                latField.value = lat.toFixed(6);
+                                lngField.value = lng.toFixed(6);
+                                locationCaptured = true;
+                                updateLocationStatus('success', 'Network location found');
+                                console.log('Mobile IP location:', latField.value, lngField.value);
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                        console.log(`Mobile service ${service} failed:`, e.message);
+                        continue;
+                    }
+                }
+                
+            } catch (error) {
+                console.log('Mobile IP geolocation failed:', error.message);
+            }
+            
+            // All methods failed, show manual input
+            locationErrorField.value = 'All location methods failed';
+            showManualLocationInput('Location detection failed');
+        }
+        
+        function showManualLocationInput(errorMessage = null) {
+            locationChoiceSection.style.display = 'block';
+            locationStatus.style.display = 'none';
+            manualLocationSection.style.display = 'block';
+            
+            // Update the choice section to show retry and manual options
+            locationChoiceSection.innerHTML = `
+                <small class="d-block mb-2 text-center">
+                    <i class="fas fa-exclamation-triangle me-1 text-warning"></i>
+                    Location detection failed
+                </small>
+                <div class="d-grid gap-2">
+                    <button type="button" id="retryLocationBtn" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-location-dot me-1"></i>Try Location Again
+                    </button>
+                    <small class="text-muted text-center">or enter location manually below</small>
+                </div>
+            `;
+            
+            // Add event listener for retry button
+            document.getElementById('retryLocationBtn').addEventListener('click', function() {
+                requestUserLocation();
+            });
+            
+            if (errorMessage) {
+                updateLocationStatus('error', errorMessage);
+                locationStatus.style.display = 'block';
+            }
+            
+            // Don't auto-focus on mobile to avoid unwanted keyboard popup
+        }
+        
+        function updateLocationStatus(status, message) {
+            locationText.textContent = message;
+            locationIcon.className = 'fas me-1 ' + 
+                (status === 'loading' ? 'fa-spinner fa-spin' : 
+                 status === 'success' ? 'fa-check-circle text-success' : 
+                 'fa-exclamation-triangle text-warning');
+        }
 
         // Handle situation button selection
         situationBtns.forEach(btn => {
@@ -112,10 +318,10 @@
                 situationInput.value = value;
                 
                 if (value === 'TEST') {
-                    // For TEST, submit immediately
+                    // For TEST, show submit button but don't auto-submit
                     descriptionSection.style.display = 'none';
                     descriptionField.required = false;
-                    form.submit();
+                    submitBtn.disabled = false;
                 } else {
                     // For other situations, show description
                     descriptionSection.style.display = 'block';

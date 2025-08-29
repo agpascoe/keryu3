@@ -52,7 +52,25 @@
                                             {% endif %}
                                             <tr>
                                                 <th>Location:</th>
-                                                <td>{{ alarm.location }}</td>
+                                                <td>
+                                                    {% if location_info %}
+                                                        {% if location_info.is_coordinates %}
+                                                            <a href="{{ location_info.maps_url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                                                <i class="fas fa-map-marker-alt me-1"></i>{{ location_info.display_text }}
+                                                            </a>
+                                                            <br><small class="text-muted">{{ location_info.raw_location }}</small>
+                                                        {% else %}
+                                                            {{ location_info.display_text }}
+                                                            <a href="{{ location_info.maps_url }}" target="_blank" class="btn btn-outline-primary btn-sm ms-2">
+                                                                <i class="fas fa-external-link-alt me-1"></i>View on Map
+                                                            </a>
+                                                        {% endif %}
+                                                    {% elif alarm.location %}
+                                                        {{ alarm.location }}
+                                                    {% else %}
+                                                        <span class="text-muted">Not available</span>
+                                                    {% endif %}
+                                                </td>
                                             </tr>
                                         </tbody>
                                     </table>

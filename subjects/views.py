@@ -32,8 +32,38 @@ from functools import wraps
 from django.db import DatabaseError
 from django.core.files.base import ContentFile
 from .utils import get_location_from_ip
+import urllib.parse
+import re
 
 logger = logging.getLogger(__name__)
+
+def format_location_for_display(location_text):
+    """Convert location string to a user-friendly display with clickable link."""
+    if not location_text or location_text.strip() == '':
+        return None
+    
+    # Check if location is GPS coordinates (lat,lng format)
+    coord_pattern = r'^-?\d+\.\d+,-?\d+\.\d+$'
+    if re.match(coord_pattern, location_text.strip()):
+        # GPS coordinates - show as clickable link
+        coords = location_text.strip()
+        maps_url = f"https://maps.google.com/?q={coords}"
+        return {
+            'display_text': 'View on Map',
+            'maps_url': maps_url,
+            'is_coordinates': True,
+            'raw_location': coords
+        }
+    else:
+        # Manual location text - show text with search link
+        encoded_location = urllib.parse.quote_plus(location_text.strip())
+        search_url = f"https://maps.google.com/maps/search/{encoded_location}"
+        return {
+            'display_text': location_text.strip(),
+            'maps_url': search_url,
+            'is_coordinates': False,
+            'raw_location': location_text.strip()
+        }
 
 @staff_member_required_403
 def subject_list(request):
@@ -799,8 +829,21 @@ def scan_qr_anonymous(request, uuid):
                 situation_type = request.POST.get('situation')
                 description = request.POST.get('description', '').strip()
                 
+                # Debug: Log POST data to see what location data is being sent
+                logger.info(f"POST data received: {dict(request.POST)}")
+                logger.info(f"Lat: {request.POST.get('lat')}, Lng: {request.POST.get('lng')}, Manual: {request.POST.get('manual_location')}")
+                
                 if situation_type == 'TEST':
-                    # Create test alarm with default location
+                    # Get location from request if available for test scans too
+                    location = None
+                    if request.POST.get('lat') and request.POST.get('lng'):
+                        location = f"{request.POST.get('lat')},{request.POST.get('lng')}"
+                    elif request.POST.get('manual_location'):
+                        location = request.POST.get('manual_location').strip()
+                    else:
+                        location = 'Test Scan (Location not captured)'
+                    
+                    # Create test alarm with actual location
                     alarm = Alarm.objects.create(
                         subject=qr.subject,
                         qr_code=qr,
@@ -808,7 +851,7 @@ def scan_qr_anonymous(request, uuid):
                         timestamp=timezone.now(),
                         is_test=True,
                         situation_type='TEST',
-                        location='Test Scan',  # Add default location
+                        location=location,
                         is_anonymous=True,
                         ip_address=request.META.get('REMOTE_ADDR'),
                         user_agent=request.META.get('HTTP_USER_AGENT', '')
@@ -823,22 +866,36 @@ def scan_qr_anonymous(request, uuid):
                     
                     logger.info(f"Created new test alarm {alarm.id} for QR {uuid}")
                     
+                    location_info = format_location_for_display(alarm.location)
                     return render(request, 'subjects/scan_result.html', {
                         'qr': qr,
                         'alarm': alarm,
                         'is_test': True,
                         'message': 'Test capture completed successfully.',
-                        'success': True
+                        'success': True,
+                        'location_info': location_info
                     })
                 
                 if not situation_type or situation_type not in dict(Alarm.SITUATION_TYPES):
-                    return render(request, 'subjects/scan_form.html', {
+                    # Check if request is from mobile device
+                    user_agent = request.META.get('HTTP_USER_AGENT', '').lower()
+                    is_mobile = any(mobile_keyword in user_agent for mobile_keyword in [
+                        'mobile', 'android', 'iphone', 'ipad', 'phone', 'tablet'
+                    ])
+                    template = 'subjects/mobile_scan_form.html' if is_mobile else 'subjects/scan_form.html'
+                    return render(request, template, {
                         'qr': qr,
                         'error': 'Please select a valid situation type'
                     })
                 
                 if not description:
-                    return render(request, 'subjects/scan_form.html', {
+                    # Check if request is from mobile device
+                    user_agent = request.META.get('HTTP_USER_AGENT', '').lower()
+                    is_mobile = any(mobile_keyword in user_agent for mobile_keyword in [
+                        'mobile', 'android', 'iphone', 'ipad', 'phone', 'tablet'
+                    ])
+                    template = 'subjects/mobile_scan_form.html' if is_mobile else 'subjects/scan_form.html'
+                    return render(request, template, {
                         'qr': qr,
                         'error': 'Please provide a description of the situation'
                     })
@@ -847,6 +904,8 @@ def scan_qr_anonymous(request, uuid):
                 location = None
                 if request.POST.get('lat') and request.POST.get('lng'):
                     location = f"{request.POST.get('lat')},{request.POST.get('lng')}"
+                elif request.POST.get('manual_location'):
+                    location = request.POST.get('manual_location').strip()
                 else:
                     location = 'Unknown Location'  # Add default location
                 
@@ -874,16 +933,25 @@ def scan_qr_anonymous(request, uuid):
                 
                 logger.info(f"Created new anonymous alarm {alarm.id} for QR {uuid}")
                 
+                location_info = format_location_for_display(alarm.location)
                 return render(request, 'subjects/scan_result.html', {
                     'qr': qr,
                     'alarm': alarm,
                     'is_duplicate': False,
                     'message': 'Thank you for your report. The custodian has been notified.',
-                    'success': True
+                    'success': True,
+                    'location_info': location_info
                 })
             
             # GET request - show the form
-            return render(request, 'subjects/scan_form.html', {'qr': qr})
+            # Check if request is from mobile device
+            user_agent = request.META.get('HTTP_USER_AGENT', '').lower()
+            is_mobile = any(mobile_keyword in user_agent for mobile_keyword in [
+                'mobile', 'android', 'iphone', 'ipad', 'phone', 'tablet'
+            ])
+            
+            template = 'subjects/mobile_scan_form.html' if is_mobile else 'subjects/scan_form.html'
+            return render(request, template, {'qr': qr})
             
     except DatabaseError as e:
         error_message = 'System is busy, please try again in a moment'

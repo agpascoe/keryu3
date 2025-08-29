@@ -72,7 +72,57 @@
                                 <i class="fas fa-paper-plane me-2"></i>Submit Report
                             </button>
                         </div>
+
+                        <!-- Hidden location fields -->
+                        <input type="hidden" name="lat" id="latField">
+                        <input type="hidden" name="lng" id="lngField">
+                        <input type="hidden" name="location_error" id="locationErrorField">
                     </form>
+
+                    <!-- Location section -->
+                    <div id="locationSection" class="mt-3">
+                        <!-- Location choice buttons -->
+                        <div id="locationChoiceSection" class="alert alert-info py-2 text-center">
+                            <small class="d-block mb-2">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                Help us locate the incident
+                            </small>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                <button type="button" id="enableLocationBtn" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-location-dot me-1"></i>Use My Location
+                                </button>
+                                <button type="button" id="enterManuallyBtn" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-edit me-1"></i>Enter Manually
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Location status indicator -->
+                        <div id="locationStatus" class="mt-2 text-center" style="display: none;">
+                            <small class="text-muted">
+                                <i id="locationIcon" class="fas fa-location-dot me-1"></i>
+                                <span id="locationText">Detecting location...</span>
+                            </small>
+                        </div>
+
+                        <!-- Manual location input -->
+                        <div id="manualLocationSection" class="mt-2" style="display: none;">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </span>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="manualLocation" 
+                                       name="manual_location"
+                                       placeholder="Enter your current location (e.g., Street, City)"
+                                       maxlength="200">
+                            </div>
+                            <small class="form-text text-muted">
+                                This helps responders find the exact location
+                            </small>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -87,6 +137,166 @@
         const descriptionField = document.getElementById('description');
         const submitBtn = document.getElementById('submitBtn');
         const radioButtons = document.querySelectorAll('input[name="situation"]');
+        
+        // Location elements
+        const latField = document.getElementById('latField');
+        const lngField = document.getElementById('lngField');
+        const locationErrorField = document.getElementById('locationErrorField');
+        const locationStatus = document.getElementById('locationStatus');
+        const locationIcon = document.getElementById('locationIcon');
+        const locationText = document.getElementById('locationText');
+        const locationChoiceSection = document.getElementById('locationChoiceSection');
+        const manualLocationSection = document.getElementById('manualLocationSection');
+        const manualLocationInput = document.getElementById('manualLocation');
+        const enableLocationBtn = document.getElementById('enableLocationBtn');
+        const enterManuallyBtn = document.getElementById('enterManuallyBtn');
+        
+        let locationCaptured = false;
+
+        // Auto-attempt location detection on page load
+        setTimeout(function() {
+            requestUserLocation();
+        }, 1000); // Small delay to let page fully load
+
+        // Location button event listeners
+        enableLocationBtn.addEventListener('click', function() {
+            requestUserLocation();
+        });
+
+        enterManuallyBtn.addEventListener('click', function() {
+            showManualLocationInput();
+        });
+
+        // User-initiated location request with Google fallback
+        function requestUserLocation() {
+            // Hide choice buttons and show loading
+            locationChoiceSection.style.display = 'none';
+            locationStatus.style.display = 'block';
+            updateLocationStatus('loading', 'Requesting location...');
+            
+            // Try browser geolocation first
+            if (navigator.geolocation) {
+                const options = {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                };
+                
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        latField.value = position.coords.latitude.toFixed(6);
+                        lngField.value = position.coords.longitude.toFixed(6);
+                        locationCaptured = true;
+                        updateLocationStatus('success', 'Location captured via GPS');
+                        console.log('Browser location captured:', latField.value, lngField.value);
+                    },
+                    function(error) {
+                        console.log('Browser geolocation failed:', error.message);
+                        // Fallback to Google Geolocation API
+                        tryGoogleGeolocation();
+                    },
+                    options
+                );
+            } else {
+                // No browser geolocation, try Google API directly
+                tryGoogleGeolocation();
+            }
+        }
+        
+        // IP-based geolocation fallback
+        async function tryGoogleGeolocation() {
+            updateLocationStatus('loading', 'Trying IP-based location...');
+            
+            try {
+                // Try multiple IP geolocation services
+                const services = [
+                    'https://ipapi.co/json/',
+                    'https://ip-api.com/json/',
+                    'https://freegeoip.app/json/'
+                ];
+                
+                for (const service of services) {
+                    try {
+                        const response = await fetch(service);
+                        if (response.ok) {
+                            const data = await response.json();
+                            
+                            // Different services have different response formats
+                            let lat, lng;
+                            if (data.latitude && data.longitude) {
+                                lat = data.latitude;
+                                lng = data.longitude;
+                            } else if (data.lat && data.lon) {
+                                lat = data.lat;
+                                lng = data.lon;
+                            }
+                            
+                            if (lat && lng) {
+                                latField.value = lat.toFixed(6);
+                                lngField.value = lng.toFixed(6);
+                                locationCaptured = true;
+                                updateLocationStatus('success', 'Location found via IP');
+                                console.log('IP-based location:', latField.value, lngField.value);
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                        console.log(`Service ${service} failed:`, e.message);
+                        continue;
+                    }
+                }
+                
+            } catch (error) {
+                console.log('IP geolocation failed:', error.message);
+            }
+            
+            // All location methods failed, show manual input
+            locationErrorField.value = 'All location methods failed';
+            showManualLocationInput('Location detection failed - please enter manually');
+        }
+        
+        function showManualLocationInput(errorMessage = null) {
+            locationChoiceSection.style.display = 'block';
+            locationStatus.style.display = 'none';
+            manualLocationSection.style.display = 'block';
+            
+            // Update the choice section to show retry and manual options
+            locationChoiceSection.innerHTML = `
+                <small class="d-block mb-2">
+                    <i class="fas fa-exclamation-triangle me-1 text-warning"></i>
+                    Location detection failed. Please choose an option:
+                </small>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <button type="button" id="retryLocationBtn" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-location-dot me-1"></i>Try Location Again
+                    </button>
+                    <span class="text-muted">or enter location below</span>
+                </div>
+            `;
+            
+            // Add event listener for retry button
+            document.getElementById('retryLocationBtn').addEventListener('click', function() {
+                requestUserLocation();
+            });
+            
+            if (errorMessage) {
+                updateLocationStatus('error', errorMessage);
+                locationStatus.style.display = 'block';
+            }
+            
+            // Focus on manual input for better UX
+            setTimeout(() => {
+                manualLocationInput.focus();
+            }, 100);
+        }
+        
+        function updateLocationStatus(status, message) {
+            locationText.textContent = message;
+            locationIcon.className = 'fas me-1 ' + 
+                (status === 'loading' ? 'fa-spinner fa-spin' : 
+                 status === 'success' ? 'fa-check-circle text-success' : 
+                 'fa-exclamation-triangle text-warning');
+        }
 
         // Show/hide description field based on selection
         radioButtons.forEach(radio => {
@@ -94,10 +304,9 @@
                 submitBtn.disabled = false;
                 
                 if (this.value === 'TEST') {
-                    // For TEST, submit immediately
+                    // For TEST, enable submit but don't auto-submit
                     descriptionSection.style.display = 'none';
                     descriptionField.required = false;
-                    form.submit();
                 } else {
                     // For other situations, show description
                     descriptionSection.style.display = 'block';

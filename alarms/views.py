@@ -32,8 +32,38 @@ from rest_framework.permissions import IsAuthenticated
 from .serializers import AlarmSerializer, NotificationAttemptSerializer
 import logging
 from django.db import models
+import urllib.parse
+import re
 
 logger = logging.getLogger(__name__)
+
+def format_location_for_display(location_text):
+    """Convert location string to a user-friendly display with clickable link."""
+    if not location_text or location_text.strip() == '':
+        return None
+    
+    # Check if location is GPS coordinates (lat,lng format)
+    coord_pattern = r'^-?\d+\.\d+,-?\d+\.\d+$'
+    if re.match(coord_pattern, location_text.strip()):
+        # GPS coordinates - show as clickable link
+        coords = location_text.strip()
+        maps_url = f"https://maps.google.com/?q={coords}"
+        return {
+            'display_text': 'View on Map',
+            'maps_url': maps_url,
+            'is_coordinates': True,
+            'raw_location': coords
+        }
+    else:
+        # Manual location text - show text with search link
+        encoded_location = urllib.parse.quote_plus(location_text.strip())
+        search_url = f"https://maps.google.com/maps/search/{encoded_location}"
+        return {
+            'display_text': location_text.strip(),
+            'maps_url': search_url,
+            'is_coordinates': False,
+            'raw_location': location_text.strip()
+        }
 
 @login_required
 def alarm_list(request):
@@ -92,7 +122,11 @@ def alarm_create(request):
 def alarm_detail(request, pk):
     """View for showing alarm details"""
     alarm = get_object_or_404(Alarm, pk=pk)
-    return render(request, 'alarms/alarm_detail.html', {'alarm': alarm})
+    location_info = format_location_for_display(alarm.location)
+    return render(request, 'alarms/alarm_detail.html', {
+        'alarm': alarm,
+        'location_info': location_info
+    })
 
 def alarm_edit(request, pk):
     return HttpResponse(f"Alarm edit view for ID {pk} - Coming soon!")
