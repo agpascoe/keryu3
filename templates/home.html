@@ -314,6 +314,12 @@ h1, h2, h3, h4, h5, h6,
     color: #6c757d;
     font-size: 1.2rem;
 }
+
+.mvp-badge {
+    font-size: 0.75em;
+    color: #d4af37;
+    font-weight: 600;
+}
 </style>
 {% endblock %}
 
@@ -323,7 +329,7 @@ h1, h2, h3, h4, h5, h6,
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-6">
-                <h1 class="display-4 fw-bold mb-4">Welcome to Keryu</h1>
+                <h1 class="display-4 fw-bold mb-4">Welcome to <span class="mvp-badge">((ALMOST AN MVP))</span> Keryu</h1>
                 <p class="lead mb-4">Always behind your care - A comprehensive system designed to protect and support vulnerable individuals through innovative tracking and instant notifications.</p>
                 {% if not user.is_authenticated %}
                     <div class="d-grid gap-3 d-md-flex">
