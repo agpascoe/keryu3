@@ -13,8 +13,6 @@ django-phonenumber-field==7.3.0
 django-chartjs==2.3.0
 drf-yasg==1.21.7
 django-extensions==3.2.3
-django-sslserver==0.22
-django-secure==1.0.2
 django-storages==1.14.2
 django-redis==5.4.0
 
